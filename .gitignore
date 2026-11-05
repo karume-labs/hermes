@@ -1,8 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
-/.pnp
+# dependencies (covers Bun workspaces: root, apps/*, packages/*)
+node_modules/
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -10,17 +10,46 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
+# bun
+bun.lockb
+*.bun-build/
+
+# testing + coverage
 /coverage
+coverage/
 
-# next.js
-/.next/
-/out/
+# next.js (apps/web)
+.next/
+**/.next/
+out/
+**/out/
+build/
+**/build/
+dist/
+**/dist/
 
-# production
+# expo / react-native (apps/mobile)
+.expo/
+**/.expo/
+.expo-shared/
+**/.expo-shared/
+*.jks
+*.keystore
+android/build/
+ios/build/
+ios/Pods/
+
+# drizzle + local data (never commit local DBs, models, device pulls)
+drizzle/
+data/
+models/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+
+# production + misc
 /build
-
-# misc
 .DS_Store
 *.pem
 
@@ -29,13 +58,26 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+bun-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+apps/api/.env
+apps/web/.env
+apps/mobile/.env
 
-# vercel
+# vercel + expo secrets
 .vercel
+.expo/.expo.*
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo

@@ -1,25 +1,41 @@
 {
-  "name": "hermes",
+  "name": "hermes-monorepo",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "biome check",
-    "format": "biome format --write"
-  },
-  "dependencies": {
-    "next": "16.4.5",
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "dev": "bun run --cwd apps/web dev",
+    "dev:web": "bun run --cwd apps/web dev",
+    "dev:api": "bun run --cwd apps/api dev",
+    "dev:mobile": "bun run --cwd apps/mobile dev",
+    "build": "bun run --cwd apps/web build",
+    "build:api": "bun run --cwd apps/api build",
+    "start": "bun run --cwd apps/web start",
+    "start:api": "bun run --cwd apps/api start",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "typecheck": "bun run --cwd apps/web typecheck && bun run --cwd apps/api typecheck && bun run --cwd apps/mobile typecheck && bun run --cwd packages/db typecheck && bun run --cwd packages/validators typecheck && bun run --cwd packages/types typecheck",
+    "typecheck:web": "bun run --cwd apps/web typecheck",
+    "typecheck:api": "bun run --cwd apps/api typecheck",
+    "typecheck:mobile": "bun run --cwd apps/mobile typecheck",
+    "test": "bun run --cwd apps/api test",
+    "test:api": "bun run --cwd apps/api test",
+    "seed:demo": "bun run scripts/seed-demo.ts",
+    "db:generate": "bun run --cwd packages/db db:generate",
+    "db:seed": "bun run --cwd packages/db db:seed",
+    "db:seed:fresh": "bun run db:migrate && bun run db:seed --force",
+    "db:push": "bun run --cwd packages/db db:push",
+    "db:migrate": "bun run --cwd packages/db db:migrate",
+    "db:studio": "bun run --cwd packages/db db:studio",
+    "update-ip": "bun run scripts/update-ip.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.2",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "babel-plugin-react-compiler": "1.0.0",
+    "lefthook": "^2.1.8",
     "typescript": "^5"
   },
   "packageManager": "bun@1.4.4",
