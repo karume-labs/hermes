@@ -1,0 +1,102 @@
+---
+import StatusPill from "@/components/StatusPill.astro";
+import { SLA_WINDOWS } from "@/lib/constants";
+
+const METRICS = [
+  { label: "Time to mobile ack", copy: "Per severity, against the SLA window" },
+  { label: "SLA breach rate", copy: "Breaches over total cases in the period" },
+  { label: "Referral conversion", copy: "Cases referred onward that closed" },
+  { label: "Push read rate", copy: "Reads of pushes that reached a device" },
+  { label: "7-day retention", copy: "Active patients and app opens" },
+  { label: "Time to booking", copy: "Result received to slot held" },
+];
+
+/* Grade tones map onto the fixed status pairs used in the apps. */
+const STATUS: Record<string, "urgent" | "actionable" | "routine"> = {
+  urgent: "urgent",
+  warning: "actionable",
+  neutral: "routine",
+};
+---
+
+<section
+  id="governance"
+  class="scroll-mt-24 border-t border-canvas-line bg-canvas-raised py-20"
+>
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+      <div data-animate>
+        <div class="flex items-center gap-3">
+          <img src="/logo-admin.svg" alt="" width="40" height="40" />
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent-strong">
+            Governance
+          </p>
+        </div>
+        <h2 class="mt-3 font-display text-3xl font-extrabold text-ink sm:text-4xl">
+          Every case carries a clock and an owner.
+        </h2>
+        <p class="mt-4 text-lg leading-relaxed text-ink-muted">
+          Triage sets the window the moment a result is graded. If the patient
+          has not acknowledged by then, the case escalates instead of waiting
+          quietly in a folder.
+        </p>
+
+        <div class="mt-8 overflow-hidden rounded-lg border border-canvas-line">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-canvas">
+              <tr>
+                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
+                  Grade
+                </th>
+                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
+                  Window
+                </th>
+                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
+                  If it lapses
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-canvas-line">
+              {
+                SLA_WINDOWS.map((row) => (
+                  <tr>
+                    <td class="px-4 py-4">
+                      <StatusPill status={STATUS[row.tone]} label={row.grade} />
+                    </td>
+                    <td class="px-4 py-4 font-semibold text-ink">
+                      {row.window}
+                    </td>
+                    <td class="px-4 py-4 text-ink-muted">{row.escalation}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div data-animate>
+        <h3 class="font-display text-sm font-bold uppercase tracking-[0.14em] text-ink-muted">
+          What the governance view reports
+        </h3>
+        <dl class="mt-4 grid gap-px overflow-hidden rounded-lg border border-canvas-line bg-canvas-line sm:grid-cols-2">
+          {
+            METRICS.map((metric) => (
+              <div class="bg-canvas-raised p-5">
+                <dt class="text-sm font-semibold text-ink">{metric.label}</dt>
+                <dd class="mt-1 text-xs leading-relaxed text-ink-muted">
+                  {metric.copy}
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+        <p class="mt-6 text-sm leading-relaxed text-ink-muted">
+          Delivery health sits next to those numbers: queued, sent, read, failed
+          and SMS fallback, plus the raw webhook log, so an integration problem
+          looks different from a patient who did not respond.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

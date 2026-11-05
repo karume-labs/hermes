@@ -1,0 +1,48 @@
+---
+/**
+ * Severity pill: the label is always visible and every status carries its own
+ * icon, so colour is never the only signal. Pairs match the design system.
+ */
+interface StatusPillProps {
+  status: "routine" | "actionable" | "urgent" | "info";
+  label: string;
+}
+
+const { status, label } = Astro.props as StatusPillProps;
+
+const ICON: Record<StatusPillProps["status"], string> = {
+  routine: "M4 8.5 l2.6 2.6 L12 5",
+  actionable: "M8 4.5 V8 l2.4 1.6",
+  urgent: "M8 3.2 14 13.2 H2 Z M8 6.8 V9.6 M8 11.3 v.2",
+  info: "M8 7.2 V12 M8 4.4 v.2",
+};
+
+const TONE: Record<StatusPillProps["status"], string> = {
+  routine: "bg-routine-fill text-routine",
+  actionable: "bg-actionable-fill text-actionable",
+  urgent: "bg-urgent-fill text-urgent",
+  info: "bg-info-fill text-info",
+};
+---
+
+<span
+  class={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold tracking-[0.04em] ${TONE[status]}`}
+>
+  <svg
+    viewBox="0 0 16 16"
+    width="13"
+    height="13"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    {status === "actionable" || status === "info" ? (
+      <circle cx="8" cy="8" r="6" />
+    ) : null}
+    <path d={ICON[status]} />
+  </svg>
+  {label}
+</span>

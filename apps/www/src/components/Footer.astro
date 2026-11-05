@@ -1,0 +1,44 @@
+---
+import { DASHBOARD_URL, NAV_ITEMS, SITE_NAME } from "@/lib/constants";
+---
+
+<footer class="border-t border-canvas-line">
+  <div
+    class="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-12 text-sm text-ink-muted sm:flex-row sm:items-start sm:justify-between"
+  >
+    <div class="flex flex-col gap-2">
+      <div class="flex items-center gap-2">
+        <img src="/logo.svg" alt="" width="24" height="24" />
+        <span class="font-display text-base font-extrabold tracking-[0.16em] text-ink">
+          hermes
+        </span>
+      </div>
+      <span>Close the loop between the lab, the clinic and the patient.</span>
+    </div>
+
+    <div class="flex flex-col gap-4 sm:items-end">
+      <nav aria-label="Footer">
+        <ul class="flex flex-wrap items-center gap-6">
+          {
+            NAV_ITEMS.map((item) => (
+              <li>
+                <a href={item.href} class="transition-colors hover:text-ink">
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+          <li>
+            <a href={DASHBOARD_URL} class="transition-colors hover:text-ink">
+              Dashboard
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <p class="text-xs">
+        {SITE_NAME} is a screening workflow, not a diagnosis. Clinical decisions
+        stay with the care team.
+      </p>
+    </div>
+  </div>
+</footer>

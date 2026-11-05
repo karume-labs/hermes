@@ -1,0 +1,43 @@
+---
+import { FEATURES } from "@/lib/constants";
+---
+
+<section
+  id="features"
+  class="scroll-mt-24 border-t border-canvas-line bg-canvas-raised py-20"
+>
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="max-w-2xl" data-animate>
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent-strong">
+        Platform
+      </p>
+      <h2 class="mt-3 font-display text-3xl font-extrabold text-ink sm:text-4xl">
+        Everything a coordinator needs, nothing a clinician has to chase.
+      </h2>
+      <p class="mt-4 text-lg leading-relaxed text-ink-muted">
+        The dashboard is one screen per job: a queue to work, a case file to
+        close, and governance views for the people accountable for the
+        programme.
+      </p>
+    </div>
+
+    <ul class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
+      {
+        FEATURES.map((feature) => (
+          <li class="rounded-lg border border-canvas-line bg-canvas p-6">
+            <span
+              class="mb-4 block h-1 w-8 rounded-full bg-accent"
+              aria-hidden="true"
+            />
+            <h3 class="font-display text-base font-bold text-ink">
+              {feature.title}
+            </h3>
+            <p class="mt-2 text-sm leading-relaxed text-ink-muted">
+              {feature.copy}
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

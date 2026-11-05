@@ -1,0 +1,23 @@
+---
+import Cta from "@/components/home/Cta.astro";
+import Faq from "@/components/home/Faq.astro";
+import Features from "@/components/home/Features.astro";
+import Governance from "@/components/home/Governance.astro";
+import Hero from "@/components/home/Hero.astro";
+import HowItWorks from "@/components/home/HowItWorks.astro";
+import Problem from "@/components/home/Problem.astro";
+import Surfaces from "@/components/home/Surfaces.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { FAQS } from "@/lib/faqs";
+---
+
+<BaseLayout faq={FAQS}>
+  <Hero />
+  <Problem />
+  <HowItWorks />
+  <Features />
+  <Surfaces />
+  <Governance />
+  <Faq />
+  <Cta />
+</BaseLayout>

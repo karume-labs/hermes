@@ -1,0 +1,43 @@
+---
+import { DASHBOARD_URL, NAV_ITEMS } from "@/lib/constants";
+---
+
+<!-- Sticky top navigation: flat paper canvas, one hairline rule. -->
+<header
+  class="sticky top-0 z-50 border-b border-canvas-line bg-canvas/90 backdrop-blur"
+>
+  <nav
+    class="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4"
+    aria-label="Primary"
+  >
+    <a href="/" class="flex items-center gap-3" aria-label="Hermes home">
+      <img src="/logo.svg" alt="" width="36" height="36" />
+      <span class="font-display text-lg font-extrabold tracking-[0.16em]">
+        hermes
+      </span>
+    </a>
+
+    <div class="flex items-center gap-6">
+      <ul class="hidden items-center gap-7 md:flex">
+        {
+          NAV_ITEMS.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class="text-sm text-ink-muted transition-colors hover:text-ink"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a
+        href={DASHBOARD_URL}
+        class="rounded-md bg-spark px-4 py-2 text-sm font-bold text-ink transition-colors hover:bg-spark-soft"
+      >
+        Open dashboard
+      </a>
+    </div>
+  </nav>
+</header>

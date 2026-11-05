@@ -1,15 +1,17 @@
 # Hermes Care Loop
 
 Screening → sign-off loop closure for clinics. Bun monorepo: Next.js web
-(clinician queue + admin) in `apps/web`, Elysia API in `apps/api`, Expo patient
-app in `apps/mobile`, shared contracts in `packages/*`. Conventions in
-`AGENTS.md`; product spec in `docs/multi-platform-ecosystem.md`.
+(clinician queue + admin) in `apps/web`, Astro marketing site in `apps/www`,
+Elysia API in `apps/api`, Expo patient app in `apps/mobile`, shared contracts
+in `packages/*`. Conventions in `AGENTS.md`; product spec in
+`docs/multi-platform-ecosystem.md`.
 
 ## Layout
 
 ```text
 apps/
   web/      # Next.js 16 clinician queue + admin (Mantine, TanStack Query, nuqs)
+  www/      # Astro landing page (Tailwind v4, no client framework)
   api/      # Elysia ingestion, triage, booking, notifications, metrics
   mobile/   # Expo patient app (expo-router)
 packages/
@@ -37,6 +39,7 @@ bun run db:seed     # demo cases, clinic slots and staff accounts (idempotent)
 bun run dev:api     # Elysia API on :8001
 bun run dev         # Next.js web on :3000
 bun run dev:mobile  # Expo app in apps/mobile
+bun run dev:www     # Astro landing page on :4322
 bun run seed:demo   # 3 demo lab cases through the API
 ```
 
@@ -62,6 +65,22 @@ ADMIN_EMAIL=admin@clinic.test ADMIN_PASSWORD=... bun run db:seed -- --auth
 
 `BETTER_AUTH_SECRET` must be a long random string in production; the API,
 the seeder and the web session check all read it from the API env.
+
+## Landing page
+
+`apps/www` is the Astro marketing site: hero, the four-step loop, platform
+features, the two surfaces, SLA/governance copy and an FAQ that is also emitted
+as FAQPage JSON-LD. It is static — `bun run build:www` writes `apps/www/dist`.
+
+```bash
+bun run dev:www            # http://localhost:4322
+bun run build:www          # static build
+```
+
+The "Open dashboard" buttons read `PUBLIC_DASHBOARD_URL` at build time and fall
+back to `http://localhost:3100`. Set it to the deployed dashboard origin, and
+keep `site` in `apps/www/astro.config.mjs` in sync with `SITE_URL` in
+`apps/www/src/lib/constants.ts` so canonical and share URLs stay correct.
 
 ## Mobile patient app
 

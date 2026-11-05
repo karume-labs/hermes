@@ -1,0 +1,62 @@
+---
+import { DASHBOARD_URL } from "@/lib/constants";
+---
+
+<section class="mx-auto max-w-6xl px-6 py-20">
+  <div class="grid gap-6 lg:grid-cols-2">
+    <article
+      class="flex flex-col rounded-xl border border-canvas-line bg-canvas-raised p-8"
+      data-animate
+    >
+      <img src="/logo-clinic.svg" alt="" width="52" height="52" />
+      <p class="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-ink-muted">
+        Clinic
+      </p>
+      <h2 class="mt-2 font-display text-2xl font-extrabold text-ink">
+        A queue that is actually the work
+      </h2>
+      <p class="mt-3 text-sm leading-relaxed text-ink-muted">
+        Severity, status, SLA countdown and the patient's acknowledgment in one
+        row. Open a case to book, refer, message or close it with a plan and
+        evidence attached.
+      </p>
+      <ul class="mt-6 flex flex-col gap-2 text-sm text-ink-muted">
+        <li>Queue sorted by SLA due time, filtered by severity and status.</li>
+        <li>Case file with the plain-language summary the patient received.</li>
+        <li>Closure recorded against the coordinator who signed it off.</li>
+      </ul>
+      <a
+        href={DASHBOARD_URL}
+        class="mt-8 inline-flex w-fit rounded-md bg-spark px-5 py-2.5 text-sm font-bold text-ink transition-colors hover:bg-spark-soft"
+      >
+        Sign in to the dashboard
+      </a>
+    </article>
+
+    <article
+      class="flex flex-col rounded-xl border border-canvas-line bg-navy p-8 text-ink-inverse"
+      data-animate
+    >
+      <img src="/logo-patient.svg" alt="" width="52" height="52" />
+      <p class="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-canvas-line">
+        Patient
+      </p>
+      <h2 class="mt-2 font-display text-2xl font-extrabold">
+        A result a person can act on
+      </h2>
+      <p class="mt-3 text-sm leading-relaxed text-canvas-line">
+        The mobile app unlocks behind device biometrics, explains the result in
+        plain language, and puts booking, the care journey and a message thread
+        in the same place.
+      </p>
+      <ul class="mt-6 flex flex-col gap-2 text-sm text-canvas-line">
+        <li>Biometric gate before any clinical detail is shown.</li>
+        <li>One-tap acknowledgment, recorded against the case.</li>
+        <li>Booking with a 24-hour reminder written to the device calendar.</li>
+      </ul>
+      <p class="mt-8 text-xs text-canvas-line/70">
+        Android and iOS · Expo · push deep links
+      </p>
+    </article>
+  </div>
+</section>

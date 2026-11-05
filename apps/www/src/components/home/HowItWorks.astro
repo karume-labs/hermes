@@ -1,0 +1,41 @@
+---
+import { STEPS } from "@/lib/constants";
+---
+
+<section id="how-it-works" class="mx-auto max-w-6xl scroll-mt-24 px-6 py-20">
+  <div class="max-w-2xl" data-animate>
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent-strong">
+      The loop
+    </p>
+    <h2 class="mt-3 font-display text-3xl font-extrabold text-ink sm:text-4xl">
+      Four steps, every result, one clock.
+    </h2>
+    <p class="mt-4 text-lg leading-relaxed text-ink-muted">
+      Each step is a record in the case, not an email thread. If one does not
+      happen, the queue says so before the SLA does.
+    </p>
+  </div>
+
+  <ol class="mt-12 grid gap-px overflow-hidden rounded-xl border border-canvas-line bg-canvas-line md:grid-cols-2">
+    {
+      STEPS.map((step) => (
+        <li class="bg-canvas-raised p-8" data-animate>
+          <div class="flex items-baseline justify-between gap-4">
+            <span class="font-display text-3xl font-extrabold text-canvas-line">
+              {step.number}
+            </span>
+            <span class="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-muted">
+              {step.meta}
+            </span>
+          </div>
+          <h3 class="mt-4 font-display text-xl font-bold text-ink">
+            {step.title}
+          </h3>
+          <p class="mt-2 text-sm leading-relaxed text-ink-muted">
+            {step.copy}
+          </p>
+        </li>
+      ))
+    }
+  </ol>
+</section>
