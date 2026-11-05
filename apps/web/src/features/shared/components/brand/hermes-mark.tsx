@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
+import { HERMES_PARTICLES } from "@/features/shared/components/brand/hermes-particles";
 
 /**
- * The four Hermes tiles. `core` is the formless mark (orange particles around
- * sky wings); the three product marks are where it takes shape — heart for the
- * patient app, plus for the clinic dashboard, shield for admin.
+ * The four Hermes tiles, traced from the brand board. `core` is the formless
+ * mark — sky wings inside a loose particle field of spark dots. The product
+ * marks are where it takes shape: heart (patient app), plus (clinic dashboard),
+ * shield on a hexagon (admin).
  */
 export type HermesMarkVariant = "core" | "patient" | "clinic" | "admin";
 
@@ -16,7 +18,6 @@ interface HermesMarkProps {
 export const SPARK = "#FF4500";
 export const INK = "#0F172A";
 export const WING = "#38BDF8";
-export const CHALK = "#F8FAFC";
 
 interface WingProps {
   transform?: string;
@@ -37,22 +38,16 @@ const Wings = (): ReactNode => (
   </g>
 );
 
-/**
- * Particle rule: dots never touch the wings and never sit in the middle of the
- * tile. They gather in the corners, outside the wing span.
- */
-const PARTICLES: ReadonlyArray<{ cx: number; cy: number; r: number }> = [
-  { cx: 14, cy: 17, r: 2.6 },
-  { cx: 48, cy: 11, r: 1.8 },
-  { cx: 82, cy: 19, r: 2.1 },
-  { cx: 17, cy: 81, r: 2.1 },
-  { cx: 79, cy: 79, r: 2.6 },
-];
-
-const Particles = (): ReactNode => (
+const PARTICLES_NODE = (
   <g fill={SPARK}>
-    {PARTICLES.map((dot) => (
-      <circle key={`${dot.cx}-${dot.cy}`} {...dot} />
+    {HERMES_PARTICLES.map((dot) => (
+      <circle
+        key={`${dot.cx}-${dot.cy}`}
+        cx={dot.cx}
+        cy={dot.cy}
+        r={dot.r}
+        opacity={dot.o}
+      />
     ))}
   </g>
 );
@@ -62,7 +57,7 @@ const ACCENTS: Partial<Record<HermesMarkVariant, string>> = {
     "M48 62 C41 57 40 50 44 48.5 C46 47.8 48 49 48 50.5 C48 49 50 47.8 52 48.5 C56 50 55 57 48 62 Z",
   clinic: "M45 49 h6 v5 h5 v6 h-5 v5 h-6 v-5 h-5 v-6 h5 z",
   admin:
-    "M48 44 Q52 45 56 44 C56 53 52 59 48 63 C44 59 40 53 40 44 Q44 45 48 44 Z",
+    "M 48 40 Q 52 44, 57 42 C 57 52, 52 59, 48 64 C 44 59, 39 52, 39 42 Q 44 44, 48 40 Z",
 };
 
 const BASE: Record<HermesMarkVariant, ReactNode> = {
@@ -96,9 +91,16 @@ export const HermesMark = ({
     <title>{title}</title>
     {BASE[variant]}
     <Wings />
-    {variant === "core" ? <Particles /> : null}
+    {variant === "core" ? PARTICLES_NODE : null}
     {ACCENTS[variant] === undefined ? null : (
-      <path d={ACCENTS[variant]} fill={CHALK} />
+      <path
+        d={ACCENTS[variant]}
+        fill={SPARK}
+        stroke={INK}
+        strokeWidth="3"
+        strokeLinejoin="round"
+        paintOrder="stroke"
+      />
     )}
   </svg>
 );

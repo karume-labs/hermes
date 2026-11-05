@@ -1,16 +1,16 @@
 import type * as React from "react";
 import Svg, { Circle, G, Path, Rect } from "react-native-svg";
+import { HERMES_PARTICLES } from "@/components/brand/hermes-particles";
 
 /**
- * The four Hermes tiles, mirroring apps/web: `core` is the formless mark with
- * orange particles, then heart (patient), plus (clinic) and shield (admin).
+ * The four Hermes tiles, traced from the brand board: the formless core field,
+ * then heart (patient app), plus (clinic dashboard) and shield (admin).
  */
 export type HermesMarkVariant = "core" | "patient" | "clinic" | "admin";
 
 const INK = "#0F172A";
 const WING = "#38BDF8";
 const SPARK = "#FF4500";
-const CHALK = "#F8FAFC";
 
 const WINGS = [
   "M56 48 L92 24 L74 50 Z",
@@ -21,21 +21,12 @@ const WINGS = [
 const WING_TRANSFORM = "translate(48 52) scale(0.72) translate(-48 -52)";
 const MIRROR_TRANSFORM = "translate(96 0) scale(-1 1)";
 
-/* Particles gather in the corners: never touching the wings, never centred. */
-const PARTICLES = [
-  { cx: 14, cy: 17, r: 2.6 },
-  { cx: 48, cy: 11, r: 1.8 },
-  { cx: 82, cy: 19, r: 2.1 },
-  { cx: 17, cy: 81, r: 2.1 },
-  { cx: 79, cy: 79, r: 2.6 },
-];
-
 const ACCENTS: Partial<Record<HermesMarkVariant, string>> = {
   patient:
     "M48 62 C41 57 40 50 44 48.5 C46 47.8 48 49 48 50.5 C48 49 50 47.8 52 48.5 C56 50 55 57 48 62 Z",
   clinic: "M45 49 h6 v5 h5 v6 h-5 v5 h-6 v-5 h-5 v-6 h5 z",
   admin:
-    "M48 44 Q52 45 56 44 C56 53 52 59 48 63 C44 59 40 53 40 44 Q44 45 48 44 Z",
+    "M 48 40 Q 52 44, 57 42 C 57 52, 52 59, 48 64 C 44 59, 39 52, 39 42 Q 44 44, 48 40 Z",
 };
 
 interface HermesMarkProps {
@@ -79,12 +70,25 @@ export const HermesMark = ({
       </G>
     </G>
     {variant === "core"
-      ? PARTICLES.map((dot) => (
-          <Circle key={`${dot.cx}-${dot.cy}`} {...dot} fill={SPARK} />
+      ? HERMES_PARTICLES.map((dot) => (
+          <Circle
+            key={`${dot.cx}-${dot.cy}`}
+            cx={dot.cx}
+            cy={dot.cy}
+            r={dot.r}
+            fill={SPARK}
+            opacity={dot.o}
+          />
         ))
       : null}
     {ACCENTS[variant] === undefined ? null : (
-      <Path d={ACCENTS[variant]} fill={CHALK} />
+      <Path
+        d={ACCENTS[variant]}
+        fill={SPARK}
+        stroke={INK}
+        strokeWidth={3}
+        strokeLinejoin="round"
+      />
     )}
   </Svg>
 );

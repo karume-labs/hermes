@@ -76,6 +76,11 @@ export const AppNavbar = ({
 }: AppNavbarProps): ReactNode => {
   const pathname = usePathname();
   const items = NAV_ITEMS.filter((item) => item.adminOnly !== true || isAdmin);
+  // Right mark for the surface: the clinic plus inside the care dashboard,
+  // the admin shield once you are in administration.
+  const surface: "clinic" | "admin" = pathname.startsWith("/admin")
+    ? "admin"
+    : "clinic";
 
   return (
     <AppShellNavbar
@@ -107,7 +112,11 @@ export const AppNavbar = ({
             padding: isExpanded ? "14px 16px" : "14px 0",
           }}
         >
-          <HermesMark variant="clinic" size={32} />
+          <HermesMark
+            variant={surface}
+            size={32}
+            title={surface === "admin" ? "Hermes admin" : "Hermes clinic"}
+          />
           {isExpanded ? <HermesWordmark size={18} /> : null}
         </UnstyledButton>
 
