@@ -8,7 +8,10 @@
     "start": "bun run src/index.ts",
     "build": "bun build src/index.ts --outdir dist --target bun",
     "test": "bun test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:generate-auth": "bunx @better-auth/cli@latest generate --output ../../packages/db/src/auth/schema/index.ts --config ./src/features/auth/services/config.ts --yes",
+    "format": "biome format --write",
+    "lint": "biome check"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.1.1",

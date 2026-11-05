@@ -37,6 +37,7 @@
     "db:seed": "bun run src/seed/index.ts",
     "lint": "biome check",
     "format": "biome format --write",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:seed:admin": "bun run src/seed/index.ts --auth"
   }
 }

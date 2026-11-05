@@ -8,10 +8,14 @@
     "ios": "expo start -c --ios",
     "web": "expo start -c --web",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf .expo node_modules"
+    "clean": "rm -rf .expo node_modules",
+    "start": "expo start -c",
+    "doctor": "expo-doctor --verbose",
+    "update-packages": "expo install --check",
+    "prebuild": "expo prebuild --clean"
   },
   "dependencies": {
-    "@expo-google-fonts/inter": "^0.4.2",
+    "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
     "@hermes/types": "workspace:*",
     "@rn-primitives/accordion": "^1.5.2",
     "@rn-primitives/alert-dialog": "^1.5.2",
@@ -83,6 +87,7 @@
     "@babel/core": "^7.26.0",
     "@types/react": "~19.2.10",
     "babel-preset-expo": "~56.0.21",
+    "expo-doctor": "^1.20.4",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "typescript": "~6.0.3"
