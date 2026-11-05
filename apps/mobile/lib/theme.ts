@@ -4,28 +4,39 @@ import {
   type Theme,
 } from "expo-router/react-navigation";
 
+/**
+ * Hermes tokens, identical hexes to apps/web and apps/www. Spark is the only
+ * primary action colour; ink carries text and tiles; status pairs stay apart
+ * from spark so "urgent" never reads as a button.
+ */
 export const THEME = {
   light: {
-    background: "#f6f8fb",
+    background: "#f8fafc",
     foreground: "#0f172a",
     card: "#ffffff",
     cardForeground: "#0f172a",
-    primary: "#0369a1",
-    primaryForeground: "#f8fafc",
-    border: "#dde5ee",
-    mutedForeground: "#5b6b7c",
-    destructive: "#b42318",
+    primary: "#ff4500",
+    primaryForeground: "#0f172a",
+    border: "#e2e8f0",
+    mutedForeground: "#475569",
+    destructive: "#991b1b",
+    success: "#166534",
+    warning: "#92400e",
+    info: "#075985",
   },
   dark: {
-    background: "#101725",
-    foreground: "#f1f5f9",
-    card: "#161f2e",
-    cardForeground: "#f1f5f9",
-    primary: "#38bdf8",
-    primaryForeground: "#06202f",
+    background: "#0f172a",
+    foreground: "#f8fafc",
+    card: "#16233b",
+    cardForeground: "#f8fafc",
+    primary: "#ff4500",
+    primaryForeground: "#0f172a",
     border: "#263141",
-    mutedForeground: "#9aa9bc",
-    destructive: "#f87171",
+    mutedForeground: "#cbd5e1",
+    destructive: "#fca5a5",
+    success: "#86efac",
+    warning: "#fcd34d",
+    info: "#7dd3fc",
   },
 } as const;
 

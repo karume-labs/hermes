@@ -1,13 +1,11 @@
 import "@/global.css";
 
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  Inter_800ExtraBold,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
   useFonts,
-} from "@expo-google-fonts/inter";
+} from "@expo-google-fonts/plus-jakarta-sans";
 import { PortalHost } from "@rn-primitives/portal";
 import { Stack } from "expo-router";
 import { ThemeProvider } from "expo-router/react-navigation";
@@ -26,11 +24,9 @@ const RootLayout = () => {
   const { theme } = useUniwind();
   const scheme = theme === "dark" ? "dark" : "light";
   const [fontsLoaded] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-    Inter_800ExtraBold,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
   });
 
   if (!fontsLoaded) return null;

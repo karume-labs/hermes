@@ -4,76 +4,97 @@
 @import "tw-animate-css";
 
 @theme {
-  --radius: 10px;
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* Hermes shape scale: control 6, card 12, panel 18, app tile 26. */
+  --radius: 12px;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 26px;
 
-  --font-sans: "Inter_400Regular";
-  --font-medium: "Inter_500Medium";
-  --font-semibold: "Inter_600SemiBold";
+  /* Plus Jakarta Sans, weights 500 / 700 / 800. `semibold` maps to 700 so
+   * existing text styles land on a loaded weight. */
+  --font-sans: "PlusJakartaSans_500Medium";
+  --font-medium: "PlusJakartaSans_500Medium";
+  --font-semibold: "PlusJakartaSans_700Bold";
+  --font-bold: "PlusJakartaSans_800ExtraBold";
+
+  /* Patient body text is 17/26: screening results are read by older adults. */
+  --text-base: 17px;
+  --text-base--line-height: 26px;
+  --text-sm: 15px;
+  --text-sm--line-height: 22px;
+  --text-xs: 13px;
+  --text-xs--line-height: 18px;
 
   /* biome-ignore lint/correctness/noUnknownFunction: tailwind v4 theme function */
   --spacing-hairline: hairlineWidth();
 }
 
 /**
- * Two palettes, one brand: slate ink on paper in light, an elevated navy in
- * dark. Sky blue is the only accent — it is the origami wing colour in the
- * logo, so it carries buttons, links and focus rings.
+ * Two palettes, one brand. Ink on paper in light, ink itself in dark. Spark
+ * orange is the only primary action colour; sky stays wing-only (fills and
+ * graphics), and status pairs never borrow spark.
  */
 @layer theme {
   :root {
     @variant light {
-      --color-background: #f6f8fb;
+      --color-background: #f8fafc;
       --color-foreground: #0f172a;
       --color-card: #ffffff;
       --color-card-foreground: #0f172a;
       --color-popover: #ffffff;
       --color-popover-foreground: #0f172a;
-      --color-primary: #0369a1;
-      --color-primary-foreground: #f8fafc;
-      --color-secondary: #eaf0f6;
+      --color-primary: #ff4500;
+      --color-primary-foreground: #0f172a;
+      --color-secondary: #f1f5f9;
       --color-secondary-foreground: #0f172a;
-      --color-muted: #eef2f7;
-      --color-muted-foreground: #5b6b7c;
-      --color-accent: #e3edf9;
-      --color-accent-foreground: #0b3e5d;
-      --color-destructive: #b42318;
-      --color-destructive-foreground: #fff5f5;
-      --color-border: #dde5ee;
-      --color-input: #dde5ee;
-      --color-ring: #38bdf8;
-      --color-success: #2f7d4f;
-      --color-warning: #b45309;
-      --color-urgent: #b42318;
+      --color-muted: #f1f5f9;
+      --color-muted-foreground: #475569;
+      --color-accent: #e0f2fe;
+      --color-accent-foreground: #075985;
+      --color-destructive: #991b1b;
+      --color-destructive-foreground: #fee2e2;
+      --color-border: #e2e8f0;
+      --color-input: #cbd5e1;
+      --color-ring: #ff4500;
+      --color-success: #166534;
+      --color-success-fill: #dcfce7;
+      --color-warning: #92400e;
+      --color-warning-fill: #fef3c7;
+      --color-urgent: #991b1b;
+      --color-urgent-fill: #fee2e2;
+      --color-info: #075985;
+      --color-info-fill: #e0f2fe;
     }
 
     @variant dark {
-      --color-background: #101725;
-      --color-foreground: #f1f5f9;
-      --color-card: #161f2e;
-      --color-card-foreground: #f1f5f9;
-      --color-popover: #161f2e;
-      --color-popover-foreground: #f1f5f9;
-      /* Brighter sky so #38bdf8 stays legible on the navy surface. */
-      --color-primary: #38bdf8;
-      --color-primary-foreground: #06202f;
-      --color-secondary: #1d2635;
-      --color-secondary-foreground: #f1f5f9;
-      --color-muted: #1b2432;
-      --color-muted-foreground: #9aa9bc;
-      --color-accent: #1c3350;
+      --color-background: #0f172a;
+      --color-foreground: #f8fafc;
+      --color-card: #16233b;
+      --color-card-foreground: #f8fafc;
+      --color-popover: #16233b;
+      --color-popover-foreground: #f8fafc;
+      --color-primary: #ff4500;
+      --color-primary-foreground: #0f172a;
+      --color-secondary: #1e2c46;
+      --color-secondary-foreground: #f8fafc;
+      --color-muted: #1b2941;
+      --color-muted-foreground: #cbd5e1;
+      --color-accent: #0b3b55;
       --color-accent-foreground: #e0f2fe;
-      --color-destructive: #f87171;
-      --color-destructive-foreground: #1a0f0f;
+      --color-destructive: #fca5a5;
+      --color-destructive-foreground: #3b0d0d;
       --color-border: #263141;
-      --color-input: #263141;
-      --color-ring: #38bdf8;
-      --color-success: #6ee7b7;
-      --color-warning: #fbbf24;
+      --color-input: #334155;
+      --color-ring: #ff7a4d;
+      --color-success: #86efac;
+      --color-success-fill: #0f3a22;
+      --color-warning: #fcd34d;
+      --color-warning-fill: #3b2606;
       --color-urgent: #fca5a5;
+      --color-urgent-fill: #3f1414;
+      --color-info: #7dd3fc;
+      --color-info-fill: #062f45;
     }
   }
 }
