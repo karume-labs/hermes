@@ -39,10 +39,12 @@ export const SignUpForm = (): ReactNode => {
   const onSubmit = (values: SignUpBody) => signUp.mutate(values);
 
   return (
-    <Card withBorder shadow="md" p="xl" w={460} maw="100%">
+    <Card w={460} maw="100%" p="xl" radius="sm">
       <Stack gap="md">
         <Stack gap={4}>
-          <Title order={2}>Create your account</Title>
+          <Title order={2} fw={900} c="brandSlate.9">
+            Create your account
+          </Title>
           <Text size="sm" c="dimmed">
             New staff start as coordinators. An administrator can promote you to
             governance access.

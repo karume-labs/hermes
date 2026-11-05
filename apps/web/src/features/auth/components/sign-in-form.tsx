@@ -39,10 +39,12 @@ export const SignInForm = (): ReactNode => {
   const onSubmit = (values: SignInBody) => signIn.mutate(values);
 
   return (
-    <Card withBorder shadow="md" p="xl" w={420} maw="100%">
+    <Card w={420} maw="100%" p="xl" radius="sm">
       <Stack gap="md">
         <Stack gap={4}>
-          <Title order={2}>Sign in</Title>
+          <Title order={2} fw={900} c="brandSlate.9">
+            Sign in
+          </Title>
           <Text size="sm" c="dimmed">
             Clinical staff only. Patient results are unlocked in the mobile app.
           </Text>
