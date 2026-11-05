@@ -34,6 +34,21 @@ Vaunt conventions adopted: Bun workspaces (`apps/*`, `packages/*`), Elysia +
 Better Auth shape, Drizzle + Postgres via `packages/db`, Caddy + Docker in
 `infra/`, Biome + lefthook + `tsc` gates.
 
+## Design system
+
+One token set, three implementations: `apps/web/src/features/shared/styles/theme.ts`
++ `app/globals.css`, `apps/mobile/global.css` + `lib/theme.ts`, and
+`apps/www/src/styles/global.css`. Keep them in sync.
+
+| Concern | Rule |
+| --- | --- |
+| Type | Plus Jakarta Sans, weights 500/700/800. Dashboard body 15/22, patient body 17/26. |
+| Colour | `spark` #FF4500 is the only primary-action/focus colour, with ink text (never white). `wing` #38BDF8 is fills and graphics only. |
+| Status | Fixed pairs: routine #166534 on #DCFCE7, actionable #92400E on #FEF3C7, urgent #991B1B on #FEE2E2, info #075985 on #E0F2FE. Never reuse spark for severity. |
+| Shape | control 6, card 12, panel 18, app tile 26. Hairlines over shadows. |
+| Marks | `core` (marketing/brand), `patient` heart (mobile), `clinic` plus (dashboard), `admin` shield (admin views); favicon is wings plus one spark dot. |
+| Signals | Every status carries an icon and a label, so colour is never the only cue. |
+
 ## Workspace shape
 
 | Path | Owns |

@@ -1,9 +1,33 @@
+:root {
+  /* Hermes tokens: the same hexes on every platform. */
+  --hermes-ink: #0f172a;
+  --hermes-ink-soft: #334155;
+  --hermes-ink-muted: #475569;
+  --hermes-wing: #38bdf8;
+  --hermes-spark: #ff4500;
+  --hermes-canvas: #f8fafc;
+  --hermes-surface: #ffffff;
+  --hermes-surface-tint: #f1f5f9;
+  --hermes-line: #e2e8f0;
+  --hermes-line-strong: #cbd5e1;
+  --hermes-routine-text: #166534;
+  --hermes-routine-fill: #dcfce7;
+  --hermes-actionable-text: #92400e;
+  --hermes-actionable-fill: #fef3c7;
+  --hermes-urgent-text: #991b1b;
+  --hermes-urgent-fill: #fee2e2;
+  --hermes-info-text: #075985;
+  --hermes-info-fill: #e0f2fe;
+  /* Filled buttons auto-contrast against spark; use ink rather than pure black. */
+  --mantine-color-black: var(--hermes-ink);
+}
+
 body {
-  background-color: #f8fafc;
+  background-color: var(--hermes-canvas);
   color: var(--mantine-color-text);
   margin: 0;
   padding: 0;
-  font-family: "Inter Variable", "Inter", system-ui, sans-serif;
+  font-family: var(--mantine-font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -31,16 +55,13 @@ h4,
 h5,
 h6,
 .mantine-Title-root {
-  letter-spacing: 0.04em;
+  letter-spacing: -0.01em;
 }
 
-button,
-input,
-select,
-.mantine-Button-root,
-.mantine-TextInput-root,
-.mantine-Select-root {
-  font-family: "Montserrat", "Inter", sans-serif;
+/* 2px spark ring, 3px offset, on every interactive element. */
+:focus-visible {
+  outline: 2px solid var(--hermes-spark);
+  outline-offset: 3px;
 }
 
 .uppercase-spaced {
@@ -49,12 +70,12 @@ select,
 }
 
 .border-dark {
-  border: 1px solid var(--mantine-color-brandSlate-6);
+  border: 1px solid var(--hermes-line-strong);
   box-shadow: none;
 }
 
 .border-light {
-  border: 1px solid var(--mantine-color-brandChalk-3);
+  border: 1px solid var(--hermes-line);
   box-shadow: none;
 }
 
@@ -71,25 +92,45 @@ select,
 }
 
 .hermes-clickable-row:hover td {
-  background-color: var(--mantine-color-brandChalk-1);
+  background-color: var(--hermes-surface-tint);
 }
 
 /* Sidebar nav links and the account menu trigger. */
 .hermes-nav-link:hover:not([data-active]) {
-  background-color: var(--mantine-color-brandChalk-2);
+  background-color: var(--hermes-surface-tint);
 }
 
 .hermes-user-trigger {
   padding: 4px 8px;
   border-radius: var(--mantine-radius-md);
   max-width: 220px;
-  transition: background-color 120ms ease;
+  transition: background-color 150ms ease-out;
 }
 
 .hermes-user-trigger:hover {
-  background-color: var(--mantine-color-brandChalk-2);
+  background-color: var(--hermes-surface-tint);
 }
 
+/* Queue density: 52px rows, hairline rules. */
+.hermes-table tbody tr {
+  height: 52px;
+}
+
+.hermes-table thead th {
+  background-color: var(--hermes-surface);
+  border-bottom: 1px solid var(--hermes-line);
+}
+
+.hermes-table tbody td {
+  border-bottom: 1px solid var(--hermes-line);
+}
+
+/* Breached rows keep the chip as the signal; the row only gets a wash. */
 .hermes-sla-breached td {
-  background-color: #fff5f5;
+  background-color: #fef6f6;
+}
+
+/* Escalated rows carry a 4px urgent marker, not colour alone. */
+.hermes-escalated td:first-child {
+  box-shadow: inset 4px 0 0 var(--hermes-urgent-text);
 }

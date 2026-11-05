@@ -171,12 +171,13 @@ export const QueueView = (): ReactNode => {
           void setSeverity("");
           void setStatus("");
         }}
-        rowClassName={(row) =>
-          new Date(row.slaDueAt).getTime() < Date.now() &&
-          row.acknowledgedAt === null
-            ? "hermes-sla-breached"
-            : undefined
-        }
+        rowClassName={(row) => {
+          const breached =
+            new Date(row.slaDueAt).getTime() < Date.now() &&
+            row.acknowledgedAt === null;
+          if (row.status === "escalated") return "hermes-escalated";
+          return breached ? "hermes-sla-breached" : undefined;
+        }}
       />
     </Stack>
   );

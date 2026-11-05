@@ -68,7 +68,11 @@ export const createQueueColumns = ({
     header: "SLA due",
     accessorFn: (row) => row.slaDueAt,
     cell: ({ row }): ReactNode => (
-      <SlaBadge slaDueAt={row.original.slaDueAt} status={row.original.status} />
+      <SlaBadge
+        slaDueAt={row.original.slaDueAt}
+        status={row.original.status}
+        severity={row.original.severity}
+      />
     ),
   },
   {

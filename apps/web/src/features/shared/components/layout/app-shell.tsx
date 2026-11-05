@@ -75,7 +75,7 @@ export const AppShellLayout = ({
       }}
     >
       <AppShellHeader withBorder={false} px="md" pt="md" bg="transparent">
-        <Paper h="100%" px="md" radius="sm" bg="brandChalk.0" withBorder>
+        <Paper h="100%" px="md" radius="lg" bg="brandChalk.0" withBorder>
           <Group h="100%" justify="space-between">
             <Group gap="xs">
               <Burger

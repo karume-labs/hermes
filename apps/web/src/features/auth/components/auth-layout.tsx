@@ -34,7 +34,7 @@ export const AuthLayout = ({ children }: AuthLayoutProps): ReactNode => (
         }}
       >
         <Group gap="sm">
-          <HermesMark variant="patient" size={44} title="Hermes Care" />
+          <HermesMark variant="clinic" size={44} title="Hermes Care" />
           <HermesWordmark size={22} color="#F8FAFC" />
         </Group>
 

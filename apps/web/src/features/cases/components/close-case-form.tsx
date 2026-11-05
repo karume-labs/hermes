@@ -1,7 +1,15 @@
 "use client";
 
 import { type CloseCaseForm, closeCaseForm } from "@hermes/validators";
-import { Alert, Button, Group, Select, Stack, Textarea } from "@mantine/core";
+import {
+  Alert,
+  Button,
+  Group,
+  Select,
+  Stack,
+  Text,
+  Textarea,
+} from "@mantine/core";
 import type { ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { useCloseCase } from "@/features/cases/services/mutations";
@@ -38,6 +46,9 @@ export const CaseCloseForm = ({
   });
 
   const onSubmit = (values: CloseCaseForm) => close.mutate(values);
+  // Sign-off needs evidence on file before the case can be closed.
+  const evidenceReady =
+    watch("evidence").trim().length > 0 && watch("plan").trim().length > 0;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -71,8 +82,15 @@ export const CaseCloseForm = ({
           disabled={disabled}
           {...register("plan")}
         />
-        <Group justify="flex-end">
-          <Button type="submit" loading={close.isPending} disabled={disabled}>
+        <Group justify="space-between" align="center">
+          <Text size="xs" c="dimmed">
+            Clinical evidence and a follow-up plan are required to close.
+          </Text>
+          <Button
+            type="submit"
+            loading={close.isPending}
+            disabled={disabled || !evidenceReady}
+          >
             Close case
           </Button>
         </Group>

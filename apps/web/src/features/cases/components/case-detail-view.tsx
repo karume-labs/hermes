@@ -71,7 +71,11 @@ export const CaseDetailView = ({ caseId }: CaseDetailViewProps): ReactNode => {
             <Group gap="xs">
               <SeverityBadge severity={careCase.severity} />
               <StatusBadge status={careCase.status} />
-              <SlaBadge slaDueAt={careCase.slaDueAt} status={careCase.status} />
+              <SlaBadge
+                slaDueAt={careCase.slaDueAt}
+                status={careCase.status}
+                severity={careCase.severity}
+              />
               <AckState acknowledgedAt={careCase.acknowledgedAt} />
             </Group>
           }

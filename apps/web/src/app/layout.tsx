@@ -1,9 +1,5 @@
 import "@mantine/core/styles.css";
-import "@fontsource-variable/inter";
-import "@fontsource/montserrat/500.css";
-import "@fontsource/montserrat/600.css";
-import "@fontsource/montserrat/700.css";
-import "@fontsource/montserrat/800.css";
+import "@fontsource-variable/plus-jakarta-sans";
 import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";

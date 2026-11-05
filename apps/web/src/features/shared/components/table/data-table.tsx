@@ -90,6 +90,7 @@ export const DataTable = <TData,>({
       >
         <ScrollArea type="scroll" offsetScrollbars>
           <Table
+            className="hermes-table"
             highlightOnHover
             stickyHeader
             withTableBorder

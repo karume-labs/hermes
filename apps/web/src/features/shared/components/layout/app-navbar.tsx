@@ -36,7 +36,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: "Queue", href: "/queue", icon: <IconStethoscope size={20} /> },
   {
-    label: "Governance",
+    label: "Overview",
     href: "/admin",
     icon: <IconLayoutDashboard size={20} />,
     adminOnly: true,
@@ -48,13 +48,13 @@ const NAV_ITEMS: NavItem[] = [
     adminOnly: true,
   },
   {
-    label: "Webhook log",
+    label: "Integrations",
     href: "/admin/webhooks",
     icon: <IconWebhook size={20} />,
     adminOnly: true,
   },
   {
-    label: "Routing",
+    label: "Routing rules",
     href: "/admin/routing",
     icon: <IconRoute size={20} />,
     adminOnly: true,
@@ -149,18 +149,21 @@ export const AppNavbar = ({
                   onClick={() => {
                     if (mobileOpened) toggleMobile();
                   }}
-                  fw={600}
-                  color="brandSlate.9"
-                  variant="light"
+                  fw={active ? 700 : 600}
+                  variant="subtle"
                   className="hermes-nav-link"
                   styles={{
                     root: {
-                      borderRadius: 8,
+                      borderRadius: 6,
                       height: 44,
                       width: isExpanded ? "auto" : 44,
                       margin: isExpanded ? 0 : "0 auto",
                       justifyContent: isExpanded ? "flex-start" : "center",
                       padding: isExpanded ? "0 12px" : 0,
+                      backgroundColor: active
+                        ? "var(--hermes-surface-tint)"
+                        : undefined,
+                      color: active ? "var(--hermes-ink)" : undefined,
                     },
                     section: { margin: isExpanded ? "0 12px 0 0" : 0 },
                     body: { display: isExpanded ? "block" : "none" },
