@@ -73,9 +73,9 @@ export const VisitCard = ({
 );
 
 export const ClosureCard = ({ careCase }: { careCase: CareCase }) => (
-  <View className="gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-    <Text className="font-semibold text-emerald-900">Case closed</Text>
-    <Text className="text-sm text-emerald-900">
+  <View className="gap-2 rounded-xl border border-success/30 bg-success/10 p-4">
+    <Text className="font-semibold text-success">Case closed</Text>
+    <Text className="text-sm text-foreground">
       {careCase.closurePlan === null
         ? "Your clinician signed off your care plan."
         : careCase.closurePlan}

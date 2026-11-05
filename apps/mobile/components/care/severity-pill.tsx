@@ -3,9 +3,9 @@ import { Chip } from "@/components/care/chip";
 import { severityLabel } from "@/lib/case-format";
 
 const TONE = {
-  Urgent: { chip: "bg-red-100", text: "text-red-700" },
-  Actionable: { chip: "bg-amber-100", text: "text-amber-800" },
-  Routine: { chip: "bg-slate-100", text: "text-slate-700" },
+  Urgent: { chip: "bg-destructive/10", text: "text-urgent" },
+  Actionable: { chip: "bg-warning/10", text: "text-warning" },
+  Routine: { chip: "bg-secondary", text: "text-secondary-foreground" },
 } as const;
 
 interface SeverityPillProps {

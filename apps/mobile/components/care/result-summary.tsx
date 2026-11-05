@@ -24,21 +24,27 @@ export const ResultSummary = ({ careCase }: ResultSummaryProps) => (
         textClassName="text-secondary-foreground"
       />
     </View>
-    <Text variant="h3">{careCase.summaryPlainLanguage}</Text>
+    <Text variant="h3" className="text-[22px] leading-snug">
+      {careCase.summaryPlainLanguage}
+    </Text>
     <Text className="text-xs text-muted-foreground">
       Received {formatDateTime(careCase.createdAt)} · {careCase.clinicId}
     </Text>
     <View className="gap-2 rounded-xl border border-border bg-card p-4">
-      <Text className="font-semibold">What this means</Text>
-      <Text className="text-sm text-muted-foreground">
+      <Text className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+        What this means
+      </Text>
+      <Text className="text-sm leading-relaxed text-foreground">
         {meaningForSeverity(careCase.severity)}
       </Text>
-      <Text className="text-sm text-muted-foreground">
+      <Text className="text-sm leading-relaxed text-muted-foreground">
         {whyItMatters(careCase.severity)}
       </Text>
-      <Text className="text-xs text-muted-foreground">
-        This is a screening flag, not a diagnosis. A clinician confirms it.
-      </Text>
+      <View className="mt-1 rounded-lg bg-muted px-3 py-2">
+        <Text className="text-xs leading-relaxed text-muted-foreground">
+          This is a screening flag, not a diagnosis. A clinician confirms it.
+        </Text>
+      </View>
     </View>
   </>
 );

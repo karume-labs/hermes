@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const textVariants = cva(
   cn(
-    "text-foreground text-base",
+    "text-foreground text-base font-sans",
     Platform.select({
       web: "select-text",
     }),

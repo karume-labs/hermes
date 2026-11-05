@@ -10,78 +10,70 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
+  --font-sans: "Inter_400Regular";
+  --font-medium: "Inter_500Medium";
+  --font-semibold: "Inter_600SemiBold";
+
   /* biome-ignore lint/correctness/noUnknownFunction: tailwind v4 theme function */
   --spacing-hairline: hairlineWidth();
 }
 
+/**
+ * Two palettes, one brand: slate ink on paper in light, an elevated navy in
+ * dark. Sky blue is the only accent — it is the origami wing colour in the
+ * logo, so it carries buttons, links and focus rings.
+ */
 @layer theme {
   :root {
     @variant light {
-      --color-background: oklch(1 0 0);
-      --color-foreground: oklch(0.145 0 0);
-      --color-card: oklch(1 0 0);
-      --color-card-foreground: oklch(0.145 0 0);
-      --color-popover: oklch(1 0 0);
-      --color-popover-foreground: oklch(0.145 0 0);
-      --color-primary: oklch(0.205 0 0);
-      --color-primary-foreground: oklch(0.985 0 0);
-      --color-secondary: oklch(0.97 0 0);
-      --color-secondary-foreground: oklch(0.205 0 0);
-      --color-muted: oklch(0.97 0 0);
-      --color-muted-foreground: oklch(0.556 0 0);
-      --color-accent: oklch(0.97 0 0);
-      --color-accent-foreground: oklch(0.205 0 0);
-      --color-destructive: oklch(0.577 0.245 27.325);
-      --color-border: oklch(0.922 0 0);
-      --color-input: oklch(0.922 0 0);
-      --color-ring: oklch(0.708 0 0);
-      --color-chart-1: oklch(0.646 0.222 41.116);
-      --color-chart-2: oklch(0.6 0.118 184.704);
-      --color-chart-3: oklch(0.398 0.07 227.392);
-      --color-chart-4: oklch(0.828 0.189 84.429);
-      --color-chart-5: oklch(0.769 0.188 70.08);
-      --color-sidebar: oklch(0.985 0 0);
-      --color-sidebar-foreground: oklch(0.145 0 0);
-      --color-sidebar-primary: oklch(0.205 0 0);
-      --color-sidebar-primary-foreground: oklch(0.985 0 0);
-      --color-sidebar-accent: oklch(0.97 0 0);
-      --color-sidebar-accent-foreground: oklch(0.205 0 0);
-      --color-sidebar-border: oklch(0.922 0 0);
-      --color-sidebar-ring: oklch(0.708 0 0);
+      --color-background: #f6f8fb;
+      --color-foreground: #0f172a;
+      --color-card: #ffffff;
+      --color-card-foreground: #0f172a;
+      --color-popover: #ffffff;
+      --color-popover-foreground: #0f172a;
+      --color-primary: #0369a1;
+      --color-primary-foreground: #f8fafc;
+      --color-secondary: #eaf0f6;
+      --color-secondary-foreground: #0f172a;
+      --color-muted: #eef2f7;
+      --color-muted-foreground: #5b6b7c;
+      --color-accent: #e3edf9;
+      --color-accent-foreground: #0b3e5d;
+      --color-destructive: #b42318;
+      --color-destructive-foreground: #fff5f5;
+      --color-border: #dde5ee;
+      --color-input: #dde5ee;
+      --color-ring: #38bdf8;
+      --color-success: #2f7d4f;
+      --color-warning: #b45309;
+      --color-urgent: #b42318;
     }
 
     @variant dark {
-      --color-background: oklch(0.145 0 0);
-      --color-foreground: oklch(0.985 0 0);
-      --color-card: oklch(0.205 0 0);
-      --color-card-foreground: oklch(0.985 0 0);
-      --color-popover: oklch(0.205 0 0);
-      --color-popover-foreground: oklch(0.985 0 0);
-      --color-primary: oklch(0.922 0 0);
-      --color-primary-foreground: oklch(0.205 0 0);
-      --color-secondary: oklch(0.269 0 0);
-      --color-secondary-foreground: oklch(0.985 0 0);
-      --color-muted: oklch(0.269 0 0);
-      --color-muted-foreground: oklch(0.708 0 0);
-      --color-accent: oklch(0.269 0 0);
-      --color-accent-foreground: oklch(0.985 0 0);
-      --color-destructive: oklch(0.704 0.191 22.216);
-      --color-border: oklch(1 0 0 / 10%);
-      --color-input: oklch(1 0 0 / 15%);
-      --color-ring: oklch(0.556 0 0);
-      --color-chart-1: oklch(0.488 0.243 264.376);
-      --color-chart-2: oklch(0.696 0.17 162.48);
-      --color-chart-3: oklch(0.769 0.188 70.08);
-      --color-chart-4: oklch(0.627 0.265 303.9);
-      --color-chart-5: oklch(0.645 0.246 16.439);
-      --color-sidebar: oklch(0.205 0 0);
-      --color-sidebar-foreground: oklch(0.985 0 0);
-      --color-sidebar-primary: oklch(0.488 0.243 264.376);
-      --color-sidebar-primary-foreground: oklch(0.985 0 0);
-      --color-sidebar-accent: oklch(0.269 0 0);
-      --color-sidebar-accent-foreground: oklch(0.985 0 0);
-      --color-sidebar-border: oklch(1 0 0 / 10%);
-      --color-sidebar-ring: oklch(0.556 0 0);
+      --color-background: #101725;
+      --color-foreground: #f1f5f9;
+      --color-card: #161f2e;
+      --color-card-foreground: #f1f5f9;
+      --color-popover: #161f2e;
+      --color-popover-foreground: #f1f5f9;
+      /* Brighter sky so #38bdf8 stays legible on the navy surface. */
+      --color-primary: #38bdf8;
+      --color-primary-foreground: #06202f;
+      --color-secondary: #1d2635;
+      --color-secondary-foreground: #f1f5f9;
+      --color-muted: #1b2432;
+      --color-muted-foreground: #9aa9bc;
+      --color-accent: #1c3350;
+      --color-accent-foreground: #e0f2fe;
+      --color-destructive: #f87171;
+      --color-destructive-foreground: #1a0f0f;
+      --color-border: #263141;
+      --color-input: #263141;
+      --color-ring: #38bdf8;
+      --color-success: #6ee7b7;
+      --color-warning: #fbbf24;
+      --color-urgent: #fca5a5;
     }
   }
 }

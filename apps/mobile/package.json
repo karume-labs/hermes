@@ -11,6 +11,7 @@
     "clean": "rm -rf .expo node_modules"
   },
   "dependencies": {
+    "@expo-google-fonts/inter": "^0.4.2",
     "@hermes/types": "workspace:*",
     "@rn-primitives/accordion": "^1.5.2",
     "@rn-primitives/alert-dialog": "^1.5.2",

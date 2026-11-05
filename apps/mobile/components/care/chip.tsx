@@ -10,6 +10,13 @@ interface ChipProps {
 
 export const Chip = ({ label, className, textClassName }: ChipProps) => (
   <View className={cn("rounded-full px-3 py-1", className)}>
-    <Text className={cn("text-xs font-semibold", textClassName)}>{label}</Text>
+    <Text
+      className={cn(
+        "text-[11px] font-semibold uppercase tracking-[0.06em]",
+        textClassName,
+      )}
+    >
+      {label}
+    </Text>
   </View>
 );

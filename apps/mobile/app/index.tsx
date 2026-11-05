@@ -106,14 +106,20 @@ const HomeScreen = () => {
         }
       >
         <View className="gap-1">
-          <Text variant="h3">Your care loop</Text>
-          <Text className="text-muted-foreground">
+          <Text className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+            Blood results
+          </Text>
+          <Text variant="h3" className="text-[26px] leading-tight">
+            Your care loop
+          </Text>
+          <Text className="text-sm text-muted-foreground">
             Screening results, bookings and follow-up in one place.
           </Text>
           {patientId === null ? null : (
-            <Text className="text-xs text-muted-foreground">
-              Signed in as {patientId}
-            </Text>
+            <View className="mt-2 flex-row items-center gap-2 self-start rounded-full border border-border bg-card px-3 py-1">
+              <View className="h-1.5 w-1.5 rounded-full bg-success" />
+              <Text className="text-xs text-muted-foreground">{patientId}</Text>
+            </View>
           )}
         </View>
 
@@ -151,40 +157,51 @@ const HomeScreen = () => {
             </Text>
           </View>
         ) : (
-          cases.map((item) => (
-            <Pressable
-              key={item.careCase.id}
-              className="gap-3 rounded-xl border border-border bg-card p-4 active:bg-accent"
-              onPress={() =>
-                router.push({
-                  pathname: "/care-action",
-                  params: { caseId: item.careCase.id },
-                })
-              }
-            >
-              <View className="flex-row items-center justify-between gap-2">
-                <SeverityPill severity={item.careCase.severity} />
-                <Text className="text-xs text-muted-foreground">
-                  {statusLabel(item.careCase)}
-                </Text>
-              </View>
-              <Text className="font-medium">
-                {item.careCase.summaryPlainLanguage}
+          <>
+            <View className="mt-1 flex-row items-center justify-between">
+              <Text className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                Latest results
               </Text>
-              <View className="flex-row items-center justify-between gap-2">
-                <Text className="text-xs text-muted-foreground">
-                  {journeyLabel(item.journeyStage)}
-                  {item.unreadMessages > 0
-                    ? ` · ${item.unreadMessages} new message`
-                    : ""}
+              <Text className="text-xs text-muted-foreground">
+                {cases.length} active
+              </Text>
+            </View>
+
+            {cases.map((item) => (
+              <Pressable
+                key={item.careCase.id}
+                className="gap-3 rounded-xl border border-border bg-card p-4 active:bg-accent"
+                onPress={() =>
+                  router.push({
+                    pathname: "/care-action",
+                    params: { caseId: item.careCase.id },
+                  })
+                }
+              >
+                <View className="flex-row items-center justify-between gap-2">
+                  <SeverityPill severity={item.careCase.severity} />
+                  <Text className="text-xs text-muted-foreground">
+                    {statusLabel(item.careCase)}
+                  </Text>
+                </View>
+                <Text className="font-medium">
+                  {item.careCase.summaryPlainLanguage}
                 </Text>
-                <Icon
-                  as={ChevronRight}
-                  className="size-4 text-muted-foreground"
-                />
-              </View>
-            </Pressable>
-          ))
+                <View className="flex-row items-center justify-between gap-2">
+                  <Text className="text-xs text-muted-foreground">
+                    {journeyLabel(item.journeyStage)}
+                    {item.unreadMessages > 0
+                      ? ` · ${item.unreadMessages} new message`
+                      : ""}
+                  </Text>
+                  <Icon
+                    as={ChevronRight}
+                    className="size-4 text-muted-foreground"
+                  />
+                </View>
+              </Pressable>
+            ))}
+          </>
         )}
 
         <View className="mt-2 flex-row justify-between gap-2">
