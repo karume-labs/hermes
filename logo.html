@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#F8FAFC" />
+  <title>Hermes | Origami Wing</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Plus Jakarta Sans", "Avenir Next", sans-serif;
+      --primary: #0F172A;
+      --harmony: #38BDF8;
+      --contrast: #FF4500;
+      --canvas: #F8FAFC;
+      --muted: #475569;
+      color: var(--primary);
+      background: var(--canvas);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-width: 320px;
+      margin: 0;
+      padding: 32px;
+      background: var(--canvas);
+    }
+
+    .board {
+      display: grid;
+      gap: 34px;
+      width: min(100%, 1400px);
+      min-height: 520px;
+      margin: 0 auto;
+      padding: 48px 56px;
+    }
+
+    .masthead,
+    .identity,
+    .theme-picker,
+    .swatches,
+    .swatch,
+    .applications,
+    .application {
+      display: flex;
+    }
+
+    .masthead,
+    .swatches {
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .masthead {
+      gap: 24px;
+    }
+
+    .identity {
+      align-items: baseline;
+      gap: 16px;
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    .eyebrow {
+      color: var(--primary);
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    h1 {
+      font-size: 40px;
+      font-weight: 800;
+      line-height: 1.15;
+    }
+
+    .theme-picker {
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    select {
+      max-width: min(58vw, 260px);
+      padding: 10px 34px 10px 12px;
+      border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--primary);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    select:focus-visible {
+      outline: 2px solid var(--contrast);
+      outline-offset: 3px;
+    }
+
+    .swatches {
+      justify-content: flex-start;
+      gap: 28px;
+      padding: 0 0 8px;
+    }
+
+    .swatch {
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .swatch__chip {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+      border-radius: 50%;
+      background: var(--swatch-color);
+    }
+
+    .swatch__copy {
+      display: grid;
+      gap: 3px;
+    }
+
+    .swatch__name {
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .swatch__value {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .applications {
+      align-items: stretch;
+      gap: 24px;
+    }
+
+    .application {
+      flex: 1;
+      min-width: 0;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding: 28px 18px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.72);
+      text-align: center;
+    }
+
+    .mark {
+      display: block;
+      width: 184px;
+      height: 184px;
+    }
+
+    .mark__base {
+      fill: var(--primary);
+    }
+
+    .mark__wing {
+      fill: var(--harmony);
+    }
+
+    .mark__accent {
+      fill: var(--contrast);
+      stroke: var(--primary);
+      stroke-width: 3;
+      stroke-linejoin: round;
+      paint-order: stroke;
+    }
+
+    .mark__hexagon {
+      fill: var(--primary);
+      stroke: var(--primary);
+      stroke-width: 8;
+      stroke-linejoin: round;
+    }
+
+    .wordmark {
+      color: var(--primary);
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .application p {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    @media (max-width: 960px) {
+      .applications {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 16px;
+      }
+
+      .board {
+        gap: 26px;
+        min-height: 0;
+        padding: 28px 20px;
+      }
+
+      .masthead {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .identity {
+        align-items: flex-start;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .swatches {
+        flex-wrap: wrap;
+        gap: 16px 24px;
+      }
+
+      .applications {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .application {
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: 20px;
+        text-align: left;
+      }
+
+      .mark {
+        width: 112px;
+        height: 112px;
+        flex: 0 0 112px;
+      }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .board {
+        animation: appear 360ms ease-out both;
+      }
+
+      @keyframes appear {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="board">
+    <header class="masthead">
+      <div class="identity">
+        <p class="eyebrow">05</p>
+        <h1>Origami Wing</h1>
+      </div>
+      <label class="theme-picker" for="theme-select">
+        <span>Theme</span>
+        <select id="theme-select" aria-label="Color theme">
+          <option value="slateFire">Slate &amp; Fire</option>
+          <option value="forest">Forest &amp; Coral</option>
+          <option value="midnight">Midnight Cyber</option>
+          <option value="terracotta">Terracotta Warmth</option>
+          <option value="ocean">Ocean &amp; Blaze</option>
+          <option value="cobaltCrimson">Cobalt &amp; Crimson</option>
+          <option value="indigoAmber">Indigo &amp; Amber</option>
+          <option value="slateNeon">Slate &amp; Neon</option>
+          <option value="royalGold">Royal &amp; Gold</option>
+          <option value="rose">Monochrome Rose</option>
+        </select>
+      </label>
+    </header>
+    <section class="swatches" aria-label="Current theme colors">
+      <div class="swatch" data-swatch="primary" style="--swatch-color: var(--primary)">
+        <span class="swatch__chip" aria-hidden="true"></span>
+        <span class="swatch__copy">
+          <span class="swatch__name">Rich Slate</span>
+          <span class="swatch__value">#0F172A · Primary</span>
+        </span>
+      </div>
+      <div class="swatch" data-swatch="harmony" style="--swatch-color: var(--harmony)">
+        <span class="swatch__chip" aria-hidden="true"></span>
+        <span class="swatch__copy">
+          <span class="swatch__name">Sky Blue</span>
+          <span class="swatch__value">#38BDF8 · Harmony</span>
+        </span>
+      </div>
+      <div class="swatch" data-swatch="contrast" style="--swatch-color: var(--contrast)">
+        <span class="swatch__chip" aria-hidden="true"></span>
+        <span class="swatch__copy">
+          <span class="swatch__name">Electric Orange</span>
+          <span class="swatch__value">#FF4500 · Contrast</span>
+        </span>
+      </div>
+    </section>
+
+    <section class="applications" aria-label="Hermes logo applications">
+
+      <!-- Core Brand (Kinetic Particles / Unshaped Floating Orange Sparks) -->
+      <article class="application">
+        <svg class="mark" viewBox="0 0 96 96" role="img" aria-labelledby="mark-title-0">
+          <title id="mark-title-0">Hermes core brand with kinetic potential sparks</title>
+          <rect class="mark__base" width="96" height="96" rx="20" />
+
+          <!-- Neutral Harmony Wings waiting for product definition -->
+          <g transform="translate(48 52) scale(.72) translate(-48 -52)">
+            <g class="mark__wing">
+              <path d="M56 48 L92 24 L74 50 Z" />
+              <path d="M58 52 L78 52 L92 64 L62 60 Z" />
+              <path d="M60 63 L86 68 L72 80 Z" />
+            </g>
+            <g class="mark__wing" transform="translate(96 0) scale(-1 1)">
+              <path d="M56 48 L92 24 L74 50 Z" />
+              <path d="M58 52 L78 52 L92 64 L62 60 Z" />
+              <path d="M60 63 L86 68 L72 80 Z" />
+            </g>
+          </g>
+
+          <!-- Floating Formless Orange Sparks / Kinetic Energy Particles -->
+          <g fill="var(--contrast)">
+            <!-- Small floating potential spark dots/nodes -->
+            <circle cx="32" cy="30" r="3" opacity="0.85" />
+            <circle cx="68" cy="26" r="2" opacity="0.6" />
+            <circle cx="24" cy="58" r="2.5" opacity="0.75" />
+            <circle cx="76" cy="62" r="3.5" opacity="0.9" />
+            <circle cx="48" cy="22" r="2" opacity="0.5" />
+            <circle cx="58" cy="74" r="2.5" opacity="0.8" />
+            <!-- Tiny freeform energy glyph / unshaped sparkle star -->
+            <path d="M 48 33 L 49.5 36.5 L 53 38 L 49.5 39.5 L 48 43 L 46.5 39.5 L 43 38 L 46.5 36.5 Z" opacity="0.85"
+              transform="scale(0.8) translate(12 8)" />
+          </g>
+        </svg>
+        <div>
+          <h2 class="wordmark">hermes</h2>
+          <p>Core · ecosystem brand</p>
+        </div>
+      </article>
+
+      <!-- Patient App -->
+      <article class="application">
+        <svg class="mark" viewBox="0 0 96 96" role="img" aria-labelledby="mark-title-1">
+          <title id="mark-title-1">Hermes origami wing with heart</title>
+          <rect class="mark__base" width="96" height="96" rx="26" />
+          <g transform="translate(48 52) scale(.72) translate(-48 -52)">
+            <g class="mark__wing">
+              <path d="M56 48 L92 24 L74 50 Z" />
+              <path d="M58 52 L78 52 L92 64 L62 60 Z" />
+              <path d="M60 63 L86 68 L72 80 Z" />
+            </g>
+            <g class="mark__wing" transform="translate(96 0) scale(-1 1)">
+              <path d="M56 48 L92 24 L74 50 Z" />
+              <path d="M58 52 L78 52 L92 64 L62 60 Z" />
+              <path d="M60 63 L86 68 L72 80 Z" />
+            </g>
+          </g>
+          <path class="mark__accent"
+            d="M48 62 C41 57 40 50 44 48.5 C46 47.8 48 49 48 50.5 C48 49 50 47.8 52 48.5 C56 50 55 57 48 62 Z" />
+        </svg>
+        <div>
+          <h2 class="wordmark">hermes</h2>
+          <p>Patient · mobile app</p>
+        </div>
+      </article>
+
+      <!-- Clinic Dashboard -->
+      <article class="application">
+        <svg class="mark" viewBox="0 0 96 96" role="img" aria-labelledby="mark-title-2">
+          <title id="mark-title-2">Hermes origami wing with plus</title>
+          <circle class="mark__base" cx="48" cy="48" r="46" />
+          <g transform="translate(48 52) scale(.72) translate(-48 -52)">
+            <g class="mark__wing">
+              <path d="M56 48 L92 24 L74 50 Z" />
+              <path d="M58 52 L78 52 L92 64 L62 60 Z" />
+              <path d="M60 63 L86 68 L72 80 Z" />
+            </g>
+            <g class="mark__wing" transform="translate(96 0) scale(-1 1)">
+              <path d="M56 48 L92 24 L74 50 Z" />
+              <path d="M58 52 L78 52 L92 64 L62 60 Z" />
+              <path d="M60 63 L86 68 L72 80 Z" />
+            </g>
+          </g>
+          <path class="mark__accent" d="M45 49 h6 v5 h5 v6 h-5 v5 h-6 v-5 h-5 v-6 h5 z" />
+        </svg>
+        <div>
+          <h2 class="wordmark">hermes</h2>
+          <p>Clinic · care dashboard</p>
+        </div>
+      </article>
+
+      <!-- Admin Portal (Prominent High-Peak Shield) -->
+      <article class="application">
+        <svg class="mark" viewBox="0 0 96 96" role="img" aria-labelledby="mark-title-3">
+          <title id="mark-title-3">Hermes origami wing with prominent shield</title>
+          <path class="mark__hexagon" d="M48 5 L86 26 V70 L48 91 L10 70 V26 Z" />
+          <g transform="translate(48 52) scale(.72) translate(-48 -52)">
+            <g class="mark__wing">
+              <path d="M56 48 L92 24 L74 50 Z" />
+              <path d="M58 52 L78 52 L92 64 L62 60 Z" />
+              <path d="M60 63 L86 68 L72 80 Z" />
+            </g>
+            <g class="mark__wing" transform="translate(96 0) scale(-1 1)">
+              <path d="M56 48 L92 24 L74 50 Z" />
+              <path d="M58 52 L78 52 L92 64 L62 60 Z" />
+              <path d="M60 63 L86 68 L72 80 Z" />
+            </g>
+          </g>
+          <!-- Prominent High-Peak Shield Path -->
+          <path class="mark__accent"
+            d="M 48 40 Q 52 44, 57 42 C 57 52, 52 59, 48 64 C 44 59, 39 52, 39 42 Q 44 44, 48 40 Z" />
+        </svg>
+        <div>
+          <h2 class="wordmark">hermes</h2>
+          <p>Admin · lab &amp; portal</p>
+        </div>
+      </article>
+
+    </section>
+  </main>
+  <script>
+    const themes = {
+      slateFire: {
+        primary: "#0F172A",
+        harmony: "#38BDF8",
+        contrast: "#FF4500",
+        canvas: "#F8FAFC",
+        muted: "#475569",
+        names: ["Rich Slate", "Sky Blue", "Electric Orange"],
+      },
+      forest: {
+        primary: "#0D4730",
+        harmony: "#59B28D",
+        contrast: "#FF7A59",
+        canvas: "#F4FAF7",
+        muted: "#4D665B",
+        names: ["Forest Green", "Soft Emerald", "Vibrant Coral"],
+      },
+      midnight: {
+        primary: "#1A1B26",
+        harmony: "#A27BFE",
+        contrast: "#00E5FF",
+        canvas: "#F0F2FA",
+        muted: "#5A5D70",
+        names: ["Deep Charcoal", "Bright Violet", "Cyan"],
+      },
+      terracotta: {
+        primary: "#5C2314",
+        harmony: "#D96A4A",
+        contrast: "#FFD166",
+        canvas: "#FFF6F0",
+        muted: "#80564D",
+        names: ["Mahogany", "Terracotta", "Mustard Yellow"],
+      },
+      ocean: {
+        primary: "#003B5C",
+        harmony: "#4BB8E7",
+        contrast: "#FF5500",
+        canvas: "#F0F7FF",
+        muted: "#4B6575",
+        names: ["Dark Navy", "Cerulean", "Blaze Orange"],
+      },
+      cobaltCrimson: {
+        primary: "#0A192F",
+        harmony: "#2563EB",
+        contrast: "#E11D48",
+        canvas: "#F0F9FF",
+        muted: "#475569",
+        names: ["Deep Navy", "Cobalt Blue", "Crimson Red"],
+      },
+      indigoAmber: {
+        primary: "#1E1B4B",
+        harmony: "#6366F1",
+        contrast: "#F59E0B",
+        canvas: "#EEF2FF",
+        muted: "#4338CA",
+        names: ["Midnight Indigo", "Vibrant Indigo", "Electric Amber"],
+      },
+      slateNeon: {
+        primary: "#0F172A",
+        harmony: "#0EA5E9",
+        contrast: "#FF0055",
+        canvas: "#F8FAFC",
+        muted: "#334155",
+        names: ["Slate Blue", "Sky Blue", "Neon Pink"],
+      },
+      royalGold: {
+        primary: "#172554",
+        harmony: "#3B82F6",
+        contrast: "#FBBF24",
+        canvas: "#EFF6FF",
+        muted: "#64748B",
+        names: ["Royal Blue", "Azure Blue", "Radiant Gold"],
+      },
+      rose: {
+        primary: "#4A1525",
+        harmony: "#D16D83",
+        contrast: "#FFA6B9",
+        canvas: "#FDF5F6",
+        muted: "#704953",
+        names: ["Burgundy", "Dusty Rose", "Bright Pink"],
+      },
+    };
+    const select = document.querySelector("#theme-select");
+    const swatches = [...document.querySelectorAll("[data-swatch]")];
+    const tokens = ["primary", "harmony", "contrast", "canvas", "muted"];
+
+    const applyTheme = (name) => {
+      const theme = themes[name];
+      for (const token of tokens) {
+        document.documentElement.style.setProperty(`--${token}`, theme[token]);
+      }
+      swatches.forEach((swatch, index) => {
+        swatch.querySelector(".swatch__name").textContent = theme.names[index];
+        swatch.querySelector(".swatch__value").textContent = `${theme[tokens[index]]} · ${["Primary", "Harmony", "Contrast"][index]}`;
+      });
+      document.querySelector('meta[name="theme-color"]').content = theme.canvas;
+    };
+
+    select.addEventListener("change", () => applyTheme(select.value));
+    applyTheme(select.value);
+  </script>
+</body>
+
+</html>
