@@ -1,0 +1,13 @@
+{
+  admin off
+}
+
+:80 {
+  handle /api/* {
+    uri strip_prefix /api
+    reverse_proxy hermes-elysia-api:8001
+  }
+  handle {
+    reverse_proxy hermes-next-web:3000
+  }
+}
