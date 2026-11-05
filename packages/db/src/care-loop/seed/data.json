@@ -1,0 +1,36 @@
+{
+  "cases": [
+    {
+      "patientId": "patient-1",
+      "severity": "Urgent",
+      "status": "notified",
+      "slaHours": 4,
+      "summary": "Your LDL cholesterol is well above the healthy range.",
+      "acknowledged": false
+    },
+    {
+      "patientId": "patient-2",
+      "severity": "Actionable",
+      "status": "acknowledged",
+      "slaHours": 24,
+      "summary": "Your fasting glucose is higher than expected.",
+      "acknowledged": true
+    },
+    {
+      "patientId": "patient-3",
+      "severity": "Routine",
+      "status": "received",
+      "slaHours": 168,
+      "summary": "Your HDL cholesterol looks healthy.",
+      "acknowledged": false
+    },
+    {
+      "patientId": "patient-4",
+      "severity": "Urgent",
+      "status": "escalated",
+      "slaHours": 4,
+      "summary": "Your potassium level needs a clinician review today.",
+      "acknowledged": false
+    }
+  ]
+}

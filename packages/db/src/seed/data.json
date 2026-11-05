@@ -1,0 +1,7 @@
+{
+  "clinics": [
+    { "id": "clinic-1", "name": "Primary Care Central" },
+    { "id": "clinic-2", "name": "Northside Clinic" },
+    { "id": "specialty-1", "name": "Cardiology Partners" }
+  ]
+}

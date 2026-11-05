@@ -1,0 +1,9 @@
+{
+  "rules": [
+    { "markerPrefix": "glucose", "clinicId": "clinic-1" },
+    { "markerPrefix": "hba1c", "clinicId": "clinic-1" },
+    { "markerPrefix": "ldl", "clinicId": "clinic-2" },
+    { "markerPrefix": "troponin", "clinicId": "specialty-1" },
+    { "markerPrefix": "potassium", "clinicId": "clinic-1" }
+  ]
+}

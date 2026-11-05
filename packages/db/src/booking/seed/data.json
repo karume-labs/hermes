@@ -1,0 +1,5 @@
+{
+  "slotKinds": ["in_person", "in_person", "telehealth"],
+  "slotMinutes": 30,
+  "daysAhead": 1
+}

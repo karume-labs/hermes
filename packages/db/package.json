@@ -1,0 +1,42 @@
+{
+  "name": "@hermes/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./utils": "./src/utils.ts",
+    "./seed": "./src/seed/index.ts",
+    "./care-loop/schema": "./src/care-loop/schema/index.ts",
+    "./booking/schema": "./src/booking/schema/index.ts",
+    "./notify/schema": "./src/notify/schema/index.ts",
+    "./patient/schema": "./src/patient/schema/index.ts",
+    "./ingestion/schema": "./src/ingestion/schema/index.ts",
+    "./auth/schema": "./src/auth/schema/index.ts",
+    "./seed/env": "./src/seed/env/index.ts"
+  },
+  "dependencies": {
+    "@hermes/types": "workspace:*",
+    "@sinclair/typebox": "^0.34.40",
+    "better-auth": "^1.7.17",
+    "drizzle-orm": "^0.44.2",
+    "postgres": "^3.4.7"
+  },
+  "devDependencies": {
+    "drizzle-kit": "0.31.10",
+    "typescript": "^5"
+  },
+  "scripts": {
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "bun run src/seed/index.ts",
+    "lint": "biome check",
+    "format": "biome format --write",
+    "typecheck": "tsc --noEmit"
+  }
+}

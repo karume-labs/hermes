@@ -1,0 +1,13 @@
+{
+  "messages": [
+    {
+      "sender": "coordinator",
+      "body": "We tried to reach you about your recent result. Please reply here or call the clinic so we can arrange follow-up."
+    },
+    {
+      "sender": "patient",
+      "body": "Thanks — I can come in tomorrow morning."
+    }
+  ],
+  "demoDeviceToken": "ExponentPushToken[demo-device]"
+}
