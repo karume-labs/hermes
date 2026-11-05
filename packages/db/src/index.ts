@@ -13,5 +13,5 @@ export const dbSchema = {
   ...patientSchema,
   ...ingestionSchema,
 };
-export { db };
 export type { Db } from "@db/client";
+export { db };

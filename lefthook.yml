@@ -1,9 +1,13 @@
 pre-commit:
-  parallel: true
   commands:
-    check:
+    lint:
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
       run: bunx biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
       stage_fixed: true
     typecheck:
       run: bun run typecheck
+    # Tests run at commit time, not only in CI: a green typecheck says nothing
+    # about triage/SLA behaviour, and those suites are fast. Kept after
+    # typecheck so a type error surfaces before the slower suites.
+    test:
+      run: bun run test
