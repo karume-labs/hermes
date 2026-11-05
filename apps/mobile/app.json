@@ -50,7 +50,9 @@
           }
         }
       ],
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-sharing",
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true
