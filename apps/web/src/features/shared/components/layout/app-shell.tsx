@@ -1,82 +1,45 @@
 "use client";
 
 import {
+  ActionIcon,
   AppShell,
   AppShellHeader,
   AppShellMain,
-  AppShellNavbar,
   Burger,
   Center,
   Group,
   Loader,
-  NavLink,
-  ScrollArea,
-  Stack,
-  Text,
-  Title,
+  Paper,
+  Tooltip,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import {
-  IconActivityHeartbeat,
-  IconLayoutDashboard,
-  IconRoute,
-  IconSend,
-  IconStethoscope,
-  IconWebhook,
-} from "@tabler/icons-react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useDisclosure, useLocalStorage } from "@mantine/hooks";
+import { IconLayoutSidebar } from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { authClient } from "@/features/auth/services/client";
+import { AppNavbar } from "@/features/shared/components/layout/app-navbar";
 import { UserMenu } from "@/features/shared/components/layout/user-menu";
 
-type NavItem = {
-  label: string;
-  href: string;
-  icon: ReactNode;
-  adminOnly?: boolean;
-};
-
-const NAV_ITEMS: NavItem[] = [
-  { label: "Queue", href: "/queue", icon: <IconStethoscope size={20} /> },
-  {
-    label: "Governance",
-    href: "/admin",
-    icon: <IconLayoutDashboard size={20} />,
-    adminOnly: true,
-  },
-  {
-    label: "Delivery",
-    href: "/admin/delivery",
-    icon: <IconSend size={20} />,
-    adminOnly: true,
-  },
-  {
-    label: "Webhook log",
-    href: "/admin/webhooks",
-    icon: <IconWebhook size={20} />,
-    adminOnly: true,
-  },
-  {
-    label: "Routing",
-    href: "/admin/routing",
-    icon: <IconRoute size={20} />,
-    adminOnly: true,
-  },
-];
+const HEADER_HEIGHT = 76;
+const SIDEBAR_WIDTH_EXPANDED = 260;
+const SIDEBAR_WIDTH_COLLAPSED = 96;
+const SIDEBAR_STORAGE_KEY = "hermes-sidebar-expanded";
 
 interface AppShellLayoutProps {
   children: ReactNode;
 }
 
-export const AppShellLayout = ({ children }: AppShellLayoutProps) => {
-  const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] =
-    useDisclosure(false);
-  const pathname = usePathname();
+export const AppShellLayout = ({
+  children,
+}: AppShellLayoutProps): ReactNode => {
+  const [mobileOpened, { toggle: toggleMobile }] = useDisclosure(false);
+  const [isExpanded, setIsExpanded] = useLocalStorage({
+    key: SIDEBAR_STORAGE_KEY,
+    defaultValue: true,
+  });
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
-  const user = session === null ? null : session.user;
 
   // proxy.ts already blocks signed-out traffic; this covers client-side
   // navigation and expired sessions without a server fetch in the layout.
@@ -84,85 +47,72 @@ export const AppShellLayout = ({ children }: AppShellLayoutProps) => {
     if (!isPending && session === null) router.replace("/sign-in");
   }, [isPending, session, router]);
 
-  if (user === null) {
+  if (session === null) {
     return (
-      <Center mih="100vh">
-        <Loader size="sm" />
+      <Center mih="100vh" bg="brandChalk.1">
+        <Loader size="sm" color="brandSlate.9" />
       </Center>
     );
   }
 
-  const items = NAV_ITEMS.filter(
-    (item) => item.adminOnly !== true || user.role === "admin",
-  );
+  const user = session.user;
+  const isAdmin = user.role === "admin";
 
   return (
     <AppShell
       layout="alt"
-      header={{ height: 64 }}
+      header={{ height: HEADER_HEIGHT }}
       navbar={{
-        width: 248,
-        breakpoint: "sm",
+        width: isExpanded ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_COLLAPSED,
+        breakpoint: "md",
         collapsed: { mobile: !mobileOpened },
       }}
       padding="lg"
-      bg="var(--mantine-color-gray-0)"
+      bg="brandChalk.1"
+      c="brandSlate.9"
+      styles={{
+        main: { width: "100%", maxWidth: 1480, margin: "0 auto" },
+      }}
     >
-      <AppShellHeader withBorder={false} px="md" bg="teal.9">
-        <Group h="100%" justify="space-between">
-          <Group gap="xs">
-            <Burger
-              opened={mobileOpened}
-              onClick={toggleMobile}
-              hiddenFrom="sm"
-              color="white"
-              size="sm"
-            />
-            <IconActivityHeartbeat size={24} color="white" />
-            <Title order={4} c="white">
-              Hermes Care
-            </Title>
+      <AppShellHeader withBorder={false} px="md" pt="md" bg="transparent">
+        <Paper h="100%" px="md" radius="sm" bg="brandChalk.0" withBorder>
+          <Group h="100%" justify="space-between">
+            <Group gap="xs">
+              <Burger
+                opened={mobileOpened}
+                onClick={toggleMobile}
+                hiddenFrom="md"
+                size="sm"
+                color="brandSlate.9"
+              />
+              <Tooltip
+                label={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
+                withArrow
+                position="bottom"
+              >
+                <ActionIcon
+                  variant="subtle"
+                  color="brandSlate.9"
+                  size="lg"
+                  onClick={() => setIsExpanded((open) => !open)}
+                  visibleFrom="md"
+                  aria-label="Toggle sidebar"
+                >
+                  <IconLayoutSidebar size={22} stroke={1.5} />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
+            <UserMenu user={user} />
           </Group>
-          <UserMenu user={user} />
-        </Group>
+        </Paper>
       </AppShellHeader>
 
-      <AppShellNavbar p="md" bg="white">
-        <Stack gap={4}>
-          <Text
-            size="xs"
-            fw={700}
-            c="dimmed"
-            tt="uppercase"
-            lts="0.08em"
-            px="sm"
-          >
-            {user.role === "admin" ? "Administration" : "Coordinator"}
-          </Text>
-          <ScrollArea>
-            {items.map((item) => {
-              const active =
-                pathname === item.href ||
-                (item.href !== "/queue" && pathname.startsWith(item.href));
-              return (
-                <NavLink
-                  key={item.href}
-                  component={Link}
-                  href={item.href}
-                  label={item.label}
-                  leftSection={item.icon}
-                  active={active}
-                  onClick={closeMobile}
-                  variant="light"
-                  color="teal"
-                  fw={600}
-                  style={{ borderRadius: 8, height: 42 }}
-                />
-              );
-            })}
-          </ScrollArea>
-        </Stack>
-      </AppShellNavbar>
+      <AppNavbar
+        isExpanded={isExpanded}
+        isAdmin={isAdmin}
+        mobileOpened={mobileOpened}
+        toggleMobile={toggleMobile}
+      />
 
       <AppShellMain>{children}</AppShellMain>
     </AppShell>

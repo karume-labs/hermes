@@ -9,18 +9,21 @@ import {
   SegmentedControl,
   SimpleGrid,
   Stack,
-  Table,
   Text,
-  Title,
 } from "@mantine/core";
+import { IconSend } from "@tabler/icons-react";
+import type { ColumnDef } from "@tanstack/react-table";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { WebhookLogTable } from "@/features/admin/components/webhook-log-table";
 import { useDispatchNotifications } from "@/features/admin/services/mutations";
 import {
   useNotificationStats,
   useRecentNotifications,
 } from "@/features/admin/services/queries";
+import { PageHeader } from "@/features/shared/components/layout/page-header";
+import { DataTable } from "@/features/shared/components/table/data-table";
+import { MetricCard } from "@/features/shared/components/ui/metric-card";
 
 const statusColor = (status: string): string => {
   if (status === "sent") return "teal";
@@ -31,128 +34,179 @@ const statusColor = (status: string): string => {
 
 const channels = ["all", "push", "sms", "in_app", "email"];
 
+interface NotificationRow {
+  id: string;
+  caseId: string;
+  channel: string;
+  kind: string;
+  status: string;
+  attempts: number;
+  error: string | null;
+  createdAt: string;
+}
+
 export const DeliveryView = (): ReactNode => {
   const [channel, setChannel] = useState("all");
   const notifications = useRecentNotifications();
   const stats = useNotificationStats();
   const dispatch = useDispatchNotifications();
 
-  const items = notifications.data === undefined ? [] : notifications.data;
+  const items: NotificationRow[] =
+    notifications.data === undefined ? [] : notifications.data;
   const filtered =
     channel === "all"
       ? items
       : items.filter((item) => item.channel === channel);
   const failures = items.filter((item) => item.status === "failed");
 
-  return (
-    <Stack gap="lg">
-      <Group justify="space-between">
-        <div>
-          <Title order={2}>Delivery &amp; integrations</Title>
-          <Text size="sm" c="dimmed">
-            Push, SMS fallback, webhook intake and lab-feed health.
+  const columns = useMemo<ColumnDef<NotificationRow, unknown>[]>(
+    () => [
+      {
+        id: "case",
+        header: "Case",
+        accessorFn: (row) => row.caseId,
+        cell: ({ row }): ReactNode => (
+          <Text size="xs" ff="monospace">
+            {row.original.caseId.slice(0, 8)}
           </Text>
-        </div>
-        <Button
-          variant="light"
-          loading={dispatch.isPending}
-          onClick={() => dispatch.mutate()}
-        >
-          Run outbox now
-        </Button>
-      </Group>
+        ),
+      },
+      {
+        id: "channel",
+        header: "Channel",
+        accessorFn: (row) => row.channel,
+        cell: ({ row }): ReactNode => (
+          <Badge variant="outline" tt="capitalize">
+            {row.original.channel}
+          </Badge>
+        ),
+      },
+      {
+        id: "kind",
+        header: "Kind",
+        accessorFn: (row) => row.kind,
+        cell: ({ row }): ReactNode => (
+          <Text size="sm">{row.original.kind}</Text>
+        ),
+      },
+      {
+        id: "status",
+        header: "Status",
+        accessorFn: (row) => row.status,
+        cell: ({ row }): ReactNode => (
+          <Badge color={statusColor(row.original.status)} variant="light">
+            {row.original.status}
+          </Badge>
+        ),
+      },
+      {
+        id: "attempts",
+        header: "Attempts",
+        accessorFn: (row) => row.attempts,
+      },
+      {
+        id: "queued",
+        header: "Queued",
+        accessorFn: (row) => row.createdAt,
+        cell: ({ row }): ReactNode => (
+          <Text size="xs" c="dimmed">
+            {new Date(row.original.createdAt).toLocaleString(undefined, {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Text>
+        ),
+      },
+    ],
+    [],
+  );
 
-      {(notifications.isError || stats.isError) && (
+  const statValue = (
+    key: "queued" | "sent" | "read" | "failed" | "smsQueued",
+  ) => (stats.data === undefined ? 0 : stats.data[key]);
+
+  return (
+    <Stack gap="xl">
+      <PageHeader
+        eyebrow="Administration"
+        title="Delivery & integrations"
+        subtitle="Push, SMS fallback, webhook intake and lab-feed health."
+        actions={
+          <Button
+            leftSection={<IconSend size={16} />}
+            loading={dispatch.isPending}
+            onClick={() => dispatch.mutate()}
+          >
+            Run outbox now
+          </Button>
+        }
+      />
+
+      {notifications.isError || stats.isError ? (
         <Alert color="red" title="Delivery log unavailable">
           Start the API with <code>bun run dev:api</code>.
         </Alert>
-      )}
+      ) : null}
 
-      <SimpleGrid cols={{ base: 2, sm: 5 }}>
-        {[
-          ["Queued", stats.data === undefined ? 0 : stats.data.queued],
-          ["Sent", stats.data === undefined ? 0 : stats.data.sent],
-          ["Read", stats.data === undefined ? 0 : stats.data.read],
-          ["Failed", stats.data === undefined ? 0 : stats.data.failed],
-          ["SMS fallback", stats.data === undefined ? 0 : stats.data.smsQueued],
-        ].map(([label, value]) => (
-          <Card withBorder key={label}>
-            <Text size="xs" c="dimmed">
-              {label}
-            </Text>
-            <Text size="xl" fw={700}>
-              {value}
-            </Text>
-          </Card>
-        ))}
+      <SimpleGrid cols={{ base: 1, sm: 2, lg: 5 }}>
+        <MetricCard label="Queued" value={statValue("queued")} />
+        <MetricCard label="Sent" value={statValue("sent")} />
+        <MetricCard label="Read" value={statValue("read")} />
+        <MetricCard
+          label="Failed"
+          value={statValue("failed")}
+          tone={statValue("failed") > 0 ? "red.7" : "brandSlate.9"}
+        />
+        <MetricCard label="SMS fallback" value={statValue("smsQueued")} />
       </SimpleGrid>
 
-      {dispatch.isSuccess && (
+      {dispatch.isSuccess ? (
         <Alert color="teal">
           Outbox drained: {dispatch.data.delivered} notification(s) delivered.
         </Alert>
-      )}
+      ) : null}
 
-      {failures.length > 0 && (
+      {failures.length > 0 ? (
         <Alert color="orange" title={`${failures.length} failed deliveries`}>
           {failures[0].error === null
-            ? "Inspect the failed rows below."
+            ? "Inspect the failed rows in the outbox table."
             : `${failures[0].caseId.slice(0, 8)}: ${failures[0].error}`}
         </Alert>
-      )}
+      ) : null}
 
-      <SegmentedControl
-        value={channel}
-        onChange={setChannel}
-        data={channels.map((value) => ({ value, label: value }))}
-        w="fit-content"
-      />
+      <Card
+        radius="sm"
+        p="lg"
+        bg="brandChalk.0"
+        bd="1px solid var(--mantine-color-brandChalk-3)"
+      >
+        <Stack gap="lg">
+          <Group justify="space-between">
+            <Stack gap={2}>
+              <Text fw={500}>Notification outbox</Text>
+              <Text size="sm" c="dimmed">
+                Every push, SMS and in-app notice the loop has queued.
+              </Text>
+            </Stack>
+            <SegmentedControl
+              size="xs"
+              value={channel}
+              onChange={setChannel}
+              data={channels.map((value) => ({ value, label: value }))}
+            />
+          </Group>
 
-      <Table.ScrollContainer minWidth={720}>
-        <Table striped highlightOnHover>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Case</Table.Th>
-              <Table.Th>Channel</Table.Th>
-              <Table.Th>Kind</Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th>Attempts</Table.Th>
-              <Table.Th>Queued</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {filtered.map((item) => (
-              <Table.Tr key={item.id}>
-                <Table.Td>
-                  <Text size="xs" ff="monospace">
-                    {item.caseId.slice(0, 8)}
-                  </Text>
-                </Table.Td>
-                <Table.Td>{item.channel}</Table.Td>
-                <Table.Td>
-                  <Text size="xs">{item.kind}</Text>
-                </Table.Td>
-                <Table.Td>
-                  <Badge color={statusColor(item.status)} variant="light">
-                    {item.status}
-                  </Badge>
-                </Table.Td>
-                <Table.Td>{item.attempts}</Table.Td>
-                <Table.Td>
-                  <Text size="xs">
-                    {new Date(item.createdAt).toLocaleString(undefined, {
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </Text>
-                </Table.Td>
-              </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
-      </Table.ScrollContainer>
+          <DataTable
+            data={filtered}
+            columns={columns}
+            minWidth={840}
+            pageSize={10}
+            emptyMessage="No notifications in this channel"
+          />
+        </Stack>
+      </Card>
 
       <WebhookLogTable />
     </Stack>

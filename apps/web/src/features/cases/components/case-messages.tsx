@@ -78,7 +78,7 @@ export const CaseMessages = ({ detail }: { detail: CaseDetail }): ReactNode => {
               <Card
                 key={message.id}
                 withBorder
-                bg={fromPatient ? "gray.0" : "teal.0"}
+                bg={fromPatient ? "brandChalk.2" : "brandSky.0"}
                 p="xs"
               >
                 <Group justify="space-between">

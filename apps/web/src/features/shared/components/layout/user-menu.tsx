@@ -4,64 +4,85 @@ import {
   Avatar,
   Group,
   Menu,
-  Stack,
+  MenuDivider,
+  MenuDropdown,
+  MenuItem,
+  MenuLabel,
+  MenuTarget,
+  Skeleton,
   Text,
   UnstyledButton,
 } from "@mantine/core";
-import { IconChevronDown, IconLogout, IconUser } from "@tabler/icons-react";
+import { IconChevronDown, IconLogout } from "@tabler/icons-react";
+import type { ReactNode } from "react";
 import { useSignOut } from "@/features/auth/services/mutations";
 import type { SessionUser } from "@/features/auth/services/types";
 
 interface UserMenuProps {
-  user: SessionUser;
+  user: SessionUser | null;
 }
 
-const initials = (name: string): string =>
-  name
-    .split(" ")
-    .filter((part) => part.length > 0)
+const initialsOf = (value: string): string =>
+  value
+    .trim()
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join("")
     .slice(0, 2)
-    .map((part) => part[0].toUpperCase())
-    .join("");
+    .toUpperCase();
 
-export const UserMenu = ({ user }: UserMenuProps) => {
+export const UserMenu = ({ user }: UserMenuProps): ReactNode => {
   const signOut = useSignOut();
 
+  if (user === null) {
+    return (
+      <Group gap="xs" wrap="nowrap" px="sm">
+        <Skeleton height={30} circle />
+        <Skeleton height={16} width={90} radius="xl" />
+      </Group>
+    );
+  }
+
+  const displayName = user.name.length > 0 ? user.name : user.email;
+
   return (
-    <Menu position="bottom-end" width={220} withArrow>
-      <Menu.Target>
-        <UnstyledButton>
-          <Group gap="xs">
-            <Avatar color="teal.3" radius="xl" size={32}>
-              {initials(user.name)}
+    <Menu shadow="md" width={260} position="bottom-end" withArrow>
+      <MenuTarget>
+        <UnstyledButton
+          className="hermes-user-trigger"
+          aria-label="Account menu"
+        >
+          <Group gap="xs" wrap="nowrap">
+            <Avatar size={30} radius="xl" color="brandSlate.9">
+              {initialsOf(displayName)}
             </Avatar>
-            <Stack gap={0} visibleFrom="sm">
-              <Text size="sm" fw={600} c="white" lh={1.2}>
-                {user.name}
+            <Group gap={6} wrap="nowrap" visibleFrom="sm">
+              <Text size="sm" fw={600} truncate maw={140}>
+                {displayName}
               </Text>
-              <Text size="xs" c="teal.2" tt="capitalize">
+              <Text size="xs" c="dimmed" tt="capitalize">
                 {user.role}
               </Text>
-            </Stack>
-            <IconChevronDown size={16} color="white" />
+            </Group>
+            <IconChevronDown size={14} stroke={1.75} />
           </Group>
         </UnstyledButton>
-      </Menu.Target>
-      <Menu.Dropdown>
-        <Menu.Label>{user.email}</Menu.Label>
-        <Menu.Item leftSection={<IconUser size={16} />} disabled>
-          {user.role === "admin" ? "Administrator" : "Care coordinator"}
-        </Menu.Item>
-        <Menu.Divider />
-        <Menu.Item
-          color="red"
+      </MenuTarget>
+      <MenuDropdown>
+        <MenuLabel>Signed in as</MenuLabel>
+        <Text px="xs" py="xs" size="sm" style={{ overflowWrap: "anywhere" }}>
+          {user.email}
+        </Text>
+        <MenuDivider />
+        <MenuItem
+          c="dimmed"
           leftSection={<IconLogout size={16} />}
           onClick={() => signOut.mutate()}
           disabled={signOut.isPending}
         >
           Sign out
-        </Menu.Item>
-      </Menu.Dropdown>
+        </MenuItem>
+      </MenuDropdown>
     </Menu>
   );
 };

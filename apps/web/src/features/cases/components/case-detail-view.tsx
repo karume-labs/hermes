@@ -2,6 +2,7 @@
 
 import {
   Alert,
+  Anchor,
   Badge,
   Button,
   Card,
@@ -9,7 +10,6 @@ import {
   Stack,
   Tabs,
   Text,
-  Title,
 } from "@mantine/core";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -23,10 +23,13 @@ import {
 } from "@/features/cases/components/case-badges";
 import { CaseMessages } from "@/features/cases/components/case-messages";
 import { useCaseDetail } from "@/features/cases/services/queries";
+import { PageHeader } from "@/features/shared/components/layout/page-header";
 
 interface CaseDetailViewProps {
   caseId: string;
 }
+
+const CARD_STYLE = "1px solid var(--mantine-color-brandChalk-3)";
 
 // Clinical free text often ends in its own full stop; keep exactly one.
 const asSentence = (value: string | null): string => {
@@ -37,10 +40,10 @@ const asSentence = (value: string | null): string => {
 export const CaseDetailView = ({ caseId }: CaseDetailViewProps): ReactNode => {
   const detail = useCaseDetail(caseId);
 
-  if (detail.isLoading) return <Text p={24}>Loading case…</Text>;
+  if (detail.isLoading) return <Text c="dimmed">Loading case…</Text>;
   if (detail.isError || detail.data === undefined)
     return (
-      <Stack p={24}>
+      <Stack>
         <Alert color="red" title="Case not found">
           This case does not exist or the API is offline.
         </Alert>
@@ -53,31 +56,43 @@ export const CaseDetailView = ({ caseId }: CaseDetailViewProps): ReactNode => {
   const careCase = detail.data;
 
   return (
-    <Stack p={24} maw={1100} mx="auto" gap="lg">
-      <Group justify="space-between">
-        <div>
-          <Text size="xs" c="dimmed">
-            <Link href="/queue">Queue</Link> / {careCase.id.slice(0, 8)}
-          </Text>
-          <Title order={1}>Case file</Title>
-          <Text c="dimmed" size="sm">
-            {careCase.patientId} · {careCase.clinicId}
-          </Text>
-        </div>
-        <Group gap="xs">
-          <SeverityBadge severity={careCase.severity} />
-          <StatusBadge status={careCase.status} />
-          <SlaBadge slaDueAt={careCase.slaDueAt} status={careCase.status} />
-          <AckState acknowledgedAt={careCase.acknowledgedAt} />
-        </Group>
-      </Group>
+    <Stack gap="xl" maw={1100}>
+      <Stack gap="xs">
+        <Text size="xs" c="dimmed">
+          <Anchor component={Link} href="/queue" size="xs" c="dimmed">
+            Queue
+          </Anchor>{" "}
+          / {careCase.id.slice(0, 8)}
+        </Text>
+        <PageHeader
+          title="Case file"
+          subtitle={`${careCase.patientId} · ${careCase.clinicId}`}
+          actions={
+            <Group gap="xs">
+              <SeverityBadge severity={careCase.severity} />
+              <StatusBadge status={careCase.status} />
+              <SlaBadge slaDueAt={careCase.slaDueAt} status={careCase.status} />
+              <AckState acknowledgedAt={careCase.acknowledgedAt} />
+            </Group>
+          }
+        />
+      </Stack>
 
-      <Card withBorder>
-        <Text size="xs" c="dimmed" mb={4}>
+      <Card radius="sm" p="xl" bg="brandChalk.0" bd={CARD_STYLE}>
+        <Text
+          size="xs"
+          c="brandSlate.5"
+          tt="uppercase"
+          fw={700}
+          lts="0.1em"
+          mb="sm"
+        >
           Plain-language summary sent to the patient
         </Text>
-        <Text>{careCase.summaryPlainLanguage}</Text>
-        <Group mt="sm" gap="lg">
+        <Text size="md" lh={1.6}>
+          {careCase.summaryPlainLanguage}
+        </Text>
+        <Group mt="lg" gap="xl">
           <Text size="xs" c="dimmed">
             Received {new Date(careCase.createdAt).toLocaleString()}
           </Text>
@@ -90,15 +105,15 @@ export const CaseDetailView = ({ caseId }: CaseDetailViewProps): ReactNode => {
         </Group>
       </Card>
 
-      {careCase.escalatedAt !== null && careCase.status !== "closed" && (
+      {careCase.escalatedAt !== null && careCase.status !== "closed" ? (
         <Alert color="orange" title="Escalated">
           No mobile acknowledgment by the SLA window. Escalated{" "}
           {new Date(careCase.escalatedAt).toLocaleString()} — outreach is
           recommended.
         </Alert>
-      )}
+      ) : null}
 
-      {careCase.status === "closed" && (
+      {careCase.status === "closed" ? (
         <Alert color="teal" title="Case closed">
           Signed off by {careCase.closedBy} on{" "}
           {careCase.closedAt === null
@@ -107,7 +122,7 @@ export const CaseDetailView = ({ caseId }: CaseDetailViewProps): ReactNode => {
           . Plan: {asSentence(careCase.closurePlan)} Evidence:{" "}
           {asSentence(careCase.closureEvidence)}
         </Alert>
-      )}
+      ) : null}
 
       <Tabs defaultValue="actions" keepMounted={false}>
         <Tabs.List>

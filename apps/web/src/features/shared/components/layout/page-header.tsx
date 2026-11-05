@@ -4,19 +4,28 @@ import type { ReactNode } from "react";
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
+  eyebrow?: string;
   actions?: ReactNode;
 }
 
 export const PageHeader = ({
   title,
   subtitle,
+  eyebrow,
   actions,
 }: PageHeaderProps): ReactNode => (
-  <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
+  <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
     <Stack gap={4}>
-      <Title order={2}>{title}</Title>
+      {eyebrow === undefined ? null : (
+        <Text size="xs" fw={700} c="brandSlate.5" tt="uppercase" lts="0.14em">
+          {eyebrow}
+        </Text>
+      )}
+      <Title order={1} fw={900} c="brandSlate.9" lts="0.05em">
+        {title}
+      </Title>
       {subtitle === undefined ? null : (
-        <Text size="sm" c="dimmed" maw={640}>
+        <Text c="dimmed" size="md" maw={720}>
           {subtitle}
         </Text>
       )}

@@ -72,12 +72,7 @@ export const CaseCloseForm = ({
           {...register("plan")}
         />
         <Group justify="flex-end">
-          <Button
-            type="submit"
-            color="teal"
-            loading={close.isPending}
-            disabled={disabled}
-          >
+          <Button type="submit" loading={close.isPending} disabled={disabled}>
             Close case
           </Button>
         </Group>

@@ -10,7 +10,6 @@ import {
   Stack,
   Switch,
   Text,
-  Title,
 } from "@mantine/core";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ReactNode } from "react";
@@ -21,6 +20,7 @@ import {
   useUpsertRoutingRule,
 } from "@/features/admin/services/mutations";
 import { useRoutingRules } from "@/features/admin/services/queries";
+import { PageHeader } from "@/features/shared/components/layout/page-header";
 import { DataTable } from "@/features/shared/components/table/data-table";
 import { DataTableSkeleton } from "@/features/shared/components/table/data-toolbar";
 import { errorMessage } from "@/features/shared/utils/form-errors";
@@ -91,14 +91,12 @@ export const RoutingView = (): ReactNode => {
   );
 
   return (
-    <Stack gap="lg">
-      <div>
-        <Title order={2}>Routing configuration</Title>
-        <Text size="sm" c="dimmed">
-          Incoming lab markers are matched by longest lowercase prefix.
-          Unmatched results fall back to clinic-1.
-        </Text>
-      </div>
+    <Stack gap="xl">
+      <PageHeader
+        eyebrow="Administration"
+        title="Routing configuration"
+        subtitle="Incoming lab markers are matched by longest lowercase prefix. Unmatched results fall back to clinic-1."
+      />
 
       {rules.isError || upsert.isError || remove.isError ? (
         <Alert color="red" title="Routing configuration failed">
@@ -112,16 +110,26 @@ export const RoutingView = (): ReactNode => {
         </Alert>
       ) : null}
 
-      <Card withBorder radius="md" p="lg">
-        <Title order={4} mb="sm">
+      <Card
+        radius="sm"
+        p="xl"
+        bg="brandChalk.0"
+        bd="1px solid var(--mantine-color-brandChalk-3)"
+      >
+        <Text fw={700} mb="lg">
           Add or replace a rule
-        </Title>
+        </Text>
         <RoutingRuleComposer />
       </Card>
 
-      <Card withBorder radius="md" p="md">
+      <Card
+        radius="sm"
+        p="lg"
+        bg="brandChalk.0"
+        bd="1px solid var(--mantine-color-brandChalk-3)"
+      >
         {rules.isLoading ? (
-          <DataTableSkeleton rows={4} />
+          <DataTableSkeleton columnCount={4} rowCount={4} />
         ) : (
           <DataTable
             data={items}
