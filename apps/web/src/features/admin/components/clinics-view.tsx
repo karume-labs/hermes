@@ -1,13 +1,49 @@
 "use client";
 
 import type { AdminClinicSummary } from "@hermes/types";
-import { Alert, Badge, SimpleGrid, Stack, Text } from "@mantine/core";
+import {
+  Alert,
+  Badge,
+  Group,
+  SimpleGrid,
+  Stack,
+  Switch,
+  Text,
+} from "@mantine/core";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ReactNode } from "react";
+import { useSetClinicActive } from "@/features/admin/services/mutations";
 import { useAdminClinics } from "@/features/admin/services/queries";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
 import { DataTable } from "@/features/shared/components/table/data-table";
 import { MetricCard } from "@/features/shared/components/ui/metric-card";
+
+const ClinicStatus = ({
+  clinic,
+}: {
+  clinic: AdminClinicSummary;
+}): ReactNode => {
+  const setActive = useSetClinicActive();
+  return (
+    <Group gap="xs" wrap="nowrap">
+      <Badge variant="light" color={clinic.isActive ? "teal" : "gray"}>
+        {clinic.isActive ? "Active" : "Inactive"}
+      </Badge>
+      <Switch
+        size="xs"
+        checked={clinic.isActive}
+        disabled={setActive.isPending}
+        aria-label={`${clinic.isActive ? "Pause" : "Activate"} ${clinic.name}`}
+        onChange={(event) =>
+          setActive.mutate({
+            id: clinic.id,
+            isActive: event.currentTarget.checked,
+          })
+        }
+      />
+    </Group>
+  );
+};
 
 const columns: ColumnDef<AdminClinicSummary>[] = [
   {
@@ -35,11 +71,7 @@ const columns: ColumnDef<AdminClinicSummary>[] = [
     id: "status",
     header: "Status",
     accessorFn: (row) => (row.isActive ? "active" : "inactive"),
-    cell: ({ row }) => (
-      <Badge variant="light" color={row.original.isActive ? "teal" : "gray"}>
-        {row.original.isActive ? "Active" : "Inactive"}
-      </Badge>
-    ),
+    cell: ({ row }) => <ClinicStatus clinic={row.original} />,
   },
   {
     id: "patients",

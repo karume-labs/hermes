@@ -5,6 +5,7 @@ import "./errors";
 export * from "./auth";
 export * from "./booking";
 export * from "./care-loop";
+export * from "./directory";
 export * from "./errors";
 export * from "./ingestion";
 export * from "./patient";

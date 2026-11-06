@@ -76,6 +76,21 @@ export const useUpdateStaffUser = () => {
   });
 };
 
+export const useSetClinicActive = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; isActive: boolean }) => {
+      const response = await api.admin.clinics({ id: input.id }).patch({
+        isActive: input.isActive,
+      });
+      if (response.error) throw response.error;
+      return response.data;
+    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.clinics }),
+  });
+};
+
 export const useDispatchNotifications = () => {
   const queryClient = useQueryClient();
   return useMutation({

@@ -41,6 +41,20 @@ export const listAdminClinics = async (): Promise<AdminClinicSummary[]> => {
   }));
 };
 
+export const setClinicActive = async (id: string, isActive: boolean) => {
+  const [row] = await db
+    .update(clinics)
+    .set({ isActive })
+    .where(eq(clinics.id, id))
+    .returning();
+  if (row === undefined) return null;
+  return {
+    ...row,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+};
+
 export const listAdminAudit = async (): Promise<AdminAuditEntry[]> => {
   const rows = await db
     .select({

@@ -417,6 +417,9 @@ id matches the path. Webhooks require a valid, unexpired, single-use signature.
 | GET | `/attachments/:id[?patientId=]` | staff or owner | stream the file |
 | GET | `/clinics/:clinicId/slots` | staff/patient | slots (created on first read) |
 | POST | `/bookings` | staff/patient | book a slot (case ownership and clinic checked) |
+| POST | `/bookings/:id/cancel` | staff/patient | cancel a confirmed visit and release the slot |
+| POST | `/bookings/:id/reschedule` | staff/patient | move a confirmed visit to another slot |
+| PATCH | `/bookings/:id/outcome` | staff | mark a started visit attended or no-show |
 | POST | `/referrals` | staff | create a referral (`sent`) |
 | GET | `/referrals?direction=incoming\\|outgoing` | staff | referral inbox/history |
 | POST | `/referrals/:id/accept` | receiving staff | accept, assign an owner and close the receiving task |
@@ -424,6 +427,9 @@ id matches the path. Webhooks require a valid, unexpired, single-use signature.
 | POST | `/referrals/:id/complete` | receiving staff | complete the accepted referral |
 | POST | `/cases/close` | clinician/admin | clinical sign-off (requires an assigned owner) |
 | GET | `/metrics` | staff | governance metrics |
+| GET | `/admin/clinics` | admin | clinic directory with activity counts |
+| PATCH | `/admin/clinics/:id` | admin | activate or pause a clinic |
+| GET | `/admin/audit` | admin | global audit trail |
 | GET | `/audit/:caseId` | staff/patient | audit trail |
 | GET | `/notifications?caseId=\|patientId=` | staff | outbox rows |
 | GET | `/notifications/stats` | staff | delivery counts |
