@@ -2,10 +2,10 @@ import type { MobileEventType } from "@hermes/types";
 import * as SecureStore from "expo-secure-store";
 import { careApi } from "@/lib/care-api";
 
-// No production sign-in yet: the seeded demo identity is the fallback while
-// the API keeps every patient read scoped by patientId.
+// No production sign-in yet: the seeded identity is the fallback while the
+// API keeps every patient read scoped by patientId.
 export const DEFAULT_PATIENT_ID = "patient-1-clinic-1";
-export const DEMO_PATIENT_IDS = [
+export const PATIENT_IDS = [
   "patient-1-clinic-1",
   "patient-2-clinic-1",
   "patient-3-clinic-1",
@@ -24,9 +24,9 @@ export const setPatientId = async (patientId: string): Promise<void> => {
   await SecureStore.setItemAsync(PATIENT_KEY, patientId);
 };
 
-export const nextDemoPatient = async (current: string): Promise<string> => {
-  const index = DEMO_PATIENT_IDS.indexOf(current);
-  const next = DEMO_PATIENT_IDS[(index + 1) % DEMO_PATIENT_IDS.length];
+export const nextPatient = async (current: string): Promise<string> => {
+  const index = PATIENT_IDS.indexOf(current);
+  const next = PATIENT_IDS[(index + 1) % PATIENT_IDS.length];
   await setPatientId(next);
   return next;
 };

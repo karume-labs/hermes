@@ -13,9 +13,9 @@ const seedEnvSchema = Type.Object({
   COORDINATOR_EMAIL: Type.String({
     default: "coordinator@hermescare.test",
   }),
-  COORDINATOR_PASSWORD: Type.String({ default: "hermes-demo" }),
+  COORDINATOR_PASSWORD: Type.String({ default: "hermes-care" }),
   ADMIN_EMAIL: Type.String({ default: "admin@hermescare.test" }),
-  ADMIN_PASSWORD: Type.String({ default: "hermes-demo" }),
+  ADMIN_PASSWORD: Type.String({ default: "hermes-care" }),
 });
 
 type SeedEnv = Static<typeof seedEnvSchema>;

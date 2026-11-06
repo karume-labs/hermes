@@ -65,7 +65,7 @@ export const BiometricGate = ({ children }: BiometricGateProps) => {
         </Text>
         <Text className="text-center text-muted-foreground">
           {state === "unavailable"
-            ? "This device has no enrolled Face ID or fingerprint. In demo mode you can continue without device biometrics."
+            ? "This device has no enrolled Face ID or fingerprint. You can continue without device biometrics."
             : "Confirm it is you with Face ID or your fingerprint to review screening updates."}
         </Text>
       </View>
@@ -82,7 +82,7 @@ export const BiometricGate = ({ children }: BiometricGateProps) => {
       ) : null}
       {state === "unavailable" ? (
         <Button onPress={() => setState("unlocked")} size="lg">
-          <Text>Continue in demo mode</Text>
+          <Text>Continue without biometrics</Text>
         </Button>
       ) : null}
       {error === "" ? null : (

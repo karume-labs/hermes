@@ -21,7 +21,7 @@ packages/
 infra/
   docker/   # Dockerfiles + docker-compose (Postgres 17, API, web, Caddy)
   caddy/    # reverse proxy: /api/* → api:8001
-scripts/    # demo seeding + Expo LAN-IP sync
+scripts/    # seed helpers + Expo LAN-IP sync
 ```
 
 Root `package.json` only orchestrates workspaces; every script runs with
@@ -35,17 +35,16 @@ cp apps/api/.env.example apps/api/.env      # DATABASE_URL + BETTER_AUTH_SECRET
 cp apps/web/.env.example apps/web/.env      # NEXT_PUBLIC_API_URL
 cp apps/mobile/.env.example apps/mobile/.env # EXPO_PUBLIC_API_BASE
 bun run db:migrate  # apply packages/db/src/migrations
-bun run db:seed     # demo cases, clinic slots and staff accounts (idempotent)
+bun run db:seed     # sample cases, documents, clinic slots and staff accounts (idempotent)
 bun run dev:api     # Elysia API on :8001
 bun run dev         # Next.js web on :3000
 bun run dev:mobile  # Expo app in apps/mobile
 bun run dev:www     # Astro landing page on :4322
-bun run seed:demo   # 3 demo lab cases through the API
 ```
 
 Open [http://localhost:3000/sign-in](http://localhost:3000/sign-in) and use a
 seeded account (`coordinator@hermescare.test` / `admin@hermescare.test`,
-password `hermes-demo`). `/queue` is the Loop-Closure Queue and `/admin` holds
+password `hermes-care`). `/queue` is the Loop-Closure Queue and `/admin` holds
 governance metrics, delivery health, the webhook log and routing rules.
 
 ## Staff auth
@@ -95,9 +94,9 @@ bun run update-ip    # point EXPO_PUBLIC_API_BASE at this machine's LAN IP
 ```
 
 Push needs an EAS `projectId` in `app.json` (`extra.eas.projectId`); without it
-the app skips token registration and the demo continues with in-app alerts.
-Devices without enrolled biometrics get a worker-documented demo bypass, and
-the demo identity switcher cycles `patient-1..4-clinic-1` so each seeded case
+the app skips token registration and alerts stay in-app.
+Devices without enrolled biometrics can still continue, and the patient
+switcher cycles `patient-1..4-clinic-1` so each seeded case
 can be walked end to end. Staff sessions use Better Auth; patient identity is
 still client-supplied — the server enforces case ownership on the patient
 routes.
@@ -113,7 +112,7 @@ bun run db:generate   # after schema edits
 bun run db:migrate    # apply committed SQL
 bun run db:seed       # all features; skips populated tables
 bun run db:seed -- --care-loop   # one feature (also --booking, --auth)
-bun run db:seed -- --force       # wipe demo rows, then reseed
+bun run db:seed -- --force       # wipe seeded rows, then reseed
 bun run db:seed:fresh # migrate + force seed
 bun run db:studio     # drizzle studio
 ```

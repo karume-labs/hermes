@@ -121,9 +121,8 @@ export const HermesWordmark = ({
       fontWeight: 800,
       letterSpacing: "0.14em",
       lineHeight: 1,
-      textTransform: "lowercase",
     }}
   >
-    hermes
+    Hermes
   </span>
 );

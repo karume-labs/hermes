@@ -99,8 +99,8 @@ export const SignInForm = (): ReactNode => {
         </Text>
 
         <Text size="xs" c="dimmed">
-          Demo accounts: coordinator@hermescare.test or admin@hermescare.test ·
-          password hermes-demo
+          Test accounts: coordinator@hermescare.test or admin@hermescare.test ·
+          password hermes-care
         </Text>
       </Stack>
     </Card>

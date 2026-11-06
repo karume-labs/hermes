@@ -20,18 +20,18 @@ bun run update-ip         # root: rewrite .env for a physical device on the LAN
 
 | Route | Flow |
 | --- | --- |
-| `/` | Biometric gate, case list with journey stage and unread messages, demo identity switcher, pull to refresh. |
+| `/` | Biometric gate, case list with journey stage and unread messages, patient switcher, pull to refresh. |
 | `/care-action?caseId=` | Plain-language result, meaning/why it matters, acknowledge, visit card with calendar sync, next steps. |
 | `/booking?caseId=&clinicId=&kind=` | Live clinic slots, one-tap confirm, 24h device-calendar reminder, prep instructions. |
 | `/journey?caseId=` | Received → Booked → Consultation → Completed timeline. |
 | `/messages?caseId=` | Secure message thread with the care team. |
 
 Biometrics use `expo-local-authentication`; when no biometrics are enrolled the
-gate offers an explicit demo path. Push registration needs an EAS `projectId`
+gate lets the user continue without biometrics. Push registration needs an EAS `projectId`
 in `app.json` (`extra.eas.projectId`) and is skipped otherwise, so the app still
 works with in-app notification records. Deep links use the `hermescare` scheme.
 
-Patient identity is client-supplied (SecureStore, demo default
+Patient identity is client-supplied (SecureStore, seeded default
 `patient-1-clinic-1`) — the server enforces case ownership, but patient
 authentication is not implemented yet.
 

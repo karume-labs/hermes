@@ -164,7 +164,7 @@ Root is workspace orchestration only; the apps live under `apps/`.
     features/shared/env/  # validated env (PORT, DATABASE_URL, API_SECRET, NOTIFY_WEBHOOK_URL)
   packages/types|validators|db # shared DTOs, TypeBox contracts, Drizzle schema + migrations + seed
   apps/mobile/app/
-    index.tsx             # Flow 1 step 1-2: push deep links, case list, demo identity switcher
+    index.tsx             # Flow 1 step 1-2: push deep links, case list, patient switcher
     care-action.tsx       # Flow 1 step 2: biometric gate + plain-language review
     booking.tsx           # Flow 1 step 3: real slots, confirm, device-calendar sync
     journey.tsx           # Flow 1 step 4-5: Received → Booked → Consultation → Completed
@@ -178,9 +178,9 @@ Run: `bun install` → `bun run dev:api` (:8001) + `bun run dev` (:3000) + `bun 
 
 ## 6. Connected end-to-end (implemented)
 
-- Web: Next.js + Mantine + TanStack Query + nuqs at `/`, `/queue` (nuqs severity/status filters, ingest demo, escalate, per-case links), `/cases/[id]` (slots, book, referral hand-off, documented closure), `/admin` (metrics via treaty). Providers wrap Mantine + NuqsAdapter + QueryClient.
+- Web: Next.js + Mantine + TanStack Query + nuqs at `/`, `/queue` (nuqs severity/status filters, ingest lab result, escalate, per-case links), `/cases/[id]` (slots, book, referral hand-off, documented closure), `/admin` (metrics via treaty). Providers wrap Mantine + NuqsAdapter + QueryClient.
 - API: Elysia feature routers (`/webhooks/lab`, `/cases`, `/bookings`, `/clinics/:id/slots`, `/referrals`, `/cases/close`, `/metrics`, `/audit/:caseId`) with TypeBox validation, typed errors + `onError` envelope, 5-min `croner` SLA sweep, coordinator guard (enforced in production, open in dev/test).
-- Mobile: `apps/mobile/` Expo app with `expo-local-authentication` + `expo-secure-store` biometric gate (demo bypass when no biometrics are enrolled), `expo-notifications` push registration + 24h reminder scheduling, `expo-calendar` visit sync, typed `careApi` client over the patient endpoints (`/patients/:id/cases`, `/acknowledge`, `/read`, `/devices`, `/events`), deep-link `care-action?caseId=` acknowledge flow, live journey timeline and a secure message thread. Identity is still client-supplied (SecureStore, demo `patient-1..4-clinic-1`); the server enforces case ownership, but there is no Better Auth patient session yet.
+- Mobile: `apps/mobile/` Expo app with `expo-local-authentication` + `expo-secure-store` biometric gate (continue without biometrics when none are enrolled), `expo-notifications` push registration + 24h reminder scheduling, `expo-calendar` visit sync, typed `careApi` client over the patient endpoints (`/patients/:id/cases`, `/acknowledge`, `/read`, `/devices`, `/events`), deep-link `care-action?caseId=` acknowledge flow, live journey timeline and a secure message thread. Identity is still client-supplied (SecureStore, seeded `patient-1..4-clinic-1`); the server enforces case ownership, but there is no Better Auth patient session yet.
 - Data: `packages/db` feature schemas (`uuid` PKs, `lifecycleTimestamps`, `$onUpdate`, relations, single `client.ts`) for `care_cases`, `audit_trail`, `bookings`, `slots`, `notifications`, `webhook_logs`. Migrations live in `packages/db/src/migrations`; `packages/db/src/seed/index.ts` composes feature seeders (`src/care-loop/seed`, `src/booking/seed`) behind `--care-loop`/`--booking`/`--force` and is idempotent. API reads/writes go through feature repositories, so API DTO shapes are unchanged.
 - Delivery: every triage push is written to the notification outbox (`queued`), drained by the 5-minute job when `NOTIFY_WEBHOOK_URL` is set; inbound lab calls are recorded in `webhook_logs`. With no provider configured rows stay `queued` rather than being marked sent. `/admin` renders both tables.
 - Deploy: `infra/docker/docker-compose.yml` (Postgres 17 + API + web + Caddy), Dockerfiles in `infra/docker/`, `tunnel.sh`, `.github/workflows/deploy.yml` CI (`install → lint → typecheck → test → build`, plus a migration job against a throwaway Postgres service).
@@ -191,7 +191,7 @@ Run: `bun install` → `bun run dev:api` (:8001) + `bun run dev` (:3000) + `bun 
 cp apps/api/.env.example apps/api/.env   # DATABASE_URL=postgresql://…/hermes
 bun run db:generate   # after schema edits
 bun run db:migrate    # apply packages/db/src/migrations
-bun run db:seed       # demo cases + clinic slots (idempotent)
+bun run db:seed       # sample cases, documents + clinic slots (idempotent)
 ```
 
 Local note: this workspace's dev database runs on port `5434` (`postgres/postgres`, db `hermes`) because `5432`/`5433` were already taken; compose uses an internal `postgres:5432` and injects `DATABASE_URL` for the API container.

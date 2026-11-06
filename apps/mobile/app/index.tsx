@@ -19,7 +19,7 @@ import { Text } from "@/components/ui/text";
 import { careApi } from "@/lib/care-api";
 import { journeyLabel, statusLabel } from "@/lib/case-format";
 import { registerPushToken } from "@/lib/notifications";
-import { getPatientId, nextDemoPatient, trackEvent } from "@/lib/session";
+import { getPatientId, nextPatient, trackEvent } from "@/lib/session";
 
 const HomeScreen = () => {
   const router = useRouter();
@@ -82,10 +82,10 @@ const HomeScreen = () => {
     return () => subscription.remove();
   }, [router]);
 
-  const switchDemoPatient = async (): Promise<void> => {
+  const switchPatient = async (): Promise<void> => {
     if (patientId === null) return;
     setLoading(true);
-    const next = await nextDemoPatient(patientId);
+    const next = await nextPatient(patientId);
     setPatientId(next);
     await load(next);
   };
@@ -218,8 +218,8 @@ const HomeScreen = () => {
           >
             <Text>Care journey</Text>
           </Button>
-          <Button variant="ghost" size="sm" onPress={switchDemoPatient}>
-            <Text>Switch demo patient</Text>
+          <Button variant="ghost" size="sm" onPress={switchPatient}>
+            <Text>Switch patient</Text>
           </Button>
         </View>
       </ScrollView>

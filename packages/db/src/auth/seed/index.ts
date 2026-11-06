@@ -5,10 +5,11 @@ import type { SeedContext } from "@db/seed/types";
 import type { StaffRole } from "@hermes/types";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { hashPassword } from "better-auth/crypto";
 import { admin } from "better-auth/plugins";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
-type DemoAccount = {
+type SeedAccount = {
   name: string;
   email: string;
   password: string;
@@ -28,7 +29,7 @@ const seedAuthInstance = betterAuth({
   plugins: [admin({ defaultRole: "coordinator", adminRoles: ["admin"] })],
 });
 
-const demoAccounts = (): DemoAccount[] => [
+const seedAccounts = (): SeedAccount[] => [
   {
     name: "Casey Coordinator",
     email: seedEnv.COORDINATOR_EMAIL,
@@ -55,33 +56,52 @@ const findUserByEmail = async (email: string) => {
 export const seedAuth = async (_context: SeedContext): Promise<number> => {
   let created = 0;
 
-  for (const demo of demoAccounts()) {
-    const existing = await findUserByEmail(demo.email);
+  for (const accountSeed of seedAccounts()) {
+    const existing = await findUserByEmail(accountSeed.email);
     if (existing !== null) {
       await db
         .update(user)
-        .set({ role: demo.role })
+        .set({ role: accountSeed.role })
         .where(eq(user.id, existing.id));
-      console.log(`    ${demo.email} already exists (role ${demo.role}).`);
+      // Keep the seeded password in step with the configured one, so changing
+      // the default does not strand an existing database on the old credential.
+      await db
+        .update(account)
+        .set({ password: await hashPassword(accountSeed.password) })
+        .where(
+          and(
+            eq(account.userId, existing.id),
+            eq(account.providerId, "credential"),
+          ),
+        );
+      console.log(
+        `    ${accountSeed.email} already exists (role ${accountSeed.role}, password refreshed).`,
+      );
       continue;
     }
 
     const response = await seedAuthInstance.api.signUpEmail({
-      body: { email: demo.email, password: demo.password, name: demo.name },
+      body: {
+        email: accountSeed.email,
+        password: accountSeed.password,
+        name: accountSeed.name,
+      },
       headers: new Headers(),
     });
 
     if (response.user === undefined || response.user === null) {
-      console.error(`    Failed to create ${demo.email}.`);
+      console.error(`    Failed to create ${accountSeed.email}.`);
       continue;
     }
 
     await db
       .update(user)
-      .set({ role: demo.role })
+      .set({ role: accountSeed.role })
       .where(eq(user.id, response.user.id));
     created += 1;
-    console.log(`    ${demo.email} seeded with role ${demo.role}.`);
+    console.log(
+      `    ${accountSeed.email} seeded with role ${accountSeed.role}.`,
+    );
   }
 
   return created;

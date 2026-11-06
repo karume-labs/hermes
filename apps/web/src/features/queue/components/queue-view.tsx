@@ -15,7 +15,7 @@ import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { useEscalateCase } from "@/features/cases/services/mutations";
 import { createQueueColumns } from "@/features/queue/components/queue-columns";
-import { useIngestDemo } from "@/features/queue/services/ingest";
+import { useIngestLabResult } from "@/features/queue/services/ingest";
 import { useQueueCases } from "@/features/queue/services/queries";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
 import { DataTable } from "@/features/shared/components/table/data-table";
@@ -45,7 +45,7 @@ export const QueueView = (): ReactNode => {
   );
   const list = useQueueCases(severity, status);
   const escalate = useEscalateCase();
-  const ingest = useIngestDemo();
+  const ingest = useIngestLabResult();
 
   const cases = list.cases;
   const pending = cases.filter(
@@ -85,7 +85,7 @@ export const QueueView = (): ReactNode => {
               loading={ingest.isPending}
               onClick={() => ingest.mutate()}
             >
-              Ingest demo case
+              Ingest lab result
             </Button>
             <Button
               leftSection={<IconPlus size={16} />}
