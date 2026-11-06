@@ -1,4 +1,4 @@
-import type { Booking, CareCase, Slot } from "@hermes/types";
+import type { Booking, CareCase, CaseFeedback, Slot } from "@hermes/types";
 import { useRouter } from "expo-router";
 import {
   CalendarDays,
@@ -7,6 +7,7 @@ import {
   Stethoscope,
   Video,
 } from "lucide-react-native";
+import { useState } from "react";
 import { View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -88,6 +89,10 @@ export const ClosureCard = ({ careCase }: { careCase: CareCase }) => (
 
 export const NextSteps = ({ careCase }: { careCase: CareCase }) => {
   const router = useRouter();
+  const bookingClinicId =
+    careCase.referralClinicId === null
+      ? careCase.clinicId
+      : careCase.referralClinicId;
   if (careCase.status === "closed") return null;
   return (
     <View className="gap-2">
@@ -99,7 +104,7 @@ export const NextSteps = ({ careCase }: { careCase: CareCase }) => {
             pathname: "/booking",
             params: {
               caseId: careCase.id,
-              clinicId: careCase.clinicId,
+              clinicId: bookingClinicId,
               kind: "in_person",
             },
           })
@@ -115,7 +120,7 @@ export const NextSteps = ({ careCase }: { careCase: CareCase }) => {
             pathname: "/booking",
             params: {
               caseId: careCase.id,
-              clinicId: careCase.clinicId,
+              clinicId: bookingClinicId,
               kind: "telehealth",
             },
           })
@@ -147,6 +152,83 @@ export const NextSteps = ({ careCase }: { careCase: CareCase }) => {
       >
         <Text>Track your care journey</Text>
       </Button>
+    </View>
+  );
+};
+
+interface FeedbackCardProps {
+  careCase: CareCase;
+  feedback: CaseFeedback | null;
+  busy: boolean;
+  onSubmit: (understood: boolean, confidence: number) => void;
+}
+
+// Teach-back, not a read receipt: the patient tells us whether the result made
+// sense and how reassured they feel. It stays editable.
+export const FeedbackCard = ({
+  careCase,
+  feedback,
+  busy,
+  onSubmit,
+}: FeedbackCardProps) => {
+  const [understood, setUnderstood] = useState<boolean | null>(
+    feedback === null ? null : feedback.understood,
+  );
+  const [confidence, setConfidence] = useState<number>(
+    feedback === null ? 3 : feedback.confidence,
+  );
+  return (
+    <View className="gap-3 rounded-xl border border-border p-4">
+      <Text className="font-semibold">Did you understand your result?</Text>
+      <Text className="text-sm text-muted-foreground">
+        This helps your clinic know whether the explanation was clear. It does
+        not change your care.
+      </Text>
+      <View className="flex-row gap-2">
+        {(
+          [
+            [true, "Yes, I understand"],
+            [false, "No, I need help"],
+          ] as const
+        ).map(([value, label]) => (
+          <Button
+            key={String(value)}
+            size="sm"
+            variant={understood === value ? "default" : "outline"}
+            onPress={() => setUnderstood(value)}
+          >
+            <Text>{label}</Text>
+          </Button>
+        ))}
+      </View>
+      <Text className="text-sm font-medium">
+        How reassured do you feel? {confidence}/5
+      </Text>
+      <View className="flex-row gap-2">
+        {[1, 2, 3, 4, 5].map((value) => (
+          <Button
+            key={value}
+            size="sm"
+            variant={confidence === value ? "default" : "outline"}
+            onPress={() => setConfidence(value)}
+          >
+            <Text>{value}</Text>
+          </Button>
+        ))}
+      </View>
+      <Button
+        disabled={understood === null || busy || careCase.id === ""}
+        onPress={() => {
+          if (understood !== null) onSubmit(understood, confidence);
+        }}
+      >
+        <Text>{busy ? "Saving…" : "Send my answer"}</Text>
+      </Button>
+      {feedback === null ? null : (
+        <Text className="text-xs text-muted-foreground">
+          Last saved {formatDateTime(feedback.createdAt)}.
+        </Text>
+      )}
     </View>
   );
 };

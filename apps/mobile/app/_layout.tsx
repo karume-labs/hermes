@@ -13,7 +13,6 @@ import { StatusBar } from "expo-status-bar";
 import { type ReactNode, useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { useUniwind } from "uniwind";
-import { BrandHeader } from "@/components/brand/brand-header";
 import { getPatientToken } from "@/lib/auth";
 import "@/lib/notifications";
 import { NAV_THEME } from "@/lib/theme";
@@ -80,14 +79,9 @@ const RootLayout = () => {
             name="sign-in"
             options={{ headerShown: false, title: "Sign in" }}
           />
-          <Stack.Screen
-            name="index"
-            options={{ headerTitle: () => <BrandHeader title="Your care" /> }}
-          />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="care-action" options={{ title: "Your result" }} />
           <Stack.Screen name="booking" options={{ title: "Book a visit" }} />
-          <Stack.Screen name="messages" options={{ title: "Messages" }} />
-          <Stack.Screen name="journey" options={{ title: "Care journey" }} />
         </Stack>
       </AuthGate>
       <PortalHost />

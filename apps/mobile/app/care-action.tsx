@@ -1,10 +1,11 @@
-import { useLocalSearchParams } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import * as React from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { BiometricGate } from "@/components/care/biometric-gate";
 import {
   AckCard,
   ClosureCard,
+  FeedbackCard,
   NextSteps,
   VisitCard,
 } from "@/components/care/case-actions";
@@ -26,6 +27,7 @@ const CareAction = () => {
   const [error, setError] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [calendarNote, setCalendarNote] = React.useState("");
+  const [feedbackBusy, setFeedbackBusy] = React.useState(false);
 
   const load = React.useCallback(
     async (pid: string, cid: string): Promise<void> => {
@@ -58,13 +60,18 @@ const CareAction = () => {
     void (async () => {
       const pid = paramString(params.patientId) ?? (await getPatientId());
       setPatientId(pid);
-      if (caseId === undefined) {
-        setError("No result selected.");
-        return;
-      }
-      await load(pid, caseId);
+      if (caseId === undefined) setError("No result selected.");
     })();
-  }, [caseId, load, params.patientId]);
+  }, [caseId, params.patientId]);
+
+  // Returning from booking must replace the superseded visit with the new one.
+  useFocusEffect(
+    React.useCallback(() => {
+      if (patientId !== null && caseId !== undefined) {
+        void load(patientId, caseId);
+      }
+    }, [caseId, load, patientId]),
+  );
 
   const acknowledge = async (): Promise<void> => {
     if (patientId === null || caseId === undefined || detail === null) return;
@@ -99,6 +106,26 @@ const CareAction = () => {
     );
   };
 
+  const submitFeedback = async (
+    understood: boolean,
+    confidence: number,
+  ): Promise<void> => {
+    if (patientId === null || caseId === undefined) return;
+    setFeedbackBusy(true);
+    try {
+      await careApi.feedback(patientId, caseId, understood, confidence);
+      await load(patientId, caseId);
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Could not save your answer.",
+      );
+    } finally {
+      setFeedbackBusy(false);
+    }
+  };
+
   const renderBody = (): React.ReactNode => {
     if (error !== "") {
       return <Text className="text-destructive">{error}</Text>;
@@ -129,6 +156,12 @@ const CareAction = () => {
           careCase={detail.careCase}
           busy={busy}
           onAcknowledge={acknowledge}
+        />
+        <FeedbackCard
+          careCase={detail.careCase}
+          feedback={detail.feedback}
+          busy={feedbackBusy}
+          onSubmit={submitFeedback}
         />
         <NextSteps careCase={detail.careCase} />
       </>

@@ -1,10 +1,12 @@
 import type {
   Booking,
+  CaseFeedback,
   CaseMessage,
   MobileEventType,
   NotificationChannel,
   NotificationKind,
   NotificationStatus,
+  PatientBooking,
   PatientCase,
   Slot,
 } from "@hermes/types";
@@ -27,6 +29,7 @@ export interface PatientNotification {
 export interface PatientCaseDetail extends PatientCase {
   messages: CaseMessage[];
   notifications: PatientNotification[];
+  feedback: CaseFeedback | null;
 }
 
 const requestJson = async <T>(path: string, init?: RequestInit): Promise<T> => {
@@ -62,6 +65,8 @@ const postJson = <T>(path: string, payload: unknown): Promise<T> =>
 export const careApi = {
   patientCases: (patientId: string): Promise<PatientCase[]> =>
     requestJson(`/patients/${patientId}/cases`),
+  patientBookings: (patientId: string): Promise<PatientBooking[]> =>
+    requestJson(`/patients/${patientId}/bookings`),
   patientCase: (
     patientId: string,
     caseId: string,
@@ -69,6 +74,18 @@ export const careApi = {
     requestJson(`/patients/${patientId}/cases/${caseId}`),
   acknowledge: (caseId: string, patientId: string): Promise<unknown> =>
     postJson("/cases/acknowledge", { caseId, patientId }),
+  feedback: (
+    patientId: string,
+    caseId: string,
+    understood: boolean,
+    confidence: number,
+    comment?: string,
+  ): Promise<CaseFeedback> =>
+    postJson(`/patients/${patientId}/cases/${caseId}/feedback`, {
+      understood,
+      confidence,
+      comment,
+    }),
   markRead: (patientId: string, caseId: string): Promise<unknown> =>
     postJson(`/patients/${patientId}/cases/${caseId}/read`, {}),
   slots: (clinicId: string): Promise<Slot[]> =>
