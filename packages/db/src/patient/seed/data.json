@@ -1,13 +1,264 @@
 {
-  "messages": [
+  "devices": [
     {
-      "sender": "coordinator",
-      "body": "We tried to reach you about your recent result. Please reply here or call the clinic so we can arrange follow-up."
+      "patientId": "patient-1-clinic-1",
+      "token": "ExponentPushToken[hermes-ios-patient-1]",
+      "platform": "ios",
+      "lastSeenHoursAgo": 0.5
     },
     {
-      "sender": "patient",
-      "body": "Thanks — I can come in tomorrow morning."
+      "patientId": "patient-2-clinic-1",
+      "token": "ExponentPushToken[hermes-android-patient-2]",
+      "platform": "android",
+      "lastSeenHoursAgo": 4
+    },
+    {
+      "patientId": "patient-3-clinic-1",
+      "token": "ExponentPushToken[hermes-ios-patient-3]",
+      "platform": "ios",
+      "lastSeenHoursAgo": 26
+    },
+    {
+      "patientId": "patient-5-clinic-1",
+      "token": "ExponentPushToken[hermes-android-patient-5]",
+      "platform": "android",
+      "lastSeenHoursAgo": 72
     }
   ],
-  "demoDeviceToken": "ExponentPushToken[demo-device]"
+  "messages": [
+    {
+      "slug": "troponin-0-58",
+      "sender": "coordinator",
+      "senderId": "coordinator-1",
+      "body": "Hello — a result from your recent screening needs a confirmatory visit. I can book you in today. Would 14:00 work?",
+      "hoursAfterCase": 0.3,
+      "read": true
+    },
+    {
+      "slug": "troponin-0-58",
+      "sender": "coordinator",
+      "senderId": "coordinator-1",
+      "body": "If you cannot make it in person, we can arrange a phone review instead. Please reply here so we know you have seen this.",
+      "hoursAfterCase": 0.8,
+      "read": false
+    },
+    {
+      "slug": "glucose-268",
+      "sender": "coordinator",
+      "senderId": "coordinator-1",
+      "body": "Thanks for acknowledging your result. I have booked you in for 09:00 tomorrow at Riverbend Family Health.",
+      "hoursAfterCase": 3.6,
+      "read": true
+    },
+    {
+      "slug": "glucose-268",
+      "sender": "patient",
+      "senderId": "patient-2-clinic-1",
+      "body": "Thank you. Should I eat before the appointment?",
+      "hoursAfterCase": 4.2,
+      "read": true
+    },
+    {
+      "slug": "glucose-268",
+      "sender": "coordinator",
+      "senderId": "coordinator-1",
+      "body": "Please fast for eight hours beforehand — water is fine, and keep taking your usual medicines.",
+      "hoursAfterCase": 4.5,
+      "read": false
+    },
+    {
+      "slug": "sodium-121",
+      "sender": "coordinator",
+      "senderId": "coordinator-1",
+      "body": "Your result came through after hours and was flagged automatically. I have asked the on-call clinician to review it first thing.",
+      "hoursAfterCase": 4.4,
+      "read": true
+    },
+    {
+      "slug": "sodium-121",
+      "sender": "patient",
+      "senderId": "patient-5-clinic-1",
+      "body": "I can come in this afternoon if that helps.",
+      "hoursAfterCase": 5.5,
+      "read": true
+    },
+    {
+      "slug": "sodium-121",
+      "sender": "coordinator",
+      "senderId": "coordinator-1",
+      "body": "That helps — the clinic can see you at 15:00. I will send the details to your appointments.",
+      "hoursAfterCase": 6.5,
+      "read": true
+    },
+    {
+      "slug": "creatinine-2-4",
+      "sender": "coordinator",
+      "senderId": "coordinator-1",
+      "body": "I have referred you to Meridian Cardiology for a kidney-function review. They will contact you within two working days.",
+      "hoursAfterCase": 4.1,
+      "read": true
+    },
+    {
+      "slug": "creatinine-2-4",
+      "sender": "patient",
+      "senderId": "patient-8-clinic-2",
+      "body": "Understood — is there anything I should bring?",
+      "hoursAfterCase": 5,
+      "read": true
+    },
+    {
+      "slug": "creatinine-2-4",
+      "sender": "coordinator",
+      "senderId": "coordinator-1",
+      "body": "A list of your current medicines and any recent blood results, please.",
+      "hoursAfterCase": 5.2,
+      "read": false
+    },
+    {
+      "slug": "ldl-198",
+      "sender": "coordinator",
+      "senderId": "coordinator-1",
+      "body": "We have not heard back about booking your follow-up. Would a telehealth appointment be easier?",
+      "hoursAfterCase": 8,
+      "read": false
+    },
+    {
+      "slug": "hba1c-8-4",
+      "sender": "coordinator",
+      "senderId": "coordinator-1",
+      "body": "Your review is complete and the plan is in the app. We will see you again in three months.",
+      "hoursAfterCase": 88,
+      "read": true
+    },
+    {
+      "slug": "potassium-5-6",
+      "sender": "coordinator",
+      "senderId": "coordinator-1",
+      "body": "Thanks for confirming. Please book a follow-up within the next two days so we can repeat the test.",
+      "hoursAfterCase": 2,
+      "read": false
+    }
+  ],
+  "events": [
+    {
+      "patientId": "patient-1-clinic-1",
+      "slug": "ldl-88",
+      "type": "app_open",
+      "hoursAgo": 2
+    },
+    {
+      "patientId": "patient-1-clinic-1",
+      "slug": "troponin-0-58",
+      "type": "push_opened",
+      "hoursAgo": 0.9
+    },
+    {
+      "patientId": "patient-1-clinic-1",
+      "slug": "troponin-0-58",
+      "type": "case_viewed",
+      "hoursAgo": 0.85
+    },
+    {
+      "patientId": "patient-1-clinic-1",
+      "slug": "ldl-88",
+      "type": "app_open",
+      "hoursAgo": 200
+    },
+    {
+      "patientId": "patient-2-clinic-1",
+      "slug": "glucose-268",
+      "type": "push_opened",
+      "hoursAgo": 25
+    },
+    {
+      "patientId": "patient-2-clinic-1",
+      "slug": "glucose-268",
+      "type": "case_viewed",
+      "hoursAgo": 24.9
+    },
+    {
+      "patientId": "patient-2-clinic-1",
+      "slug": "glucose-268",
+      "type": "booking_confirmed",
+      "hoursAgo": 22.5
+    },
+    {
+      "patientId": "patient-2-clinic-1",
+      "slug": "glucose-268",
+      "type": "message_sent",
+      "hoursAgo": 21.8
+    },
+    {
+      "patientId": "patient-2-clinic-1",
+      "slug": "creatinine-1-1",
+      "type": "app_open",
+      "hoursAgo": 2
+    },
+    {
+      "patientId": "patient-2-clinic-1",
+      "slug": "glucose-268",
+      "type": "app_open",
+      "hoursAgo": 190
+    },
+    {
+      "patientId": "patient-3-clinic-1",
+      "slug": "hba1c-10-1",
+      "type": "app_open",
+      "hoursAgo": 300
+    },
+    {
+      "patientId": "patient-4-clinic-1",
+      "slug": "potassium-6-2",
+      "type": "app_open",
+      "hoursAgo": 6
+    },
+    {
+      "patientId": "patient-4-clinic-1",
+      "slug": "potassium-6-2",
+      "type": "case_viewed",
+      "hoursAgo": 5.8
+    },
+    {
+      "patientId": "patient-4-clinic-1",
+      "slug": "potassium-6-2",
+      "type": "app_open",
+      "hoursAgo": 400
+    },
+    {
+      "patientId": "patient-5-clinic-1",
+      "slug": "sodium-121",
+      "type": "push_opened",
+      "hoursAgo": 6
+    },
+    {
+      "patientId": "patient-5-clinic-1",
+      "slug": "sodium-121",
+      "type": "case_viewed",
+      "hoursAgo": 5.9
+    },
+    {
+      "patientId": "patient-5-clinic-1",
+      "slug": "sodium-121",
+      "type": "app_open",
+      "hoursAgo": 200
+    },
+    {
+      "patientId": "patient-7-clinic-2",
+      "slug": "ldl-204",
+      "type": "app_open",
+      "hoursAgo": 27
+    },
+    {
+      "patientId": "patient-9-clinic-2",
+      "slug": "bp-sys-186",
+      "type": "booking_confirmed",
+      "hoursAgo": 17
+    },
+    {
+      "patientId": "patient-13-clinic-1",
+      "slug": "hba1c-5-6",
+      "type": "app_open",
+      "hoursAgo": 44
+    }
+  ]
 }

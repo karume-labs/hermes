@@ -1,0 +1,299 @@
+{
+  "notifications": [
+    {
+      "slug": "potassium-6-2",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "sent",
+      "minutesAfterCase": 2,
+      "attempts": 1
+    },
+    {
+      "slug": "potassium-6-2",
+      "channel": "in_app",
+      "kind": "escalation",
+      "status": "sent",
+      "minutesAfterCase": 245,
+      "attempts": 1
+    },
+    {
+      "slug": "potassium-6-2",
+      "channel": "sms",
+      "kind": "sms_fallback",
+      "status": "failed",
+      "minutesAfterCase": 246,
+      "attempts": 3,
+      "error": "Provider timeout after 10s",
+      "nextAttemptMinutes": 30
+    },
+    {
+      "slug": "troponin-0-58",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "delivered",
+      "minutesAfterCase": 3,
+      "attempts": 1
+    },
+    {
+      "slug": "glucose-268",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "read",
+      "minutesAfterCase": 2,
+      "readMinutesAfterCase": 1500,
+      "attempts": 1
+    },
+    {
+      "slug": "glucose-268",
+      "channel": "push",
+      "kind": "visit_reminder",
+      "status": "queued",
+      "minutesAfterCase": 1500,
+      "attempts": 0
+    },
+    {
+      "slug": "hba1c-10-1",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "queued",
+      "minutesAfterCase": 1,
+      "attempts": 0
+    },
+    {
+      "slug": "sodium-121",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "read",
+      "minutesAfterCase": 2,
+      "readMinutesAfterCase": 360,
+      "attempts": 1
+    },
+    {
+      "slug": "sodium-121",
+      "channel": "in_app",
+      "kind": "escalation",
+      "status": "sent",
+      "minutesAfterCase": 260,
+      "attempts": 1
+    },
+    {
+      "slug": "sodium-121",
+      "channel": "sms",
+      "kind": "sms_fallback",
+      "status": "delivered",
+      "minutesAfterCase": 270,
+      "attempts": 2
+    },
+    {
+      "slug": "sodium-121",
+      "channel": "push",
+      "kind": "secure_message",
+      "status": "read",
+      "minutesAfterCase": 300,
+      "readMinutesAfterCase": 420,
+      "attempts": 1,
+      "payload": {
+        "sender": "coordinator",
+        "preview": "We have left you a note about today's appointment."
+      }
+    },
+    {
+      "slug": "ldl-198",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "sent",
+      "minutesAfterCase": 30,
+      "attempts": 1
+    },
+    {
+      "slug": "ldl-204",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "read",
+      "minutesAfterCase": 2,
+      "readMinutesAfterCase": 180,
+      "attempts": 1
+    },
+    {
+      "slug": "creatinine-2-4",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "read",
+      "minutesAfterCase": 2,
+      "readMinutesAfterCase": 72,
+      "attempts": 1
+    },
+    {
+      "slug": "creatinine-2-4",
+      "channel": "email",
+      "kind": "visit_reminder",
+      "status": "delivered",
+      "minutesAfterCase": 300,
+      "attempts": 1
+    },
+    {
+      "slug": "bp-sys-186",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "read",
+      "minutesAfterCase": 3,
+      "readMinutesAfterCase": 150,
+      "attempts": 1
+    },
+    {
+      "slug": "bp-sys-186",
+      "channel": "in_app",
+      "kind": "visit_reminder",
+      "status": "sent",
+      "minutesAfterCase": 180,
+      "attempts": 1
+    },
+    {
+      "slug": "hba1c-8-4",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "read",
+      "minutesAfterCase": 4,
+      "readMinutesAfterCase": 90,
+      "attempts": 1
+    },
+    {
+      "slug": "glucose-154",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "read",
+      "minutesAfterCase": 5,
+      "readMinutesAfterCase": 120,
+      "attempts": 1
+    },
+    {
+      "slug": "ldl-96",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "queued",
+      "minutesAfterCase": 1,
+      "attempts": 0
+    },
+    {
+      "slug": "hba1c-5-6",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "read",
+      "minutesAfterCase": 2,
+      "readMinutesAfterCase": 240,
+      "attempts": 1
+    },
+    {
+      "slug": "potassium-4-1",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "read",
+      "minutesAfterCase": 2,
+      "readMinutesAfterCase": 90,
+      "attempts": 1
+    },
+    {
+      "slug": "creatinine-1-1",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "read",
+      "minutesAfterCase": 2,
+      "readMinutesAfterCase": 60,
+      "attempts": 1
+    },
+    {
+      "slug": "creatinine-1-1",
+      "channel": "push",
+      "kind": "visit_reminder",
+      "status": "sent",
+      "minutesAfterCase": 1440,
+      "attempts": 1
+    },
+    {
+      "slug": "potassium-5-6",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "read",
+      "minutesAfterCase": 2,
+      "readMinutesAfterCase": 120,
+      "attempts": 1
+    },
+    {
+      "slug": "potassium-5-6",
+      "channel": "sms",
+      "kind": "secure_message",
+      "status": "failed",
+      "minutesAfterCase": 200,
+      "attempts": 2,
+      "error": "Recipient unreachable",
+      "nextAttemptMinutes": 120
+    },
+    {
+      "slug": "ldl-88",
+      "channel": "push",
+      "kind": "case_alert",
+      "status": "read",
+      "minutesAfterCase": 3,
+      "readMinutesAfterCase": 120,
+      "attempts": 1
+    }
+  ],
+  "webhooks": [
+    {
+      "source": "fhir",
+      "ok": true,
+      "status": "200",
+      "hoursAgo": 0.4,
+      "detail": { "resourceType": "DiagnosticReport", "marker": "hba1c" }
+    },
+    {
+      "source": "fhir",
+      "ok": true,
+      "status": "200",
+      "hoursAgo": 1,
+      "detail": { "resourceType": "DiagnosticReport", "marker": "troponin" }
+    },
+    {
+      "source": "hl7",
+      "ok": true,
+      "status": "200",
+      "hoursAgo": 6,
+      "detail": { "messageType": "ORU^R01", "marker": "potassium" }
+    },
+    {
+      "source": "fhir",
+      "ok": false,
+      "status": "422",
+      "hoursAgo": 8,
+      "detail": { "error": "Unsupported marker code", "marker": "nt-probnp" }
+    },
+    {
+      "source": "notification",
+      "ok": false,
+      "status": "502",
+      "hoursAgo": 3,
+      "detail": { "provider": "push", "error": "Device token expired" }
+    },
+    {
+      "source": "notification",
+      "ok": true,
+      "status": "200",
+      "hoursAgo": 2.9,
+      "detail": { "provider": "push", "retried": true, "attempt": 2 }
+    },
+    {
+      "source": "sms",
+      "ok": false,
+      "status": "429",
+      "hoursAgo": 4,
+      "detail": { "provider": "sms", "error": "Rate limited" }
+    },
+    {
+      "source": "hl7",
+      "ok": false,
+      "status": "400",
+      "hoursAgo": 26,
+      "detail": { "error": "Missing PID segment" }
+    }
+  ]
+}

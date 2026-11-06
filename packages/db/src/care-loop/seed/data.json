@@ -1,36 +1,571 @@
 {
   "cases": [
     {
-      "patientId": "patient-1",
-      "severity": "Urgent",
-      "status": "notified",
-      "slaHours": 4,
-      "summary": "Your LDL cholesterol is well above the healthy range.",
-      "acknowledged": false
-    },
-    {
-      "patientId": "patient-2",
-      "severity": "Actionable",
-      "status": "acknowledged",
-      "slaHours": 24,
-      "summary": "Your fasting glucose is higher than expected.",
-      "acknowledged": true
-    },
-    {
-      "patientId": "patient-3",
-      "severity": "Routine",
-      "status": "received",
-      "slaHours": 168,
-      "summary": "Your HDL cholesterol looks healthy.",
-      "acknowledged": false
-    },
-    {
-      "patientId": "patient-4",
+      "slug": "potassium-6-2",
+      "patientId": "patient-4-clinic-1",
+      "clinicId": "clinic-1",
       "severity": "Urgent",
       "status": "escalated",
-      "slaHours": 4,
-      "summary": "Your potassium level needs a clinician review today.",
-      "acknowledged": false
+      "createdHoursAgo": 9,
+      "acknowledgedHoursAgo": null,
+      "escalatedHoursAgo": 4.5,
+      "summary": "Your recent screening showed potassium at 6.2 mmol/L. This needs prompt follow-up — please book a confirmatory visit within hours. This is a screening flag, not a diagnosis."
+    },
+    {
+      "slug": "troponin-0-58",
+      "patientId": "patient-1-clinic-1",
+      "clinicId": "specialty-1",
+      "severity": "Urgent",
+      "status": "notified",
+      "createdHoursAgo": 1,
+      "acknowledgedHoursAgo": null,
+      "summary": "Your recent screening showed troponin at 0.58 ng/mL. This needs prompt follow-up — please book a confirmatory visit within hours. This is a screening flag, not a diagnosis."
+    },
+    {
+      "slug": "glucose-268",
+      "patientId": "patient-2-clinic-1",
+      "clinicId": "clinic-1",
+      "severity": "Urgent",
+      "status": "appointment_booked",
+      "createdHoursAgo": 26,
+      "acknowledgedHoursAgo": 25.6,
+      "summary": "Your recent screening showed blood glucose at 268 mg/dL. This needs prompt follow-up — please book a confirmatory visit within hours. This is a screening flag, not a diagnosis."
+    },
+    {
+      "slug": "hba1c-10-1",
+      "patientId": "patient-3-clinic-1",
+      "clinicId": "clinic-1",
+      "severity": "Urgent",
+      "status": "received",
+      "createdHoursAgo": 0.4,
+      "acknowledgedHoursAgo": null,
+      "summary": "Your recent screening showed HbA1c at 10.1 %. This needs prompt follow-up — please book a confirmatory visit within hours. This is a screening flag, not a diagnosis."
+    },
+    {
+      "slug": "sodium-121",
+      "patientId": "patient-5-clinic-1",
+      "clinicId": "clinic-1",
+      "severity": "Urgent",
+      "status": "escalated",
+      "createdHoursAgo": 12,
+      "acknowledgedHoursAgo": 7,
+      "escalatedHoursAgo": 8,
+      "summary": "Your recent screening showed sodium at 121 mmol/L. This needs prompt follow-up — please book a confirmatory visit within hours. This is a screening flag, not a diagnosis."
+    },
+    {
+      "slug": "ldl-198",
+      "patientId": "patient-6-clinic-2",
+      "clinicId": "clinic-2",
+      "severity": "Actionable",
+      "status": "notified",
+      "createdHoursAgo": 10,
+      "acknowledgedHoursAgo": null,
+      "summary": "Your recent screening showed LDL cholesterol at 198 mg/dL. This is worth checking soon — please book a follow-up within 48 hours. This is a screening flag, not a diagnosis."
+    },
+    {
+      "slug": "ldl-204",
+      "patientId": "patient-7-clinic-2",
+      "clinicId": "clinic-2",
+      "severity": "Actionable",
+      "status": "acknowledged",
+      "createdHoursAgo": 30,
+      "acknowledgedHoursAgo": 27,
+      "summary": "Your recent screening showed LDL cholesterol at 204 mg/dL. This is worth checking soon — please book a follow-up within 48 hours. This is a screening flag, not a diagnosis."
+    },
+    {
+      "slug": "creatinine-2-4",
+      "patientId": "patient-8-clinic-2",
+      "clinicId": "clinic-2",
+      "severity": "Actionable",
+      "status": "referred",
+      "createdHoursAgo": 40,
+      "acknowledgedHoursAgo": 38,
+      "referralClinicId": "specialty-1",
+      "summary": "Your recent screening showed creatinine at 2.4 mg/dL. This is worth checking soon — please book a follow-up within 48 hours. This is a screening flag, not a diagnosis."
+    },
+    {
+      "slug": "bp-sys-186",
+      "patientId": "patient-9-clinic-2",
+      "clinicId": "specialty-1",
+      "severity": "Urgent",
+      "status": "appointment_booked",
+      "createdHoursAgo": 20,
+      "acknowledgedHoursAgo": 19,
+      "summary": "Your recent screening showed systolic blood pressure at 186 mmHg. This needs prompt follow-up — please book a confirmatory visit within hours. This is a screening flag, not a diagnosis."
+    },
+    {
+      "slug": "hba1c-8-4",
+      "patientId": "patient-10-clinic-1",
+      "clinicId": "clinic-1",
+      "severity": "Routine",
+      "status": "closed",
+      "createdHoursAgo": 96,
+      "acknowledgedHoursAgo": 95,
+      "closedHoursAgo": 90,
+      "closurePlan": "Confirmed with repeat HbA1c and a dietitian referral; next review in three months.",
+      "closureEvidence": "Repeat HbA1c 8.1 % and patient attended the 14:00 appointment.",
+      "closedBy": "coordinator-1",
+      "summary": "Your recent screening showed HbA1c at 8.4 %. This looks routine. No urgent action is needed, but keep your regular check-ups."
+    },
+    {
+      "slug": "glucose-154",
+      "patientId": "patient-11-clinic-1",
+      "clinicId": "clinic-1",
+      "severity": "Routine",
+      "status": "closed",
+      "createdHoursAgo": 120,
+      "acknowledgedHoursAgo": 118,
+      "closedHoursAgo": 112,
+      "closurePlan": "Fasting repeat booked and lifestyle advice given.",
+      "closureEvidence": "Fasting glucose 138 mg/dL reviewed with the patient by phone.",
+      "closedBy": "coordinator-1",
+      "summary": "Your recent screening showed blood glucose at 154 mg/dL. This looks routine. No urgent action is needed, but keep your regular check-ups."
+    },
+    {
+      "slug": "ldl-96",
+      "patientId": "patient-12-clinic-2",
+      "clinicId": "clinic-2",
+      "severity": "Routine",
+      "status": "received",
+      "createdHoursAgo": 0.1,
+      "acknowledgedHoursAgo": null,
+      "summary": "Your recent screening showed LDL cholesterol at 96 mg/dL. This looks routine. No urgent action is needed, but keep your regular check-ups."
+    },
+    {
+      "slug": "hba1c-5-6",
+      "patientId": "patient-13-clinic-1",
+      "clinicId": "clinic-1",
+      "severity": "Routine",
+      "status": "acknowledged",
+      "createdHoursAgo": 50,
+      "acknowledgedHoursAgo": 46,
+      "summary": "Your recent screening showed HbA1c at 5.6 %. This looks routine. No urgent action is needed, but keep your regular check-ups."
+    },
+    {
+      "slug": "potassium-4-1",
+      "patientId": "patient-14-clinic-1",
+      "clinicId": "clinic-1",
+      "severity": "Routine",
+      "status": "closed",
+      "createdHoursAgo": 200,
+      "acknowledgedHoursAgo": 198,
+      "closedHoursAgo": 180,
+      "closurePlan": "No action needed; routine review at next annual screening.",
+      "closureEvidence": "Repeat potassium 4.2 mmol/L on the same sample run.",
+      "closedBy": "coordinator-1",
+      "summary": "Your recent screening showed potassium at 4.1 mmol/L. This looks routine. No urgent action is needed, but keep your regular check-ups."
+    },
+    {
+      "slug": "troponin-0-02",
+      "patientId": "patient-15-clinic-2",
+      "clinicId": "specialty-1",
+      "severity": "Routine",
+      "status": "triaged",
+      "createdHoursAgo": 3,
+      "acknowledgedHoursAgo": null,
+      "summary": "Your recent screening showed troponin at 0.02 ng/mL. This looks routine. No urgent action is needed, but keep your regular check-ups."
+    },
+    {
+      "slug": "creatinine-1-1",
+      "patientId": "patient-2-clinic-1",
+      "clinicId": "clinic-2",
+      "severity": "Routine",
+      "status": "appointment_booked",
+      "createdHoursAgo": 70,
+      "acknowledgedHoursAgo": 68,
+      "summary": "Your recent screening showed creatinine at 1.1 mg/dL. This looks routine. No urgent action is needed, but keep your regular check-ups."
+    },
+    {
+      "slug": "potassium-5-6",
+      "patientId": "patient-16-clinic-1",
+      "clinicId": "clinic-1",
+      "severity": "Actionable",
+      "status": "acknowledged",
+      "createdHoursAgo": 15,
+      "acknowledgedHoursAgo": 12,
+      "summary": "Your recent screening showed potassium at 5.6 mmol/L. This is worth checking soon — please book a follow-up within 48 hours. This is a screening flag, not a diagnosis."
+    },
+    {
+      "slug": "ldl-88",
+      "patientId": "patient-1-clinic-1",
+      "clinicId": "clinic-2",
+      "severity": "Routine",
+      "status": "closed",
+      "createdHoursAgo": 240,
+      "acknowledgedHoursAgo": 238,
+      "closedHoursAgo": 230,
+      "closurePlan": "Completed annual review; results discussed at the visit.",
+      "closureEvidence": "Visit notes from 11:00 appointment attached to the case.",
+      "closedBy": "coordinator-1",
+      "summary": "Your recent screening showed LDL cholesterol at 88 mg/dL. This looks routine. No urgent action is needed, but keep your regular check-ups."
+    }
+  ],
+  "audit": [
+    {
+      "slug": "potassium-6-2",
+      "hoursAfterCase": 0,
+      "actor": "facility:Riverbend Lab Services",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "potassium",
+        "value": 6.2,
+        "unit": "mmol/L"
+      }
+    },
+    {
+      "slug": "potassium-6-2",
+      "hoursAfterCase": 0.02,
+      "actor": "system",
+      "action": "push_queued",
+      "detail": {
+        "severity": "Urgent"
+      }
+    },
+    {
+      "slug": "potassium-6-2",
+      "hoursAfterCase": 4,
+      "actor": "system",
+      "action": "auto_escalated",
+      "detail": {
+        "slaBreach": false,
+        "unacked": true,
+        "coordinatorNotified": true
+      }
+    },
+    {
+      "slug": "troponin-0-58",
+      "hoursAfterCase": 0,
+      "actor": "facility:Meridian Reference Lab",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "troponin",
+        "value": 0.58,
+        "unit": "ng/mL"
+      }
+    },
+    {
+      "slug": "troponin-0-58",
+      "hoursAfterCase": 0.03,
+      "actor": "system",
+      "action": "push_queued",
+      "detail": {
+        "severity": "Urgent"
+      }
+    },
+    {
+      "slug": "glucose-268",
+      "hoursAfterCase": 0,
+      "actor": "facility:Riverbend Lab Services",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "glucose",
+        "value": 268,
+        "unit": "mg/dL"
+      }
+    },
+    {
+      "slug": "glucose-268",
+      "hoursAfterCase": 0.4,
+      "actor": "patient:patient-2-clinic-1",
+      "action": "mobile_acknowledged",
+      "detail": {}
+    },
+    {
+      "slug": "glucose-268",
+      "hoursAfterCase": 3.5,
+      "actor": "patient:patient-2-clinic-1",
+      "action": "appointment_booked",
+      "detail": {
+        "slotId": "clinic-1-slot-2",
+        "kind": "in_person"
+      }
+    },
+    {
+      "slug": "hba1c-10-1",
+      "hoursAfterCase": 0,
+      "actor": "facility:Northgate Point-of-Care",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "hba1c",
+        "value": 10.1,
+        "unit": "%"
+      }
+    },
+    {
+      "slug": "sodium-121",
+      "hoursAfterCase": 0,
+      "actor": "facility:Riverbend Lab Services",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "sodium",
+        "value": 121,
+        "unit": "mmol/L"
+      }
+    },
+    {
+      "slug": "sodium-121",
+      "hoursAfterCase": 4.2,
+      "actor": "system",
+      "action": "auto_escalated",
+      "detail": {
+        "slaBreach": true,
+        "unacked": true,
+        "coordinatorNotified": true
+      }
+    },
+    {
+      "slug": "sodium-121",
+      "hoursAfterCase": 4.6,
+      "actor": "coordinator",
+      "action": "outreach_triggered",
+      "detail": {
+        "channel": "push+sms"
+      }
+    },
+    {
+      "slug": "sodium-121",
+      "hoursAfterCase": 6,
+      "actor": "patient:patient-5-clinic-1",
+      "action": "mobile_acknowledged",
+      "detail": {}
+    },
+    {
+      "slug": "ldl-198",
+      "hoursAfterCase": 0,
+      "actor": "facility:Northgate Community Lab",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "ldl",
+        "value": 198,
+        "unit": "mg/dL"
+      }
+    },
+    {
+      "slug": "ldl-198",
+      "hoursAfterCase": 0.5,
+      "actor": "system",
+      "action": "push_queued",
+      "detail": {
+        "severity": "Actionable"
+      }
+    },
+    {
+      "slug": "ldl-204",
+      "hoursAfterCase": 0,
+      "actor": "facility:Northgate Community Lab",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "ldl",
+        "value": 204,
+        "unit": "mg/dL"
+      }
+    },
+    {
+      "slug": "ldl-204",
+      "hoursAfterCase": 2,
+      "actor": "patient:patient-7-clinic-2",
+      "action": "mobile_acknowledged",
+      "detail": {}
+    },
+    {
+      "slug": "creatinine-2-4",
+      "hoursAfterCase": 0,
+      "actor": "facility:Northgate Community Lab",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "creatinine",
+        "value": 2.4,
+        "unit": "mg/dL"
+      }
+    },
+    {
+      "slug": "creatinine-2-4",
+      "hoursAfterCase": 1.2,
+      "actor": "patient:patient-8-clinic-2",
+      "action": "mobile_acknowledged",
+      "detail": {}
+    },
+    {
+      "slug": "creatinine-2-4",
+      "hoursAfterCase": 4,
+      "actor": "coordinator",
+      "action": "referral_linked",
+      "detail": {
+        "toClinicId": "specialty-1"
+      }
+    },
+    {
+      "slug": "bp-sys-186",
+      "hoursAfterCase": 0,
+      "actor": "facility:Meridian Cardiology Clinic",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "bp_sys",
+        "value": 186,
+        "unit": "mmHg"
+      }
+    },
+    {
+      "slug": "bp-sys-186",
+      "hoursAfterCase": 2.5,
+      "actor": "patient:patient-9-clinic-2",
+      "action": "appointment_booked",
+      "detail": {
+        "slotId": "specialty-1-slot-5",
+        "kind": "telehealth"
+      }
+    },
+    {
+      "slug": "hba1c-8-4",
+      "hoursAfterCase": 0,
+      "actor": "facility:Riverbend Lab Services",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "hba1c",
+        "value": 8.4,
+        "unit": "%"
+      }
+    },
+    {
+      "slug": "hba1c-8-4",
+      "hoursAfterCase": 6,
+      "actor": "clinician:coordinator-1",
+      "action": "case_closed",
+      "detail": {
+        "evidence": "Repeat HbA1c 8.1 % and patient attended the 14:00 appointment.",
+        "plan": "Confirmed with repeat HbA1c and a dietitian referral; next review in three months."
+      }
+    },
+    {
+      "slug": "glucose-154",
+      "hoursAfterCase": 0,
+      "actor": "facility:Riverbend Lab Services",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "glucose",
+        "value": 154,
+        "unit": "mg/dL"
+      }
+    },
+    {
+      "slug": "glucose-154",
+      "hoursAfterCase": 8,
+      "actor": "clinician:coordinator-1",
+      "action": "case_closed",
+      "detail": {
+        "evidence": "Fasting glucose 138 mg/dL reviewed with the patient by phone.",
+        "plan": "Fasting repeat booked and lifestyle advice given."
+      }
+    },
+    {
+      "slug": "hba1c-5-6",
+      "hoursAfterCase": 0,
+      "actor": "facility:Riverbend Lab Services",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "hba1c",
+        "value": 5.6,
+        "unit": "%"
+      }
+    },
+    {
+      "slug": "hba1c-5-6",
+      "hoursAfterCase": 4,
+      "actor": "patient:patient-13-clinic-1",
+      "action": "mobile_acknowledged",
+      "detail": {}
+    },
+    {
+      "slug": "potassium-4-1",
+      "hoursAfterCase": 0,
+      "actor": "facility:Riverbend Lab Services",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "potassium",
+        "value": 4.1,
+        "unit": "mmol/L"
+      }
+    },
+    {
+      "slug": "potassium-4-1",
+      "hoursAfterCase": 20,
+      "actor": "clinician:coordinator-1",
+      "action": "case_closed",
+      "detail": {
+        "evidence": "Repeat potassium 4.2 mmol/L on the same sample run.",
+        "plan": "No action needed; routine review at next annual screening."
+      }
+    },
+    {
+      "slug": "troponin-0-02",
+      "hoursAfterCase": 0,
+      "actor": "facility:Meridian Reference Lab",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "troponin",
+        "value": 0.02,
+        "unit": "ng/mL"
+      }
+    },
+    {
+      "slug": "creatinine-1-1",
+      "hoursAfterCase": 0,
+      "actor": "facility:Northgate Community Lab",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "creatinine",
+        "value": 1.1,
+        "unit": "mg/dL"
+      }
+    },
+    {
+      "slug": "creatinine-1-1",
+      "hoursAfterCase": 2,
+      "actor": "patient:patient-2-clinic-1",
+      "action": "appointment_booked",
+      "detail": {
+        "slotId": "clinic-2-slot-3",
+        "kind": "in_person"
+      }
+    },
+    {
+      "slug": "potassium-5-6",
+      "hoursAfterCase": 0,
+      "actor": "facility:Riverbend Lab Services",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "potassium",
+        "value": 5.6,
+        "unit": "mmol/L"
+      }
+    },
+    {
+      "slug": "potassium-5-6",
+      "hoursAfterCase": 3,
+      "actor": "patient:patient-16-clinic-1",
+      "action": "mobile_acknowledged",
+      "detail": {}
+    },
+    {
+      "slug": "ldl-88",
+      "hoursAfterCase": 0,
+      "actor": "facility:Northgate Community Lab",
+      "action": "lab_ingested",
+      "detail": {
+        "marker": "ldl",
+        "value": 88,
+        "unit": "mg/dL"
+      }
+    },
+    {
+      "slug": "ldl-88",
+      "hoursAfterCase": 10,
+      "actor": "clinician:coordinator-1",
+      "action": "case_closed",
+      "detail": {
+        "evidence": "Visit notes from 11:00 appointment attached to the case.",
+        "plan": "Completed annual review; results discussed at the visit."
+      }
     }
   ]
 }

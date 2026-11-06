@@ -10,6 +10,7 @@ const RoutingSeed = Type.Object({
     Type.Object({
       markerPrefix: Type.String(),
       clinicId: Type.String(),
+      active: Type.Optional(Type.Boolean()),
     }),
   ),
 });
@@ -23,6 +24,11 @@ export const seedRouting = async (_context: SeedContext): Promise<number> => {
     .limit(1);
   if (existing.length > 0) return 0;
 
-  await db.insert(routingRules).values(parsed.rules).onConflictDoNothing();
-  return parsed.rules.length;
+  const rows = parsed.rules.map((rule) => ({
+    markerPrefix: rule.markerPrefix,
+    clinicId: rule.clinicId,
+    active: rule.active ?? true,
+  }));
+  await db.insert(routingRules).values(rows).onConflictDoNothing();
+  return rows.length;
 };

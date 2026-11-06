@@ -1,5 +1,60 @@
 {
-  "slotKinds": ["in_person", "in_person", "telehealth"],
   "slotMinutes": 30,
-  "daysAhead": 1
+  "slotPattern": [
+    { "dayOffset": 1, "time": "09:00", "kind": "in_person" },
+    { "dayOffset": 1, "time": "14:00", "kind": "telehealth" },
+    { "dayOffset": 2, "time": "08:30", "kind": "in_person" },
+    { "dayOffset": 2, "time": "11:00", "kind": "in_person" },
+    { "dayOffset": 3, "time": "13:30", "kind": "telehealth" },
+    { "dayOffset": 3, "time": "16:00", "kind": "in_person" }
+  ],
+  "historySlots": [
+    { "clinicId": "clinic-1", "time": "14:00", "daysAgo": 4 },
+    { "clinicId": "clinic-1", "time": "10:30", "daysAgo": 6 },
+    { "clinicId": "clinic-2", "time": "15:00", "daysAgo": 5 }
+  ],
+  "bookings": [
+    {
+      "caseSlug": "glucose-268",
+      "slotId": "clinic-1-slot-1",
+      "status": "confirmed",
+      "bookedHoursAfterCase": 3.5,
+      "prepInstructions": "Fast for 8 hours before your appointment — water is fine. Keep taking your usual medicines unless your clinician said otherwise, and bring a list of them with you."
+    },
+    {
+      "caseSlug": "bp-sys-186",
+      "slotId": "specialty-1-slot-5",
+      "status": "confirmed",
+      "bookedHoursAfterCase": 2.5,
+      "prepInstructions": "Join the video call five minutes early. Have your home blood-pressure readings from the last week and your current medicines to hand."
+    },
+    {
+      "caseSlug": "creatinine-1-1",
+      "slotId": "clinic-2-slot-3",
+      "status": "confirmed",
+      "bookedHoursAfterCase": 2,
+      "prepInstructions": "Bring your current medicines and any recent blood results. No fasting is needed for this visit."
+    },
+    {
+      "caseSlug": "creatinine-2-4",
+      "slotId": "specialty-1-slot-1",
+      "status": "confirmed",
+      "bookedHoursAfterCase": 4.5,
+      "prepInstructions": "Meridian Cardiology will review your kidney function. Bring a list of your medicines and any recent test results."
+    },
+    {
+      "caseSlug": "hba1c-8-4",
+      "slotId": "clinic-1-slot-h1",
+      "status": "attended",
+      "bookedHoursAfterCase": 2,
+      "prepInstructions": "Your diabetes review. Bring your glucose diary and current medicines."
+    },
+    {
+      "caseSlug": "glucose-154",
+      "slotId": "clinic-1-slot-h2",
+      "status": "cancelled",
+      "bookedHoursAfterCase": 1,
+      "prepInstructions": "Fasting blood test. Water is fine; nothing to eat for 8 hours beforehand."
+    }
+  ]
 }
