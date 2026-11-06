@@ -35,14 +35,14 @@ export const SLA_WINDOWS = [
   },
   {
     grade: "Actionable",
-    window: "24 hours",
-    escalation: "Escalates to the clinic coordinator the next morning",
+    window: "48 hours",
+    escalation: "Escalates to the clinic coordinator at the 48-hour mark",
     tone: "warning",
   },
   {
     grade: "Routine",
-    window: "72 hours",
-    escalation: "Stays in the queue for the next routine review",
+    window: "168 hours",
+    escalation: "Escalates to the care team after seven days unacknowledged",
     tone: "neutral",
   },
 ] as const;
@@ -51,7 +51,7 @@ export const STEPS = [
   {
     number: "01",
     title: "Ingest",
-    copy: "FHIR Observations and HL7 ORU messages land on signed webhook endpoints. Every call is logged with its source, status and payload.",
+    copy: "FHIR Observations and HL7 ORU messages land on HMAC-SHA256 signed webhook endpoints with replay protection. Every call is logged with its source, status and payload.",
     meta: "FHIR · HL7 · webhook log",
   },
   {

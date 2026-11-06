@@ -1,0 +1,112 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const updated = "6 November 2026";
+---
+
+<BaseLayout
+  title="Terms - Hermes"
+  description="The terms that apply to Hermes clinics, staff and patients."
+>
+  <article class="mx-auto max-w-3xl px-6 py-16">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent-strong">
+      Legal
+    </p>
+    <h1 class="mt-3 font-display text-4xl font-extrabold text-ink">Terms</h1>
+    <p class="mt-3 text-sm text-ink-muted">Last updated {updated}</p>
+
+    <div class="mt-10 flex flex-col gap-8 text-base leading-relaxed text-ink-muted">
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">What Hermes is</h2>
+        <p class="mt-2">
+          Hermes is care-loop software that helps a clinic receive laboratory
+          results, triage them by severity, notify the patient and track the case
+          until a clinician signs it off. It is provided to clinics; individual
+          patients use it through their clinic.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">
+          Not a diagnosis and not for emergencies
+        </h2>
+        <p class="mt-2">
+          A screening flag is not a diagnosis. The plain-language summary is
+          generated from the laboratory value and does not replace clinical
+          judgment. If you feel unwell or think you are having an emergency,
+          contact emergency services or your clinic directly; do not wait for an
+          app notification.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">Accounts</h2>
+        <p class="mt-2">
+          Staff accounts are created by an administrator invite and are personal.
+          Do not share a password or session. Patients sign in with a one-time
+          code sent to the phone number their clinic holds. Tell your clinic
+          immediately if your number changes or you think someone else has
+          accessed your account.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">Acceptable use</h2>
+        <p class="mt-2">
+          Do not attempt to access another patient's record, probe the service
+          for vulnerabilities without written permission, submit false
+          laboratory data, or use Hermes to send unlawful or abusive content.
+          Clinic staff must act within their role and assigned clinic.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">
+          Clinical responsibility
+        </h2>
+        <p class="mt-2">
+          The treating clinic remains responsible for clinical decisions,
+          consent, record keeping and follow-up. Hermes provides the workflow,
+          the clock and the audit trail; it does not choose a treatment plan.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">Availability</h2>
+        <p class="mt-2">
+          We aim to keep the service available and to deliver notifications
+          promptly, but delivery can depend on mobile networks and SMS or push
+          providers. Planned maintenance is communicated to clinics in advance.
+          Notification failure does not remove the clinic's duty to follow up.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">Liability</h2>
+        <p class="mt-2">
+          To the extent permitted by law, Hermes is not liable for indirect or
+          consequential loss, or for clinical decisions made by a clinic. Nothing
+          in these terms limits liability that cannot lawfully be limited,
+          including for death or personal injury caused by negligence.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">Governing law</h2>
+        <p class="mt-2">
+          These terms are governed by the laws of Kenya. Disputes are subject to
+          the exclusive jurisdiction of the Kenyan courts, unless your clinic's
+          contract says otherwise.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">Changes</h2>
+        <p class="mt-2">
+          We may update these terms as the service changes. The date above shows
+          the current version; continued use after an update means you accept it.
+        </p>
+      </section>
+    </div>
+  </article>
+</BaseLayout>

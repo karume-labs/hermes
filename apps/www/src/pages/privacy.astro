@@ -1,0 +1,113 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const updated = "6 November 2026";
+---
+
+<BaseLayout
+  title="Privacy - Hermes"
+  description="What Hermes processes, why, how long it keeps it, and the choices patients and clinic staff have."
+>
+  <article class="mx-auto max-w-3xl px-6 py-16">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent-strong">
+      Legal
+    </p>
+    <h1 class="mt-3 font-display text-4xl font-extrabold text-ink">Privacy</h1>
+    <p class="mt-3 text-sm text-ink-muted">Last updated {updated}</p>
+
+    <div class="mt-10 flex flex-col gap-8 text-base leading-relaxed text-ink-muted">
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">Who is responsible</h2>
+        <p class="mt-2">
+          Hermes is care-loop software used by your clinic. The clinic that
+          ordered your screening is the data controller for your health
+          information; Hermes processes it on the clinic's instructions. For any
+          request about your record, contact that clinic first.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">What we process</h2>
+        <ul class="mt-2 list-disc space-y-1 pl-5">
+          <li>Your name, phone number and clinic identifier.</li>
+          <li>Laboratory results, the marker and units, and the plain-language summary shown in the app.</li>
+          <li>Appointments, referrals, secure messages and case notes written by clinic staff.</li>
+          <li>Push notification tokens, app opens and acknowledgments.</li>
+          <li>Staff account details: name, work email, role and assigned clinic.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">Why we process it</h2>
+        <p class="mt-2">
+          To deliver your screening result, notify you, let you book or message
+          your care team, and let the clinic follow the case through to
+          sign-off. We also keep an audit trail of case actions so the clinic can
+          show who did what and when.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">Consent and choices</h2>
+        <p class="mt-2">
+          The patient app asks for consent before a login code is sent, covering
+          SMS and push notifications. You can withdraw consent at any time by
+          telling your clinic. Withdrawing notification consent stops reminders
+          and result alerts; your clinic can still contact you by other means.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">Who sees it</h2>
+        <p class="mt-2">
+          Clinic staff see only the cases for their assigned clinic. Platform
+          administrators can see all clinics for support and governance. The
+          laboratory that produced the result and service providers that send
+          SMS or push notifications process the minimum needed to deliver the
+          message. We do not sell personal data.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">How long we keep it</h2>
+        <p class="mt-2">
+          Case and audit records follow your clinic's retention policy. Login
+          codes expire after 10 minutes, patient sessions after 30 days, and
+          webhook replay receipts are deleted after 24 hours. Deleting the app
+          removes the token stored on your device but not the clinic's record.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">Security</h2>
+        <p class="mt-2">
+          Traffic is encrypted in transit. Lab feeds are signed with
+          HMAC-SHA256 and a timestamp, session tokens are stored hashed, and
+          every patient request is checked against the signed-in patient. Staff
+          access is role- and clinic-scoped, and every case transition is
+          audited.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">Your rights</h2>
+        <p class="mt-2">
+          You can ask for a copy of your record, correction of inaccurate
+          details, deletion where the clinic is not required to keep it, or a
+          restriction on processing. Contact your clinic's data protection
+          contact. If you are not satisfied, you may complain to your national
+          data protection authority.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-bold text-ink">Changes</h2>
+        <p class="mt-2">
+          We will update this page when the way we process data changes and show
+          the new date above. Material changes will also be communicated by your
+          clinic.
+        </p>
+      </section>
+    </div>
+  </article>
+</BaseLayout>

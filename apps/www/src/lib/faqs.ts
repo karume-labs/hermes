@@ -12,7 +12,7 @@ export const FAQS: Faq[] = [
   {
     question: "What happens when a lab result comes in?",
     answer:
-      "Hermes accepts FHIR Observations and HL7 ORU messages on a webhook, maps the marker to a LOINC code and grades it urgent, actionable or routine. The result is routed to the owning clinic, given an SLA deadline and pushed to the patient in plain language.",
+      "Hermes accepts FHIR Observations and HL7 ORU messages on a webhook signed with HMAC-SHA256 and a timestamp, rejecting stale or replayed calls. It maps the marker to a LOINC code, grades it urgent (4 hours), actionable (48 hours) or routine (168 hours), routes it to the owning clinic and pushes the result to the patient in plain language.",
   },
   {
     question: "How does the clinic know a patient saw the result?",
@@ -32,7 +32,7 @@ export const FAQS: Faq[] = [
   {
     question: "Who can see a case?",
     answer:
-      "Staff sign in with Better Auth, either email and password or Google. Coordinators see the queue and the cases they work; governance metrics, delivery health and routing configuration are limited to the admin role. Patient access in the mobile app is scoped to that patient's own cases.",
+      "Staff accounts are created by an administrator invite; there is no public sign-up. Coordinators see only their own clinic's queue, while governance metrics, delivery health and routing configuration are limited to the admin role. Patients sign in with a one-time SMS code, and every patient read is scoped to that patient's own cases.",
   },
   {
     question: "Is this replacing clinical judgment?",

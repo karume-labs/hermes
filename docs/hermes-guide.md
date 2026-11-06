@@ -100,12 +100,14 @@ bun run --cwd packages/db db:seed --auth   # create/update the staff accounts
 | `API_SECRET` | API | `Authorization: Bearer …` service credential |
 | `API_URL` | API | origin Better Auth mounts `/auth` under |
 | `FRONTEND_URL` | API | trusted dashboard origin for cookies |
-| `BETTER_AUTH_SECRET` | API | session signing secret |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | API | optional Google sign-in |
-| `NOTIFY_WEBHOOK_URL` | API | outbound notification sink; empty = queue only |
+| `BETTER_AUTH_SECRET` | API | session signing secret, also keys patient login-code HMACs |
+| `WEBHOOK_SECRET` | API | HMAC secret lab feeds sign with |
+| `SMS_WEBHOOK_URL` | API | SMS gateway for patient login codes; required in production |
+| `NOTIFY_WEBHOOK_URL` | API | outbound SMS sink; empty = SMS delivery fails loudly |
+| `PATIENT_SESSION_DAYS` | API | patient bearer session lifetime (default 30) |
+| `PATIENT_CODE_TTL_MINUTES` | API | login code lifetime (default 10) |
 | `UPLOAD_DIR` | API | where case documents are written (default `uploads`) |
 | `NEXT_PUBLIC_API_URL` | web | API base URL |
-| `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED` | web | show the Google button |
 | `EXPO_PUBLIC_API_BASE` | mobile | API base URL as seen from the device |
 
 ---
@@ -116,16 +118,16 @@ bun run --cwd packages/db db:seed --auth   # create/update the staff accounts
 
 | Control | What it does |
 | --- | --- |
-| **Google** button | only rendered when `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true` and the API has Google credentials; starts the Better Auth social flow |
 | **Work email** | staff email |
 | **Password** | staff password |
 | **Sign in** | `POST /auth/sign-in/email`; on success the session cookie is set and `proxy.ts` lets the route through |
-| **Create an account** | goes to `/sign-up` (new coordinators default to the `coordinator` role) |
 
-Under the form the sign-in card lists the seeded test accounts and the
-`hermes-care` password. `proxy.ts` reads the Better Auth session cookie on every
-dashboard request and redirects signed-out visitors to `/sign-in`; `/admin/*`
-additionally requires `role === "admin"`.
+There is no public sign-up and no social provider. An administrator creates a
+staff account from **Administration → Staff access**, which returns a one-time
+`/accept-invite?token=…` link; the invitee sets a password there and signs in.
+`proxy.ts` reads the Better Auth session cookie on every dashboard request and
+redirects signed-out visitors to `/sign-in`; `/admin/*` additionally requires
+`role === "admin"`.
 
 ### 3.2 Shell — left navigation and user menu
 
@@ -137,6 +139,7 @@ additionally requires `role === "admin"`.
 | **Delivery** | `/admin/delivery` | admin |
 | **Integrations** | `/admin/webhooks` | admin |
 | **Routing rules** | `/admin/routing` | admin |
+| **Staff access** | `/admin/staff` | admin |
 | Avatar / name / role menu → **Sign out** | ends the session | everyone |
 
 The mark beside the wordmark changes with the surface: the clinic plus on queue
@@ -240,7 +243,16 @@ matching marker prefix wins and anything unmatched falls back to `clinic-1`.
 The app opens behind a biometric gate and uses a seeded patient identity from
 `expo-secure-store` (there is no patient sign-in yet).
 
-### 4.1 Biometric gate (every screen)
+### 4.1 Sign-in — `/sign-in`
+
+The patient enters the phone number their clinic holds, accepts the SMS and push
+consent checkbox and requests a 6-digit code. Without `SMS_WEBHOOK_URL` the API
+returns `devCode` and the screen shows it (development only). Verifying stores
+the bearer token in `expo-secure-store` and records consent through
+`PATCH /patient-auth/consent`. The token is attached to every patient request;
+`/patient-auth/session` restores the cached profile on launch.
+
+### 4.2 Biometric gate (every screen)
 
 | State | Control | Result |
 | --- | --- | --- |
@@ -252,14 +264,14 @@ The app opens behind a biometric gate and uses a seeded patient identity from
 A cancelled prompt keeps the results hidden and shows
 "Unlock cancelled. Your results stay hidden until you confirm."
 
-### 4.2 Home — `/`
+### 4.3 Home — `/`
 
 | Control | What it does |
 | --- | --- |
 | Case card | opens `/care-action?caseId=…`; shows severity, journey stage, unread messages |
 | Pull to refresh | reloads `GET /patients/:id/cases` |
 | **Care journey** | opens `/journey?caseId=…` for the most recent case |
-| **Switch patient** | cycles `patient-1..4-clinic-1` so each seeded story can be walked |
+| **Sign out** | revokes the patient token server-side and returns to `/sign-in` |
 | **Try again** | shown when the API is unreachable |
 | Push notification tap | deep-links to `/care-action?caseId=…` and logs `push_opened` |
 
@@ -267,7 +279,7 @@ On load the app records `app_open`, registers an Expo push token with
 `POST /patients/:id/devices` (skipped without an EAS `projectId`), and switches
 to in-app alerts only when push is unavailable.
 
-### 4.3 Care action — `/care-action?caseId=…`
+### 4.4 Care action — `/care-action?caseId=…`
 
 Opening the screen logs `case_viewed`, marks coordinator messages read and marks
 the case's push alerts read.
@@ -280,7 +292,7 @@ the case's push alerts read.
 | **Add to device calendar** | writes the booked visit to the device calendar |
 | **Next steps** | explains what happens after acknowledgment |
 
-### 4.4 Booking — `/booking`
+### 4.5 Booking — `/booking`
 
 | Control | What it does |
 | --- | --- |
@@ -289,7 +301,7 @@ the case's push alerts read.
 | **Track your care journey** | `/journey?caseId=…` |
 | **Back to result** | returns to the care action screen |
 
-### 4.5 Journey and messages
+### 4.6 Journey and messages
 
 - `/journey` renders Received → Booked → Consultation → Completed from the case,
   booking, referral and closure fields.
@@ -321,27 +333,40 @@ Base URL is whatever `PORT` serves; all examples assume `http://localhost:8001`.
 | --- | --- | --- |
 | Staff session | dashboard | Better Auth cookie (`credentials: "include"`), resolved via `/auth/get-session` |
 | Service bearer | scripts, jobs | `Authorization: Bearer $API_SECRET` |
-| Patient scope | mobile | `patientId` in the path or query; the server checks the case belongs to that patient |
-| Open | lab feeds, some reads | no credential — see [Known gaps](#12-known-gaps) |
+| Patient bearer | mobile | opaque token from `/patient-auth/verify`; hashed at rest, scoped by patient id |
+| HMAC signature | lab feeds | `x-hermes-timestamp` + `x-hermes-signature` over `${timestamp}.${raw body}` |
 
-Staff writes require `coordinator` or `admin`; admin-only pages are additionally
-gated in the web proxy.
+Staff reads and writes require `coordinator` or `admin`, and coordinators only
+see their assigned clinic. Patient routes require a patient token whose patient
+id matches the path. Webhooks require a valid, unexpired, single-use signature.
 
 ### 6.2 Endpoints
 
 | Method | Path | Auth | Purpose |
 | --- | --- | --- | --- |
 | GET | `/health` | — | liveness |
-| ALL | `/auth/*` | — | Better Auth (sign-in, sign-up, sign-out, session, Google callback) |
-| POST | `/webhooks/lab` | — | canonical JSON lab result |
-| POST | `/webhooks/fhir` | — | FHIR R4 `Observation` |
-| POST | `/webhooks/hl7` | — | HL7v2 `ORU^R01` message |
-| GET | `/routing-rules` | — | list rules |
+| GET | `/ready` | — | database readiness |
+| ALL | `/auth/*` | — | Better Auth (sign-in, sign-out, session) |
+| POST | `/patient-auth/request-code` | — | SMS login code (rate limited) |
+| POST | `/patient-auth/verify` | — | exchange code for a bearer token |
+| GET | `/patient-auth/session` | patient | current patient profile |
+| POST | `/patient-auth/sign-out` | patient | revoke the token |
+| PATCH | `/patient-auth/consent` | patient | update push/SMS consent |
+| POST | `/webhooks/lab` | HMAC | canonical JSON lab result |
+| POST | `/webhooks/fhir` | HMAC | FHIR R4 `Observation` |
+| POST | `/webhooks/hl7` | HMAC | HL7v2 `ORU^R01` message |
+| GET | `/clinics` | staff | clinics for filters and invites |
+| GET | `/staff/users` | admin | staff accounts |
+| PATCH | `/staff/users/:id` | admin | role, clinic and access |
+| GET/POST | `/staff/invites` | admin | list/create invites |
+| DELETE | `/staff/invites/:id` | admin | revoke an invite |
+| POST | `/staff/invites/accept` | — | set a password from an invite |
+| GET | `/routing-rules` | staff | list rules |
 | PUT | `/routing-rules` | staff | upsert a rule |
 | DELETE | `/routing-rules/:id` | staff | remove a rule |
-| GET | `/cases?severity=&status=` | — | queue list |
-| GET | `/cases/:id` | — | full case detail (messages, notifications, booking, slot, attachments) |
-| GET | `/cases/:id/messages` | — | thread |
+| GET | `/cases?severity=&status=` | staff | queue list (clinic-scoped) |
+| GET | `/cases/:id` | staff/patient | full case detail (messages, notifications, booking, slot, attachments) |
+| GET | `/cases/:id/messages` | staff/patient | thread |
 | POST | `/cases/:id/messages` | staff | send a secure message |
 | POST | `/cases/:id/outreach` | staff | message + queued SMS fallback |
 | POST | `/cases/:id/escalate` | staff | mark escalated, queue in-app alert |
@@ -349,16 +374,16 @@ gated in the web proxy.
 | POST | `/cases/:id/attachments` | staff | multipart upload |
 | GET | `/cases/:id/attachments` | staff | list attachments |
 | GET | `/attachments/:id[?patientId=]` | staff or owner | stream the file |
-| GET | `/clinics/:clinicId/slots` | — | slots (created on first read) |
-| POST | `/bookings` | — | book a slot (case ownership enforced by case id) |
+| GET | `/clinics/:clinicId/slots` | staff/patient | slots (created on first read) |
+| POST | `/bookings` | staff/patient | book a slot (case ownership and clinic checked) |
 | POST | `/referrals` | staff | link a downstream clinic |
 | POST | `/cases/close` | staff | clinical sign-off |
-| GET | `/metrics` | — | governance metrics |
-| GET | `/audit/:caseId` | — | audit trail |
-| GET | `/notifications?caseId=\|patientId=` | — | outbox rows |
-| GET | `/notifications/stats` | — | delivery counts |
+| GET | `/metrics` | staff | governance metrics |
+| GET | `/audit/:caseId` | staff/patient | audit trail |
+| GET | `/notifications?caseId=\|patientId=` | staff | outbox rows |
+| GET | `/notifications/stats` | staff | delivery counts |
 | POST | `/notifications/dispatch` | staff | drain the outbox now |
-| GET | `/webhooks/logs` | — | inbound feed log |
+| GET | `/webhooks/logs` | staff | inbound feed log |
 | GET | `/patients/:patientId/cases` | patient scope | patient case list |
 | GET | `/patients/:patientId/cases/:caseId` | patient scope | case + messages + notifications |
 | POST | `/patients/:patientId/cases/:caseId/read` | patient scope | mark messages read |
@@ -372,18 +397,26 @@ gated in the web proxy.
 ### 6.3 Ingesting a result
 
 ```bash
+BODY='{
+  "patientId": "patient-3-clinic-1",
+  "clinicId": "clinic-1",
+  "facilityId": "riverbend-lab",
+  "markerCode": "ldl",
+  "markerValue": 195,
+  "unit": "mg/dL",
+  "takenAt": "2026-11-06T08:00:00.000Z"
+}'
+TS=$(date +%s)
+SIG=$(printf '%s.%s' "$TS" "$BODY" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" -hex | awk '{print $2}')
 curl -s localhost:8001/webhooks/lab \
   -H 'content-type: application/json' \
-  -d '{
-    "patientId": "patient-3-clinic-1",
-    "clinicId": "clinic-1",
-    "facilityId": "riverbend-lab",
-    "markerCode": "ldl",
-    "markerValue": 195,
-    "unit": "mg/dL",
-    "takenAt": "2026-11-06T08:00:00.000Z"
-  }'
+  -H "x-hermes-timestamp: $TS" \
+  -H "x-hermes-signature: sha256=$SIG" \
+  --data-binary "$BODY"
 ```
+
+Unsigned calls get 401, a stale timestamp gets 401, and a replayed signature
+gets 409. Signatures are recorded in `webhook_receipts` and pruned after 24h.
 
 Response: `{ caseId, severity, slaDueAt, summary, duplicate }`.
 
@@ -642,33 +675,28 @@ signed out on their next request.
 - `caddy-proxy` on 80/443, stripping `/api` and forwarding to the API, with
   everything else going to Next
 
-Health checks: `/health` for the API and the root page for the web app.
-`.github/workflows/deploy.yml` defines install → lint → typecheck → test → build
-plus a migration job against a throwaway Postgres.
+Health checks: `/health` and `/ready` for the API and the root page for the web
+app. The GitHub deploy workflow is disabled (`deploy.yml.disabled`) until a
+release environment is chosen; run the verify commands locally before deploying.
 
 ---
 
-## 12. Known gaps
+## 12. Remaining external dependencies
 
-These are deliberate current limits, not surprises:
+Code is complete for the items below that are software; the rest need an account,
+contract or review outside the repository. See
+`docs/production-readiness-audit.md` for the per-item status.
 
-1. **Patient identity is client-supplied.** The mobile app stores a seeded
-   patient id; the API enforces case ownership on patient routes but there is no
-   patient login yet.
-2. **Lab webhooks are unauthenticated.** The ingestion endpoints validate
-   payloads and log failures but do not verify a shared secret or signature —
-   put them behind the proxy/allowlist before exposing them.
-3. **Some reads are open.** Case list/detail, threads, metrics, audit and the
-   webhook log assume an internal network; only writes are role-checked.
-4. **Notifications need a sink.** With `NOTIFY_WEBHOOK_URL` empty, alerts stay
-   `queued` by design; the metrics and delivery page will show that honestly.
-5. **Uploads are single-node disk.** The compose volume keeps them across
-   restarts, but there is no replication or object storage; back up
-   `hermes_uploads`.
-6. **Deduplication is application-level.** `labPayloadId` is checked before
-   insert but has no unique constraint, so two truly simultaneous identical
-   feeds could both create a case.
-7. **Marketing copy lags the API on SLAs.** `apps/www/src/lib/constants.ts`
-   states 24h/72h for Actionable/Routine; the API enforces 48h/168h.
-8. **No coordinator mobile app.** Staff work happens in the dashboard; the
+1. **SMS and notification providers.** `SMS_WEBHOOK_URL` must point at a live
+gateway and `NOTIFY_WEBHOOK_URL` at the SMS sink (push goes directly to Expo).
+   Without them login codes are only available in development and SMS alerts
+   fail visibly in the delivery view.
+2. **TLS and DNS.** Caddy terminates TLS, but certificates require public DNS
+   and ports 80/443.
+3. **Uploads are single-node disk.** The compose volume keeps them across
+   restarts; object storage and off-host backups remain an infrastructure task.
+4. **App store and EAS credentials** are needed to build and submit the patient
+   app.
+5. **Legal review** of `/privacy` and `/terms` by counsel before launch.
+6. **No coordinator mobile app.** Staff work happens in the dashboard; the
    mobile app is patient-only.

@@ -93,8 +93,9 @@ const STATUS: Record<string, "urgent" | "actionable" | "routine"> = {
         </dl>
         <p class="mt-6 text-sm leading-relaxed text-ink-muted">
           Delivery health sits next to those numbers: queued, sent, read, failed
-          and SMS fallback, plus the raw webhook log, so an integration problem
-          looks different from a patient who did not respond.
+          and SMS fallback, plus the webhook log with HMAC signature checks, so
+          an integration problem looks different from a patient who did not
+          respond.
         </p>
       </div>
     </div>

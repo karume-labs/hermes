@@ -52,11 +52,15 @@ governance metrics, delivery health, the webhook log and routing rules.
 
 `apps/api` mounts **Better Auth** at `/auth/*` with the Drizzle adapter
 (`user`, `session`, `account`, `verification` in `packages/db/src/auth/schema`).
-Sign-up is open: new staff start as `coordinator`; promote an account to
-`admin` to unlock `/admin` (the dashboard's `proxy.ts` enforces the role).
-Google sign-in is optional — set `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
-on the API and `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true` on the web app, and the
-"Continue with Google" button appears on both auth pages.
+Public sign-up is disabled. An admin creates a one-time invite from
+**Administration → Staff access**; the invitee opens `/accept-invite?token=…`,
+sets a password, and signs in. Coordinators are scoped to their assigned
+clinic; admins see every clinic. The dashboard's `proxy.ts` enforces the role.
+
+Patients sign in separately with a phone number and a 6-digit SMS code; the
+resulting bearer token is stored in `expo-secure-store` and required on every
+patient route. Without `SMS_WEBHOOK_URL`, development returns the code as
+`devCode`; production refuses to issue codes until an SMS gateway is set.
 
 ```bash
 # rotate/seed credentials (Vaunt pattern: accounts are created through Better Auth)
