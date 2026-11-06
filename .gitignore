@@ -81,3 +81,5 @@ next-env.d.ts
 .idea/
 *.swp
 *.swo
+
+uniwind-types.d.ts

@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "bun run update-ip && expo start -c",
-    "android": "bun run update-ip && expo start -c --android",
+    "android": "bun run update-ip && expo prebuild --clean && expo run:android",
     "ios": "bun run update-ip && expo start -c --ios",
     "web": "expo start -c --web",
     "typecheck": "tsc --noEmit",
