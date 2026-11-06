@@ -2,6 +2,11 @@ import { auth } from "@api/features/auth/services/config";
 import { bookingsRouter } from "@api/features/booking/routers/bookings-router";
 import { queueVisitReminders } from "@api/features/booking/services/reminder-service";
 import { casesRouter } from "@api/features/care-loop/routers/cases-router";
+import {
+  attachmentDownloadRouter,
+  caseAttachmentsRouter,
+} from "@api/features/documents/routers/attachments-router";
+import { ensureUploadsDirectory } from "@api/features/documents/services/storage";
 import { ingestionRouter } from "@api/features/ingestion/routers/ingestion-router";
 import { metricsRouter } from "@api/features/metrics/routers/metrics-router";
 import {
@@ -30,6 +35,8 @@ export const app = new Elysia()
   .all("/auth/*", ({ request }) => auth.handler(request))
   .use(ingestionRouter)
   .use(casesRouter)
+  .use(caseAttachmentsRouter)
+  .use(attachmentDownloadRouter)
   .use(bookingsRouter)
   .use(patientsRouter)
   .use(referralsRouter)
@@ -47,6 +54,7 @@ new Cron("*/5 * * * *", async () => {
 
 const isMain = (import.meta as unknown as { main?: boolean }).main;
 if (isMain) {
+  await ensureUploadsDirectory();
   app.listen(Number(env.PORT));
   console.log(`API listening on :${env.PORT}`);
 }

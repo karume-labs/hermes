@@ -13,6 +13,9 @@ const envSchema = Type.Object({
   // Google OAuth is optional; sign-in falls back to email + password when unset.
   GOOGLE_CLIENT_ID: Type.String({ default: "" }),
   GOOGLE_CLIENT_SECRET: Type.String({ default: "" }),
+  // Case files (lab reports, referral letters) are written to this directory on
+  // the API server's own disk; no object storage is involved.
+  UPLOAD_DIR: Type.String({ default: "uploads" }),
   // Optional outbound sink for patient notifications (email/SMS gateway URL).
   // Empty means "queue only": the outbox keeps rows for the admin to inspect.
   NOTIFY_WEBHOOK_URL: Type.String({ default: "" }),

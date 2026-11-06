@@ -1,17 +1,19 @@
 import { seedAuth } from "@db/auth/seed/index";
 import { seedBooking } from "@db/booking/seed/index";
 import { seedCareLoop } from "@db/care-loop/seed/index";
+import { seedDocuments } from "@db/documents/seed/index";
 import { seedRouting } from "@db/ingestion/seed/index";
 import { seedNotify } from "@db/notify/seed/index";
 import { seedPatient } from "@db/patient/seed/index";
 import data from "@db/seed/data.json";
-import { resetDemoData } from "@db/seed/reset";
+import { resetSeedData } from "@db/seed/reset";
 import type { SeedContext } from "@db/seed/types";
 import { Type } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
 
 const features = [
   "care-loop",
+  "documents",
   "booking",
   "notify",
   "patient",
@@ -24,6 +26,7 @@ type Seeder = (context: SeedContext) => Promise<number>;
 // Order matters: children (notifications, messages) read the seeded cases.
 const seeders: Record<FeatureName, Seeder> = {
   "care-loop": seedCareLoop,
+  documents: seedDocuments,
   booking: seedBooking,
   notify: seedNotify,
   patient: seedPatient,
@@ -35,6 +38,8 @@ const toFeature = (value: string): FeatureName | null => {
   switch (value) {
     case "care-loop":
       return "care-loop";
+    case "documents":
+      return "documents";
     case "booking":
       return "booking";
     case "notify":
@@ -61,7 +66,7 @@ const parseArgs = (argv: string[]): FeatureName[] => {
   const unknown = flags.filter((_, index) => !isFeature(parsed[index]));
   if (unknown.length > 0) {
     throw new Error(
-      `Unknown seed flag(s): ${unknown.join(", ")}. Use --care-loop, --booking, --notify, --patient, --routing, --auth or --force.`,
+      `Unknown seed flag(s): ${unknown.join(", ")}. Use --care-loop, --documents, --booking, --notify, --patient, --routing, --auth or --force.`,
     );
   }
   const selected = parsed.filter(isFeature);
@@ -78,8 +83,8 @@ export const seed = async (
   const selected = parseArgs(argv);
 
   if (argv.includes("--force")) {
-    await resetDemoData();
-    console.log("Reset demo data (--force).");
+    await resetSeedData();
+    console.log("Reset seeded data (--force).");
   }
 
   const context: SeedContext = {

@@ -6,6 +6,7 @@ import {
   findCase,
   listAudit,
 } from "@api/features/care-loop/services/case-repository";
+import { listAttachments } from "@api/features/documents/services/attachment-repository";
 import { listNotifications } from "@api/features/notify/services/notification-service";
 import { listMessages } from "@api/features/patient/services/patient-repository";
 
@@ -22,5 +23,6 @@ export const getCaseDetail = async (id: string) => {
     notifications: await listNotifications(careCase.id),
     appointment,
     slot,
+    attachments: await listAttachments(careCase.id),
   };
 };

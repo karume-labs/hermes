@@ -1,0 +1,46 @@
+{
+  "attachments": [
+    {
+      "slug": "hba1c-8-4",
+      "kind": "lab_report",
+      "filename": "Riverbend HbA1c panel.pdf",
+      "uploadedBy": "coordinator@hermescare.test",
+      "hoursAfterCase": 3,
+      "lines": [
+        "Riverbend Lab Services",
+        "Diabetes monitoring panel",
+        "HbA1c 8.4 % (reference 4.0 - 5.6)",
+        "Collected with fasting sample, analysed same day.",
+        "Reported to Riverbend Family Health."
+      ]
+    },
+    {
+      "slug": "creatinine-2-4",
+      "kind": "referral_letter",
+      "filename": "Meridian Cardiology referral.pdf",
+      "uploadedBy": "coordinator@hermescare.test",
+      "hoursAfterCase": 4.2,
+      "lines": [
+        "Meridian Cardiology",
+        "Referral: kidney function review",
+        "Creatinine 2.4 mg/dL on routine screening.",
+        "Please review renal function and advise on follow-up.",
+        "Coordinator, Northgate Community Clinic."
+      ]
+    },
+    {
+      "slug": "glucose-268",
+      "kind": "lab_report",
+      "filename": "Fasting glucose panel.pdf",
+      "uploadedBy": "coordinator@hermescare.test",
+      "hoursAfterCase": 24,
+      "lines": [
+        "Riverbend Lab Services",
+        "Fasting glucose panel",
+        "Glucose 268 mg/dL (reference 70 - 100)",
+        "Sample repeated to confirm; both results consistent.",
+        "Reported to Riverbend Family Health."
+      ]
+    }
+  ]
+}

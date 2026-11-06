@@ -1,6 +1,7 @@
 import { bookings, slots } from "@db/booking/schema/index";
 import { auditTrail, careCases } from "@db/care-loop/schema/index";
 import { db } from "@db/client";
+import { caseAttachments } from "@db/documents/schema/index";
 import { routingRules } from "@db/ingestion/schema/index";
 import { notifications, webhookLogs } from "@db/notify/schema/index";
 import {
@@ -11,7 +12,8 @@ import {
 
 // Children before parents: bookings restrict slots, everything else cascades
 // from care_cases. Only used by `--force`, never by a plain `db:seed`.
-export const resetDemoData = async (): Promise<void> => {
+export const resetSeedData = async (): Promise<void> => {
+  await db.delete(caseAttachments);
   await db.delete(caseMessages);
   await db.delete(mobileEvents);
   await db.delete(deviceTokens);

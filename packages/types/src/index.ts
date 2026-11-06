@@ -1,6 +1,7 @@
 import type * as authSchema from "@hermes/db/auth/schema";
 import type { bookings, slots } from "@hermes/db/booking/schema";
 import type { auditTrail, careCases } from "@hermes/db/care-loop/schema";
+import type { caseAttachments } from "@hermes/db/documents/schema";
 import type { routingRules } from "@hermes/db/ingestion/schema";
 import type { notifications, webhookLogs } from "@hermes/db/notify/schema";
 import type {
@@ -69,6 +70,11 @@ export type JourneyStep =
   | "specialist_consultation"
   | "completed";
 export type StaffRole = "coordinator" | "admin";
+export type AttachmentKind =
+  | "lab_report"
+  | "referral_letter"
+  | "closure_evidence"
+  | "other";
 
 // ------------------------------------------------------- database row types --
 export type CareCase = Serialized<InferSelectModel<typeof careCases>>;
@@ -87,6 +93,9 @@ export type DeviceToken = Serialized<InferSelectModel<typeof deviceTokens>>;
 export type MobileEvent = Serialized<InferSelectModel<typeof mobileEvents>>;
 
 export type AuditEntry = Serialized<InferSelectModel<typeof auditTrail>>;
+export type CaseAttachment = Serialized<
+  InferSelectModel<typeof caseAttachments>
+>;
 
 /** Better Auth user row; credentials live in `account`, never here. */
 export type StaffUser = Serialized<InferSelectModel<typeof authSchema.user>>;
@@ -108,6 +117,7 @@ export type CaseDetail = CareCase & {
   notifications: NotificationEntry[];
   appointment: Booking | null;
   slot: Slot | null;
+  attachments: CaseAttachment[];
 };
 
 /** One patient-facing case, flattened for the mobile app. */

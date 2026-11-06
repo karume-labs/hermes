@@ -20,10 +20,15 @@ const fetcher = Object.assign(
     options?: RequestInit,
   ): Promise<Response> => {
     const method = (options?.method ?? "GET").toUpperCase();
+    // FormData sets its own multipart boundary; forcing JSON here would break
+    // document uploads before they reach the API.
+    const isFormData = options?.body instanceof FormData;
     const response = await fetch(url, {
       ...options,
       credentials: "include",
-      headers: { "content-type": "application/json", ...options?.headers },
+      headers: isFormData
+        ? { ...options?.headers }
+        : { "content-type": "application/json", ...options?.headers },
       cache: "no-store",
     });
     if (!response.ok) {

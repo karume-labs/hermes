@@ -16,7 +16,8 @@
     "./patient/schema": "./src/patient/schema/index.ts",
     "./ingestion/schema": "./src/ingestion/schema/index.ts",
     "./auth/schema": "./src/auth/schema/index.ts",
-    "./seed/env": "./src/seed/env/index.ts"
+    "./seed/env": "./src/seed/env/index.ts",
+    "./documents/schema": "./src/documents/schema/index.ts"
   },
   "dependencies": {
     "@hermes/types": "workspace:*",

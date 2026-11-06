@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { CaseActions } from "@/features/cases/components/case-actions";
+import { CaseAttachments } from "@/features/cases/components/case-attachments";
 import { CaseAudit } from "@/features/cases/components/case-audit";
 import {
   AckState,
@@ -137,6 +138,12 @@ export const CaseDetailView = ({ caseId }: CaseDetailViewProps): ReactNode => {
               {careCase.messages.length}
             </Badge>
           </Tabs.Tab>
+          <Tabs.Tab value="documents">
+            Documents
+            <Badge ml={6} size="xs" variant="light">
+              {careCase.attachments.length}
+            </Badge>
+          </Tabs.Tab>
           <Tabs.Tab value="audit">Audit trail</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="actions" pt="md">
@@ -144,6 +151,9 @@ export const CaseDetailView = ({ caseId }: CaseDetailViewProps): ReactNode => {
         </Tabs.Panel>
         <Tabs.Panel value="messages" pt="md">
           <CaseMessages detail={careCase} />
+        </Tabs.Panel>
+        <Tabs.Panel value="documents" pt="md">
+          <CaseAttachments detail={careCase} />
         </Tabs.Panel>
         <Tabs.Panel value="audit" pt="md">
           <CaseAudit detail={careCase} />
