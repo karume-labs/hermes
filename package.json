@@ -23,7 +23,6 @@
     "typecheck:mobile": "bun run --cwd apps/mobile typecheck",
     "test": "bun run --cwd apps/api test",
     "test:api": "bun run --cwd apps/api test",
-    "seed:demo": "bun run scripts/seed-demo.ts",
     "db:generate": "bun run --cwd packages/db db:generate",
     "db:seed": "bun run --cwd packages/db db:seed",
     "db:seed:fresh": "bun run db:migrate && bun run db:seed --force",

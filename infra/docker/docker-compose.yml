@@ -34,6 +34,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      # Uploaded case documents live on the API container's disk; the named
+      # volume keeps them across image rebuilds and container restarts.
+      - hermes_uploads:/app/uploads
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:8001/health"]
       interval: 15s
@@ -81,6 +85,7 @@ volumes:
   caddy_data:
   caddy_config:
   hermes_db:
+  hermes_uploads:
 
 networks:
   hermes-network:
