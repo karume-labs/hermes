@@ -45,6 +45,13 @@ const seedAccounts = (): SeedAccount[] => [
     role: "admin",
     clinicId: null,
   },
+  {
+    name: "Dr. Ada Okafor",
+    email: seedEnv.CLINICIAN_EMAIL,
+    password: seedEnv.CLINICIAN_PASSWORD,
+    role: "clinician",
+    clinicId: "clinic-1",
+  },
 ];
 
 const findUserByEmail = async (email: string) => {

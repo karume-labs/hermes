@@ -26,6 +26,7 @@ import { Elysia } from "elysia";
 
 const authHeader = Type.Object({
   authorization: Type.Optional(Type.String()),
+  cookie: Type.Optional(Type.String()),
 });
 
 const actorOf = (principal: CarePrincipal): string =>

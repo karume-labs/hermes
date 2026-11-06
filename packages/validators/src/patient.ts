@@ -59,3 +59,13 @@ export const patientConsentSchema = Type.Object({
 });
 export type PatientConsent = Static<typeof patientConsentSchema>;
 export const PatientConsentSchema = patientConsentSchema;
+
+// Teach-back: did the patient understand the result, and how reassured do
+// they feel? Both answers are stored against the case for outcome measures.
+export const caseFeedbackSchema = Type.Object({
+  understood: Type.Boolean(),
+  confidence: Type.Integer({ minimum: 1, maximum: 5 }),
+  comment: Type.Optional(Type.String({ maxLength: 500 })),
+});
+export type CaseFeedbackBody = Static<typeof caseFeedbackSchema>;
+export const CaseFeedbackSchema = caseFeedbackSchema;

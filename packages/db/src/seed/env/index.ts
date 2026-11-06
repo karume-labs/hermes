@@ -14,6 +14,10 @@ const seedEnvSchema = Type.Object({
     default: "coordinator@hermescare.test",
   }),
   COORDINATOR_PASSWORD: Type.String({ default: "hermes-care" }),
+  CLINICIAN_EMAIL: Type.String({
+    default: "clinician@hermescare.test",
+  }),
+  CLINICIAN_PASSWORD: Type.String({ default: "hermes-care" }),
   ADMIN_EMAIL: Type.String({ default: "admin@hermescare.test" }),
   ADMIN_PASSWORD: Type.String({ default: "hermes-care" }),
 });

@@ -1,6 +1,13 @@
 import type * as authSchema from "@hermes/db/auth/schema";
 import type { bookings, slots } from "@hermes/db/booking/schema";
-import type { auditTrail, careCases } from "@hermes/db/care-loop/schema";
+import type {
+  auditTrail,
+  careCases,
+  caseConsultNotes,
+  caseFeedback,
+  caseReferrals,
+  caseTasks,
+} from "@hermes/db/care-loop/schema";
 import type { clinics, patients } from "@hermes/db/directory/schema";
 import type { caseAttachments } from "@hermes/db/documents/schema";
 import type { routingRules } from "@hermes/db/ingestion/schema";
@@ -52,7 +59,22 @@ export type NotificationKind =
   | "escalation"
   | "secure_message"
   | "visit_reminder";
-export type MessageSender = "patient" | "coordinator";
+export type MessageSender = "patient" | "coordinator" | "clinician";
+export type ConfirmationStatus = "pending" | "confirmed" | "ruled_out";
+export type ConsultationOutcome =
+  | "confirmed"
+  | "alternative_diagnosis"
+  | "no_action_needed"
+  | "further_referral";
+export type ReferralStatus = "sent" | "accepted" | "declined" | "completed";
+export type CaseTaskKind =
+  | "escalation"
+  | "overdue"
+  | "referral"
+  | "assignment"
+  | "surveillance_review"
+  | "patient_followup";
+export type CaseTaskStatus = "open" | "done";
 export type MobileEventType =
   | "app_open"
   | "push_opened"
@@ -71,7 +93,7 @@ export type JourneyStep =
   | "appointment_booked"
   | "specialist_consultation"
   | "completed";
-export type StaffRole = "coordinator" | "admin";
+export type StaffRole = "coordinator" | "clinician" | "admin";
 export type AttachmentKind =
   | "lab_report"
   | "referral_letter"
@@ -97,6 +119,12 @@ export type MobileEvent = Serialized<InferSelectModel<typeof mobileEvents>>;
 export type AuditEntry = Serialized<InferSelectModel<typeof auditTrail>>;
 export type CaseAttachment = Serialized<
   InferSelectModel<typeof caseAttachments>
+>;
+export type CaseReferral = Serialized<InferSelectModel<typeof caseReferrals>>;
+export type CaseTask = Serialized<InferSelectModel<typeof caseTasks>>;
+export type CaseFeedback = Serialized<InferSelectModel<typeof caseFeedback>>;
+export type CaseConsultNote = Serialized<
+  InferSelectModel<typeof caseConsultNotes>
 >;
 
 /** Better Auth user row; credentials live in `account`, never here. */
@@ -128,6 +156,15 @@ export type StaffSession = {
   session: AuthSession;
 };
 
+export type CaseAssignee = {
+  id: string;
+  name: string;
+  email: string;
+  role: StaffRole;
+  clinicId: string | null;
+  clinicName: string | null;
+};
+
 // ------------------------------------------------------------ composites ----
 export type CaseDetail = CareCase & {
   audit: AuditEntry[];
@@ -136,6 +173,11 @@ export type CaseDetail = CareCase & {
   appointment: Booking | null;
   slot: Slot | null;
   attachments: CaseAttachment[];
+  referrals: CaseReferral[];
+  tasks: CaseTask[];
+  feedback: CaseFeedback | null;
+  consultNotes: CaseConsultNote[];
+  assignee: CaseAssignee | null;
 };
 
 /** One patient-facing case, flattened for the mobile app. */
@@ -147,9 +189,61 @@ export type PatientCase = {
   unreadMessages: number;
 };
 
+/** A patient-owned booking with enough context for the mobile visits tab. */
+export type PatientBooking = {
+  booking: Booking;
+  slot: Slot;
+  clinicName: string;
+  summary: string;
+  severity: Severity;
+};
+
+/** Clinic schedule row: booking, patient and case in one record. */
+export type ClinicAppointment = {
+  booking: Booking;
+  slot: Slot;
+  clinicName: string;
+  patientId: string;
+  patientName: string;
+  patientPhone: string;
+  caseSummary: string;
+  severity: Severity;
+};
+
+/** Clinic patient roster row with a lightweight care-load summary. */
+export type ClinicPatient = Patient & {
+  caseCount: number;
+  activeCaseCount: number;
+  lastCaseId: string | null;
+  lastCaseAt: string | null;
+};
+
+/** Referral inbox row enriched with the patient and both clinics. */
+export type ClinicReferral = CaseReferral & {
+  patientName: string;
+  caseSummary: string;
+  fromClinicName: string;
+  toClinicName: string;
+};
+
+/** Admin clinic directory row with tenancy activity counts. */
+export type AdminClinicSummary = Clinic & {
+  patientCount: number;
+  staffCount: number;
+  openCaseCount: number;
+};
+
+/** Global audit row with the patient, clinic and case it belongs to. */
+export type AdminAuditEntry = AuditEntry & {
+  patientName: string;
+  clinicName: string;
+  caseSummary: string;
+};
+
 export type PatientCaseDetail = PatientCase & {
   messages: CaseMessage[];
   notifications: NotificationEntry[];
+  feedback: CaseFeedback | null;
 };
 
 export type DeliveryStats = {
@@ -174,8 +268,25 @@ export type Metrics = {
   mobileAckPct: number;
   referrals: number;
   referralConversionPct: number;
+  referralsAccepted: number;
+  referralsCompleted: number;
+  referralAcceptancePct: number;
+  referralCompletionPct: number;
+  unresolvedActionable: number;
+  overdue: number;
   appointments: number;
+  appointmentsAttended: number;
+  appointmentCompletionPct: number;
   avgTimeToBookingHours: number;
+  avgTimeToNotificationHours: number;
+  avgTimeToConfirmationHours: number;
+  avgTimeToConsultationHours: number;
+  avgTimeToTreatmentHours: number;
+  documentedClosurePct: number;
+  patientUnderstandingPct: number;
+  avgConfidence: number;
+  feedbackCount: number;
+  delayReasons: Record<string, number>;
   pushReadPct: number;
   activePatients7d: number;
   appOpens7d: number;

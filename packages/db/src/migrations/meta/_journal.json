@@ -50,6 +50,27 @@
       "when": 1793955421138,
       "tag": "0006_organic_serpent_society",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793958684515,
+      "tag": "0007_real_human_fly",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793960358260,
+      "tag": "0008_famous_night_thrasher",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793962368805,
+      "tag": "0009_opposite_ben_grimm",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,13 @@
+import { adminRouter } from "@api/features/admin/routers/admin-router";
 import { auth } from "@api/features/auth/services/config";
 import { bookingsRouter } from "@api/features/booking/routers/bookings-router";
 import { queueVisitReminders } from "@api/features/booking/services/reminder-service";
 import { casesRouter } from "@api/features/care-loop/routers/cases-router";
+import {
+  outcomesRouter,
+  tasksRouter,
+} from "@api/features/care-loop/routers/outcomes-router";
+import { clinicRouter } from "@api/features/clinic/routers/clinic-router";
 import { directoryRouter } from "@api/features/directory/routers/directory-router";
 import {
   attachmentDownloadRouter,
@@ -60,9 +66,13 @@ export const app = new Elysia()
   .all("/auth/*", ({ request }) => auth.handler(request))
   .use(patientAuthRouter)
   .use(staffRouter)
+  .use(clinicRouter)
+  .use(adminRouter)
   .use(directoryRouter)
   .use(ingestionRouter)
   .use(casesRouter)
+  .use(outcomesRouter)
+  .use(tasksRouter)
   .use(caseAttachmentsRouter)
   .use(attachmentDownloadRouter)
   .use(bookingsRouter)

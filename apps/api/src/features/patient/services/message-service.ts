@@ -5,11 +5,11 @@ import {
 import { queueNotification } from "@api/features/notify/services/notification-service";
 import { createMessage } from "@api/features/patient/services/patient-repository";
 import { NotFoundError } from "@api/features/shared/errors/index";
-import type { CaseMessage } from "@hermes/types";
+import type { CaseMessage, MessageSender } from "@hermes/types";
 
 export interface SendMessageInput {
   caseId: string;
-  sender: "patient" | "coordinator";
+  sender: MessageSender;
   senderId: string;
   body: string;
 }
@@ -26,7 +26,7 @@ export const sendCaseMessage = async (
   await queueNotification({
     caseId: careCase.id,
     patientId: careCase.patientId,
-    channel: input.sender === "coordinator" ? "push" : "in_app",
+    channel: input.sender === "patient" ? "in_app" : "push",
     kind: "secure_message",
     payload: {
       messageId: message.id,

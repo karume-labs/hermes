@@ -1,7 +1,11 @@
-import { auditTrail, careCases } from "@db/care-loop/schema/index";
+import {
+  auditTrail,
+  careCases,
+  caseReferrals,
+} from "@db/care-loop/schema/index";
 import { db } from "@db/client";
 import type { CareCase, CaseStatus, Severity } from "@hermes/types";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, lt, ne, or } from "drizzle-orm";
 
 export interface AuditEntry {
   id: string;
@@ -36,6 +40,18 @@ export const toCareCase = (row: CaseRow): CareCase => ({
   acknowledgedAt: row.acknowledgedAt?.toISOString() ?? null,
   appointmentId: row.appointmentId ?? null,
   referralClinicId: row.referralClinicId ?? null,
+  assignedToId: row.assignedToId ?? null,
+  confirmationStatus: row.confirmationStatus,
+  confirmedAt: row.confirmedAt?.toISOString() ?? null,
+  confirmationNotes: row.confirmationNotes ?? null,
+  consultedAt: row.consultedAt?.toISOString() ?? null,
+  consultationOutcome: row.consultationOutcome ?? null,
+  consultationNotes: row.consultationNotes ?? null,
+  treatmentStartedAt: row.treatmentStartedAt?.toISOString() ?? null,
+  treatmentSummary: row.treatmentSummary ?? null,
+  surveillancePlan: row.surveillancePlan ?? null,
+  nextReviewAt: row.nextReviewAt?.toISOString() ?? null,
+  dropOffReason: row.dropOffReason ?? null,
   escalatedAt: row.escalatedAt?.toISOString() ?? null,
   closurePlan: row.closurePlan ?? null,
   closureEvidence: row.closureEvidence ?? null,
@@ -46,6 +62,9 @@ export const toCareCase = (row: CaseRow): CareCase => ({
 export interface CaseFilters {
   severity?: string;
   status?: string;
+  assignedToId?: string;
+  unassigned?: boolean;
+  overdue?: boolean;
 }
 
 const isSeverity = (value: string): value is Severity =>
@@ -61,6 +80,25 @@ const isStatus = (value: string): value is CaseStatus =>
   value === "closed" ||
   value === "escalated";
 
+// The receiving clinic must see the shared case, not only the referring one.
+// An active referral (sent or accepted) widens the tenant boundary.
+const inClinicScope = (clinicId: string) =>
+  or(
+    eq(careCases.clinicId, clinicId),
+    inArray(
+      careCases.id,
+      db
+        .select({ id: caseReferrals.caseId })
+        .from(caseReferrals)
+        .where(
+          and(
+            eq(caseReferrals.toClinicId, clinicId),
+            inArray(caseReferrals.status, ["sent", "accepted"]),
+          ),
+        ),
+    ),
+  );
+
 // `clinicId` is the staff member's tenant: null means the caller is an admin
 // or a system job and may read every clinic.
 export const listCases = async (
@@ -68,11 +106,24 @@ export const listCases = async (
   clinicId: string | null = null,
 ): Promise<CareCase[]> => {
   const predicates = [];
-  if (clinicId !== null) predicates.push(eq(careCases.clinicId, clinicId));
+  if (clinicId !== null) predicates.push(inClinicScope(clinicId));
   if (filters.severity !== undefined && isSeverity(filters.severity))
     predicates.push(eq(careCases.severity, filters.severity));
   if (filters.status !== undefined && isStatus(filters.status))
     predicates.push(eq(careCases.status, filters.status));
+  if (filters.assignedToId !== undefined)
+    predicates.push(eq(careCases.assignedToId, filters.assignedToId));
+  if (filters.unassigned === true)
+    predicates.push(isNull(careCases.assignedToId));
+  if (filters.overdue === true) {
+    predicates.push(
+      and(
+        lt(careCases.slaDueAt, new Date()),
+        ne(careCases.status, "closed"),
+        isNull(careCases.acknowledgedAt),
+      ),
+    );
+  }
   const rows = await db
     .select()
     .from(careCases)
@@ -92,7 +143,7 @@ export const findCase = async (
     .where(
       clinicId === null
         ? eq(careCases.id, id)
-        : and(eq(careCases.id, id), eq(careCases.clinicId, clinicId)),
+        : and(eq(careCases.id, id), inClinicScope(clinicId)),
     );
   if (row === undefined) return null;
   return toCareCase(row);
@@ -118,7 +169,7 @@ export const listAllCases = async (
   const rows = await db
     .select()
     .from(careCases)
-    .where(clinicId === null ? undefined : eq(careCases.clinicId, clinicId));
+    .where(clinicId === null ? undefined : inClinicScope(clinicId));
   return rows.map(toCareCase);
 };
 

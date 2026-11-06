@@ -226,7 +226,9 @@ const cancelInTransaction = async (
     .from(careCases)
     .where(eq(careCases.id, caseId))
     .limit(1);
-  if (careCase !== undefined) {
+  // Closure releases the booking after setting `closed`; never roll the
+  // status back to an in-flight state in that case.
+  if (careCase !== undefined && careCase.status !== "closed") {
     await tx
       .update(careCases)
       .set({

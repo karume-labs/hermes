@@ -2,6 +2,7 @@ import { type Static, Type } from "@sinclair/typebox";
 
 export const staffRoleSchema = Type.Union([
   Type.Literal("coordinator"),
+  Type.Literal("clinician"),
   Type.Literal("admin"),
 ]);
 

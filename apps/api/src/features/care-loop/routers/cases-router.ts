@@ -5,6 +5,7 @@ import {
   logAudit,
   updateCase,
 } from "@api/features/care-loop/services/case-repository";
+import { ensureTask } from "@api/features/care-loop/services/task-service";
 import {
   markCaseNotificationsRead,
   queueNotification,
@@ -24,6 +25,9 @@ import { Elysia } from "elysia";
 const listQuery = Type.Object({
   severity: Type.Optional(Type.String()),
   status: Type.Optional(Type.String()),
+  assigned: Type.Optional(Type.String()),
+  unassigned: Type.Optional(Type.String()),
+  overdue: Type.Optional(Type.String()),
 });
 
 const authHeader = Type.Object({
@@ -36,7 +40,16 @@ export const casesRouter = new Elysia({ prefix: "/cases" })
     "/",
     async ({ query, headers }) => {
       const staff = await requireStaff(headers);
-      return listCases(query, staff.clinicId);
+      return listCases(
+        {
+          severity: query.severity,
+          status: query.status,
+          assignedToId: query.assigned === "me" ? staff.id : undefined,
+          unassigned: query.unassigned === "true",
+          overdue: query.overdue === "true",
+        },
+        staff.clinicId,
+      );
     },
     { query: listQuery, headers: authHeader },
   )
@@ -44,7 +57,7 @@ export const casesRouter = new Elysia({ prefix: "/cases" })
     "/:id",
     async ({ params, headers }) => {
       const staff = await requireStaff(headers);
-      const detail = await getCaseDetail(params.id, staff.clinicId);
+      const detail = await getCaseDetail(params.id, staff);
       if (detail === null) throw new NotFoundError("Case not found");
       return detail;
     },
@@ -98,7 +111,7 @@ export const casesRouter = new Elysia({ prefix: "/cases" })
       if (found === null) throw new NotFoundError("Case not found");
       return sendCaseMessage({
         caseId: found.id,
-        sender: "coordinator",
+        sender: staff.role === "clinician" ? "clinician" : "coordinator",
         senderId: staff.email,
         body: body.body,
       });
@@ -113,7 +126,7 @@ export const casesRouter = new Elysia({ prefix: "/cases" })
       if (found === null) throw new NotFoundError("Case not found");
       const message = await sendCaseMessage({
         caseId: found.id,
-        sender: "coordinator",
+        sender: staff.role === "clinician" ? "clinician" : "coordinator",
         senderId: staff.email,
         body: body.body,
       });
@@ -143,6 +156,7 @@ export const casesRouter = new Elysia({ prefix: "/cases" })
       const updated = await updateCase(found.id, {
         status: "escalated",
         escalatedAt: new Date(),
+        assignedToId: found.assignedToId ?? staff.id,
       });
       if (updated === null) throw new NotFoundError("Case not found");
       await queueNotification({
@@ -151,6 +165,16 @@ export const casesRouter = new Elysia({ prefix: "/cases" })
         channel: "in_app",
         kind: "escalation",
         payload: { reason: "coordinator_escalation" },
+      });
+      await ensureTask({
+        caseId: updated.id,
+        clinicId: updated.clinicId,
+        assignedToId: updated.assignedToId,
+        kind: "escalation",
+        title: "Escalated case needs clinical review",
+        detail: "No patient acknowledgement inside the SLA window.",
+        dueAt: new Date(),
+        createdBy: staff.email,
       });
       await logAudit(updated.id, `staff:${staff.email}`, "escalated", {
         reason: "manual",

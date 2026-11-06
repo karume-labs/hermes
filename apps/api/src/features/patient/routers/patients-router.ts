@@ -1,3 +1,8 @@
+import { defaultAssigneeId } from "@api/features/care-loop/services/assignment-service";
+import {
+  closeTasks,
+  ensureTask,
+} from "@api/features/care-loop/services/task-service";
 import {
   listNotifications,
   listPatientNotifications,
@@ -5,12 +10,15 @@ import {
 } from "@api/features/notify/services/notification-service";
 import { sendCaseMessage } from "@api/features/patient/services/message-service";
 import {
+  findCaseFeedback,
   findPatientCase,
   listMessages,
+  listPatientBookings,
   listPatientCases,
   markInboundMessagesRead,
   recordMobileEvent,
   registerDevice,
+  saveCaseFeedback,
 } from "@api/features/patient/services/patient-repository";
 import {
   type PatientContext,
@@ -18,6 +26,7 @@ import {
 } from "@api/features/patient-auth/services/patient-auth-service";
 import { NotFoundError } from "@api/features/shared/errors/index";
 import {
+  CaseFeedbackSchema,
   CaseMessageSchema,
   DeviceTokenSchema,
   MobileEventSchema,
@@ -57,6 +66,11 @@ export const patientsRouter = new Elysia({ prefix: "/patients" })
     { params: patientParams },
   )
   .get(
+    "/:patientId/bookings",
+    ({ patientContext }) => listPatientBookings(patientContext.patientId),
+    { params: patientParams },
+  )
+  .get(
     "/:patientId/cases/:caseId",
     async ({ params, patientContext }) => {
       const found = await findPatientCase(
@@ -68,9 +82,57 @@ export const patientsRouter = new Elysia({ prefix: "/patients" })
         ...found,
         messages: await listMessages(found.careCase.id),
         notifications: await listNotifications(found.careCase.id),
+        feedback: await findCaseFeedback(found.careCase.id),
       };
     },
     { params: caseParams },
+  )
+  .post(
+    "/:patientId/cases/:caseId/feedback",
+    async ({ params, body, patientContext }) => {
+      const found = await findPatientCase(
+        patientContext.patientId,
+        params.caseId,
+      );
+      if (found === null) throw new NotFoundError("Case not found");
+      const feedback = await saveCaseFeedback({
+        caseId: found.careCase.id,
+        patientId: patientContext.patientId,
+        understood: body.understood,
+        confidence: body.confidence,
+        comment: body.comment,
+      });
+      // Teach-back is only useful if it changes the care team's work: a
+      // negative answer opens a staff follow-up, a positive one closes it.
+      if (body.understood) {
+        await closeTasks(
+          found.careCase.id,
+          ["patient_followup"],
+          `patient:${patientContext.patientId}`,
+        );
+      } else {
+        const owner =
+          found.careCase.assignedToId ??
+          (await defaultAssigneeId(found.careCase.clinicId));
+        await ensureTask({
+          caseId: found.careCase.id,
+          clinicId: found.careCase.clinicId,
+          assignedToId: owner,
+          kind: "patient_followup",
+          title: "Patient did not understand their result",
+          detail: body.comment ?? "Patient answered that they still need help.",
+          dueAt: new Date(),
+          createdBy: `patient:${patientContext.patientId}`,
+        });
+      }
+      await recordMobileEvent({
+        patientId: patientContext.patientId,
+        caseId: found.careCase.id,
+        type: "case_viewed",
+      });
+      return feedback;
+    },
+    { params: caseParams, body: CaseFeedbackSchema },
   )
   .post(
     "/:patientId/cases/:caseId/read",

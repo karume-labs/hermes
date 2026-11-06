@@ -50,7 +50,7 @@ const hasRole = (actual: StaffRole, allowed: StaffRole[]): boolean =>
   allowed.includes(actual);
 
 const isStaffRole = (value: unknown): value is StaffRole =>
-  value === "coordinator" || value === "admin";
+  value === "coordinator" || value === "clinician" || value === "admin";
 
 /**
  * Every staff route runs through here. Two credentials are accepted: the
@@ -59,7 +59,7 @@ const isStaffRole = (value: unknown): value is StaffRole =>
  */
 export const requireStaff = async (
   headers: RequestHeaders,
-  roles: StaffRole[] = ["coordinator", "admin"],
+  roles: StaffRole[] = ["coordinator", "clinician", "admin"],
 ): Promise<StaffContext> => {
   if (
     headers.authorization !== undefined &&
@@ -76,10 +76,10 @@ export const requireStaff = async (
   const { role } = session.user;
   if (!isStaffRole(role)) throw new UnauthorizedError("Not permitted");
   if (!hasRole(role, roles)) throw new UnauthorizedError("Not permitted");
-  // A coordinator without a clinic would otherwise fall through the scoped
-  // queries as if they were an admin.
+  // A clinic-bound role without a clinic would otherwise fall through the
+  // scoped queries as if it were an admin.
   const clinicId = session.user.clinicId ?? null;
-  if (role === "coordinator" && clinicId === null) {
+  if (role !== "admin" && clinicId === null) {
     throw new UnauthorizedError(
       "This account is not assigned to a clinic. Ask an administrator.",
     );
@@ -94,10 +94,16 @@ export const requireStaff = async (
   };
 };
 
-/** Coordinator write guard shared by cases, ingestion, notify and referrals. */
+/** Care-team write guard shared by cases, ingestion, notify and referrals. */
 export const assertCoordinator = async (
   headers: RequestHeaders,
-): Promise<StaffContext> => requireStaff(headers, ["coordinator", "admin"]);
+): Promise<StaffContext> =>
+  requireStaff(headers, ["coordinator", "clinician", "admin"]);
+
+/** Only a clinician or admin may sign a case closed. */
+export const assertClinician = async (
+  headers: RequestHeaders,
+): Promise<StaffContext> => requireStaff(headers, ["clinician", "admin"]);
 
 /** Admin-only guard for staff management, webhook logs and tenant settings. */
 export const requireAdmin = async (

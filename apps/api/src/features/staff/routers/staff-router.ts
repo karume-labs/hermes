@@ -1,5 +1,7 @@
+import { listTeam } from "@api/features/care-loop/services/assignment-service";
 import {
   requireAdmin,
+  requireStaff,
   type StaffContext,
 } from "@api/features/shared/auth/index";
 import {
@@ -30,6 +32,14 @@ const authHeader = Type.Object({
 const idParams = Type.Object({ id: Type.String({ minLength: 1 }) });
 
 export const staffRouter = new Elysia({ prefix: "/staff" })
+  .get(
+    "/team",
+    async ({ headers }) => {
+      const staff = await requireStaff(headers);
+      return listTeam(staff);
+    },
+    { headers: authHeader },
+  )
   // Public: an invited person sets their password once.
   .post(
     "/invites/accept",

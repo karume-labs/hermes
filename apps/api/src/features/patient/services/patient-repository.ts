@@ -1,7 +1,8 @@
 import { toCareCase } from "@api/features/care-loop/services/case-repository";
 import { bookings, slots } from "@db/booking/schema/index";
-import { careCases } from "@db/care-loop/schema/index";
+import { careCases, caseFeedback } from "@db/care-loop/schema/index";
 import { db } from "@db/client";
+import { clinics } from "@db/directory/schema/index";
 import {
   caseMessages,
   deviceTokens,
@@ -10,9 +11,12 @@ import {
 import type {
   Booking,
   CareCase,
+  CaseFeedback,
   CaseMessage,
   JourneyStep,
+  MessageSender,
   MobileEventType,
+  PatientBooking,
   PatientCase,
   Slot,
 } from "@hermes/types";
@@ -48,7 +52,7 @@ const toMessage = (row: typeof caseMessages.$inferSelect): CaseMessage => ({
 
 export const journeyStage = (careCase: CareCase): JourneyStep => {
   if (careCase.status === "closed") return "completed";
-  if (careCase.referralClinicId !== null || careCase.status === "referred")
+  if (careCase.consultedAt !== null || careCase.treatmentStartedAt !== null)
     return "specialist_consultation";
   if (
     careCase.appointmentId !== null ||
@@ -66,7 +70,9 @@ const decorate = async (
   const guestBookings = await db
     .select()
     .from(bookings)
-    .where(inArray(bookings.caseId, caseIds));
+    .where(
+      and(inArray(bookings.caseId, caseIds), eq(bookings.status, "confirmed")),
+    );
   const slotIds = guestBookings.map((booking) => booking.slotId);
   const slotRows =
     slotIds.length === 0
@@ -133,7 +139,7 @@ export const listMessages = async (caseId: string): Promise<CaseMessage[]> => {
 
 export const createMessage = async (input: {
   caseId: string;
-  sender: "patient" | "coordinator";
+  sender: MessageSender;
   senderId: string;
   body: string;
 }): Promise<CaseMessage> => {
@@ -198,4 +204,77 @@ export const listBookingsForPatient = async (patientId: string) => {
   return patientCases.flatMap((item) =>
     item.appointment === null ? [] : [item.appointment],
   );
+};
+
+/** Every visit the patient has, including cancelled and past ones. */
+export const listPatientBookings = async (
+  patientId: string,
+): Promise<PatientBooking[]> => {
+  const rows = await db
+    .select({
+      booking: bookings,
+      slot: slots,
+      clinicName: clinics.name,
+      summary: careCases.summaryPlainLanguage,
+      severity: careCases.severity,
+    })
+    .from(bookings)
+    .innerJoin(slots, eq(bookings.slotId, slots.id))
+    .innerJoin(careCases, eq(bookings.caseId, careCases.id))
+    .innerJoin(clinics, eq(careCases.clinicId, clinics.id))
+    .where(eq(careCases.patientId, patientId))
+    .orderBy(desc(slots.startAt));
+  return rows.map((row) => ({
+    booking: toBooking(row.booking),
+    slot: toSlot(row.slot),
+    clinicName: row.clinicName,
+    summary: row.summary,
+    severity: row.severity,
+  }));
+};
+
+const toFeedback = (row: typeof caseFeedback.$inferSelect): CaseFeedback => ({
+  ...row,
+  createdAt: row.createdAt.toISOString(),
+});
+
+export const findCaseFeedback = async (
+  caseId: string,
+): Promise<CaseFeedback | null> => {
+  const [row] = await db
+    .select()
+    .from(caseFeedback)
+    .where(eq(caseFeedback.caseId, caseId))
+    .limit(1);
+  return row === undefined ? null : toFeedback(row);
+};
+
+// A patient may revise their teach-back answer; the latest response wins.
+export const saveCaseFeedback = async (input: {
+  caseId: string;
+  patientId: string;
+  understood: boolean;
+  confidence: number;
+  comment?: string;
+}): Promise<CaseFeedback> => {
+  const [row] = await db
+    .insert(caseFeedback)
+    .values({
+      caseId: input.caseId,
+      patientId: input.patientId,
+      understood: input.understood,
+      confidence: input.confidence,
+      comment: input.comment ?? null,
+    })
+    .onConflictDoUpdate({
+      target: caseFeedback.caseId,
+      set: {
+        understood: input.understood,
+        confidence: input.confidence,
+        comment: input.comment ?? null,
+        createdAt: new Date(),
+      },
+    })
+    .returning();
+  return toFeedback(row);
 };

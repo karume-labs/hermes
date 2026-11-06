@@ -1,3 +1,4 @@
+import { defaultAssigneeId } from "@api/features/care-loop/services/assignment-service";
 import {
   createCase,
   findCaseByLabPayloadId,
@@ -66,6 +67,8 @@ export const ingestLab = async (lab: NormalizedLab): Promise<IngestResult> => {
     lab.unit,
     severity,
   );
+  // Ownership is part of triage: a case never opens without a named owner.
+  const assignedToId = await defaultAssigneeId(clinicId);
 
   let careCase: CareCase;
   try {
@@ -77,6 +80,7 @@ export const ingestLab = async (lab: NormalizedLab): Promise<IngestResult> => {
       status: "notified",
       slaDueAt: due,
       summaryPlainLanguage: summary,
+      assignedToId,
     });
   } catch (error) {
     // Two feeds can race past the lookup above; the unique lab payload id
