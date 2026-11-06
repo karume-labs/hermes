@@ -135,6 +135,7 @@ redirects signed-out visitors to `/sign-in`; `/admin/*` additionally requires
 | --- | --- | --- |
 | **Hermes** wordmark | `/queue` (closes the mobile drawer) | everyone |
 | **Queue** | `/queue` | everyone |
+| **Tasks** | `/tasks` | everyone |
 | **Overview** | `/admin` | admin |
 | **Delivery** | `/admin/delivery` | admin |
 | **Integrations** | `/admin/webhooks` | admin |
@@ -145,7 +146,23 @@ redirects signed-out visitors to `/sign-in`; `/admin/*` additionally requires
 The mark beside the wordmark changes with the surface: the clinic plus on queue
 and case pages, the admin shield inside `/admin`.
 
-### 3.3 Queue — `/queue`
+### 3.3 Tasks — `/tasks`
+
+The staff worklist for everything that still needs a person: SLA escalations,
+overdue outreach, incoming referrals, surveillance reviews and patient
+follow-ups raised by negative teach-back. It refetches every 30 seconds and is
+clinic-scoped like the queue.
+
+| Control | What it does |
+| --- | --- |
+| **Open / Done** | switches `GET /tasks?status=open` and `status=done` |
+| **Complete** (row) | `POST /tasks/:id/complete`; records the actor and timestamp, then refreshes the list |
+| **Case** (row) | opens `/cases/{id}` |
+
+Metric cards show **In view**, **Overdue**, **Surveillance** and **Patient
+follow-up**. Overdue rows use the same breach treatment as the queue.
+
+### 3.4 Queue — `/queue`
 
 The worklist, sorted by SLA due time and refetched every 30 seconds. Filters live
 in the URL (`?severity=Urgent&status=notified`) so a view can be shared.
@@ -161,10 +178,12 @@ in the URL (`?severity=Urgent&status=notified`) so a view can be shared.
 | **Escalate** (row) | `POST /cases/{id}/escalate`; disabled for closed cases |
 
 Metric cards: **In view**, **Pending ack** (notified/escalated with no
-acknowledgment), **SLA breached** (past due and unacknowledged), **Urgent**.
-Rows turn red when breached and carry an orange treatment when escalated.
+acknowledgment), **SLA breached** (past due and unacknowledged), **Unassigned**.
+Filters cover severity, workflow status, ownership (my cases/unassigned) and
+overdue-only. Rows turn red when breached and carry an orange treatment when
+escalated.
 
-### 3.4 Case file — `/cases/[id]`
+### 3.5 Case file — `/cases/[id]`
 
 Breadcrumb **Queue** returns to the worklist. The header shows the severity,
 status, SLA countdown and mobile acknowledgment state; below it is the exact
@@ -175,8 +194,11 @@ plain-language summary the patient received.
 | Control | What it does |
 | --- | --- |
 | Slot rows + **Book** | `GET /clinics/:clinicId/slots` then `POST /bookings`; a booked slot shows **Booked**, and other slots lock once the case holds one |
-| **Receiving clinic** + **Hand-off note** + **Link referral** | `POST /referrals`, sets status `referred` and records the downstream clinic |
-| **Clinician**, **Clinical evidence**, **Follow-up plan** + **Close case** | `POST /cases/close`; both text fields need at least 8 characters, status becomes `closed` |
+| **Accountable owner** | `POST /cases/:id/assign`; the team select only offers staff from the case's clinics |
+| **Clinical milestones** | Records confirmation, consultation outcome, treatment start, surveillance/next review and a structured drop-off reason |
+| **Receiving clinic** + **Hand-off note** + **Send referral** | `POST /referrals` creates a `sent` referral; the receiving team accepts, declines or completes it |
+| **Clinical evidence**, **Follow-up plan** + **Close case** | `POST /cases/close`; clinician/admin only, both fields required, an owner must be assigned, status becomes `closed` |
+| **Open work** | Lists escalation, overdue and referral tasks; **Done** completes the task |
 
 **Tab 2 — Messages**
 
@@ -185,7 +207,14 @@ plain-language summary the patient received.
 | **Message to patient** + **Send secure message** | `POST /cases/:id/messages` as `coordinator`; the thread shows read/unread state |
 | **Trigger push + SMS outreach** | `POST /cases/:id/outreach` — stores the draft (or a fallback reminder), queues an SMS fallback and writes `outreach_triggered` to the audit trail |
 
-**Tab 3 — Documents**
+**Tab 3 — Clinical consult**
+
+Clinician-to-clinician notes via `GET/POST /cases/:id/consult-notes`. The tab is
+only rendered for clinicians and admins; coordinators cannot read the thread
+and the API rejects their requests. The referring and receiving clinical teams
+share it; it is never returned to the patient app.
+
+**Tab 4 — Documents**
 
 | Control | What it does |
 | --- | --- |
@@ -194,12 +223,14 @@ plain-language summary the patient received.
 | **Upload** | `POST /cases/:id/attachments` as multipart; file goes to the API server's disk, metadata to `case_attachments`, `attachment_uploaded` to the audit trail |
 | File name link | `GET /attachments/:id`, opens inline (staff session or `?patientId=`) |
 
-**Tab 4 — Audit trail** — every transition in order: `lab_ingested`,
+**Tab 5 — Audit trail** — every transition in order: `lab_ingested`,
 `push_queued`, `mobile_acknowledged`, `appointment_booked`, `referral_linked`,
-`attachment_uploaded`, `outreach_triggered`, `escalated`, `auto_escalated`,
-`case_closed`.
+`confirmation_recorded`, `consultation_recorded`, `treatment_recorded`,
+`surveillance_recorded`, `referral_accepted`/`declined`, `case_assigned`,
+`consult_note_added`, `attachment_uploaded`, `outreach_triggered`, `escalated`,
+`auto_escalated`, `case_closed`.
 
-### 3.5 Administration
+### 3.6 Administration
 
 **Overview — `/admin`**
 
@@ -370,14 +401,28 @@ id matches the path. Webhooks require a valid, unexpired, single-use signature.
 | POST | `/cases/:id/messages` | staff | send a secure message |
 | POST | `/cases/:id/outreach` | staff | message + queued SMS fallback |
 | POST | `/cases/:id/escalate` | staff | mark escalated, queue in-app alert |
+| POST | `/cases/:id/assign` | staff | set or clear the accountable owner |
+| POST | `/cases/:id/confirmation` | staff | record confirmatory outcome and notes |
+| POST | `/cases/:id/consultation` | staff | record clinical review outcome |
+| POST | `/cases/:id/treatment` | staff | record treatment start |
+| POST | `/cases/:id/surveillance` | staff | set surveillance plan and next review |
+| POST | `/cases/:id/drop-off` | staff | record a structured delay/drop-off reason |
+| GET/POST | `/cases/:id/consult-notes` | clinician/admin | internal clinician-to-clinician thread |
+| GET | `/staff/team` | staff | assignable care-team members |
+| GET | `/tasks?status=open\\|done` | staff | clinic work items |
+| POST | `/tasks/:id/complete` | staff | complete a work item |
 | POST | `/cases/acknowledge` | patient id | idempotent acknowledgment |
 | POST | `/cases/:id/attachments` | staff | multipart upload |
 | GET | `/cases/:id/attachments` | staff | list attachments |
 | GET | `/attachments/:id[?patientId=]` | staff or owner | stream the file |
 | GET | `/clinics/:clinicId/slots` | staff/patient | slots (created on first read) |
 | POST | `/bookings` | staff/patient | book a slot (case ownership and clinic checked) |
-| POST | `/referrals` | staff | link a downstream clinic |
-| POST | `/cases/close` | staff | clinical sign-off |
+| POST | `/referrals` | staff | create a referral (`sent`) |
+| GET | `/referrals?direction=incoming\\|outgoing` | staff | referral inbox/history |
+| POST | `/referrals/:id/accept` | receiving staff | accept, assign an owner and close the receiving task |
+| POST | `/referrals/:id/decline` | receiving staff | decline with a reason; origin gets a re-route task |
+| POST | `/referrals/:id/complete` | receiving staff | complete the accepted referral |
+| POST | `/cases/close` | clinician/admin | clinical sign-off (requires an assigned owner) |
 | GET | `/metrics` | staff | governance metrics |
 | GET | `/audit/:caseId` | staff/patient | audit trail |
 | GET | `/notifications?caseId=\|patientId=` | staff | outbox rows |
@@ -388,6 +433,7 @@ id matches the path. Webhooks require a valid, unexpired, single-use signature.
 | GET | `/patients/:patientId/cases/:caseId` | patient scope | case + messages + notifications |
 | POST | `/patients/:patientId/cases/:caseId/read` | patient scope | mark messages read |
 | GET/POST | `/patients/:patientId/cases/:caseId/messages` | patient scope | thread |
+| POST | `/patients/:patientId/cases/:caseId/feedback` | patient scope | teach-back; `understood: false` opens an assigned follow-up task |
 | POST | `/patients/:patientId/cases/:caseId/events` | patient scope | telemetry with a case |
 | POST | `/patients/:patientId/events` | patient scope | telemetry |
 | GET | `/patients/:patientId/notifications` | patient scope | patient alerts |
@@ -467,14 +513,18 @@ erDiagram
 
 | Table | Key columns | Notes |
 | --- | --- | --- |
-| `care_cases` | `id` uuid, `patientId`, `clinicId`, `labPayloadId`, `severity`, `status`, `slaDueAt`, `summaryPlainLanguage`, `acknowledgedAt`, `appointmentId`, `referralClinicId`, `escalatedAt`, `closedAt`, `closurePlan`, `closureEvidence`, `closedBy` | the unit of work; patient and clinic ids are external strings, not FKs |
+| `care_cases` | `id` uuid, `patientId`, `clinicId`, `labPayloadId`, `severity`, `status`, `slaDueAt`, `summaryPlainLanguage`, `acknowledgedAt`, `assignedToId`, `appointmentId`, `referralClinicId`, `confirmationStatus`, `confirmedAt`, `consultedAt`, `consultationOutcome`, `treatmentStartedAt`, `surveillancePlan`, `nextReviewAt`, `dropOffReason`, `escalatedAt`, `closedAt`, `closurePlan`, `closureEvidence`, `closedBy` | the unit of work; ownership and clinical milestones are explicit columns |
+| `case_referrals` | `caseId`, `fromClinicId`, `toClinicId`, `note`, `status`, decision actors/timestamps, `declineReason` | referral lifecycle and receiving-clinic access |
+| `case_tasks` | `caseId`, `clinicId`, `assignedToId`, `kind`, `title`, `status`, `dueAt` | escalation, overdue and referral work items |
+| `case_feedback` | `caseId` unique, `patientId`, `understood`, `confidence`, `comment` | patient teach-back and reassurance; a negative answer raises `patient_followup` |
+| `case_consult_notes` | `caseId`, `authorId`, `authorName`, `authorRole`, `body` | internal clinician consultation thread |
 | `audit_trail` | `caseId`, `actor`, `action`, `detail` jsonb | append-only narrative of the case |
 | `case_attachments` | `caseId`, `kind`, `filename`, `storedName` unique, `mimeType`, `sizeBytes`, `uploadedBy` | file bytes live on disk, not in Postgres |
 | `slots` | text id (`clinic-1-slot-1`), `clinicId`, `startAt`, `endAt`, `kind`, `heldByCaseId` | rolling inventory, created on first read |
 | `bookings` | uuid `id`, `caseId`, `slotId`, `status`, `prepInstructions` | one appointment per case |
 | `notifications` | `caseId`, `patientId`, `channel`, `kind`, `status`, `payload`, `attempts`, `error`, `sentAt`, `readAt`, `nextAttemptAt` | the outbox |
 | `webhook_logs` | `source`, `ok`, `status`, `detail` | inbound lab feeds and notification deliveries |
-| `case_messages` | `caseId`, `sender`, `senderId`, `body`, `readAt` | secure thread |
+| `case_messages` | `caseId`, `sender` (`patient`/`coordinator`/`clinician`), `senderId`, `body`, `readAt` | secure patient thread |
 | `device_tokens` | `patientId`, `token` unique, `platform` | Expo push targets |
 | `mobile_events` | `patientId`, `caseId`, `type` | app_open, push_opened, case_viewed, booking_confirmed, message_sent |
 | `routing_rules` | `markerPrefix` unique, `clinicId`, `active` | longest-prefix routing |
@@ -486,8 +536,9 @@ state the SLA sweep (or a coordinator) can enter from any open status. Live
 ingestion writes `notified` directly, because triage already happened in the
 same request; the earlier statuses appear on seeded and manually entered cases.
 Journey stage shown to patients is derived, not stored: closed → completed;
-referral → specialist consultation; booking → appointment booked; otherwise
-result received.
+consultation or treatment recorded → specialist consultation; booking →
+appointment booked; otherwise result received. Confirmation status is shown in
+the result step.
 
 ---
 
@@ -550,11 +601,16 @@ The cron queues one `visit_reminder` per booking 24 hours before the slot.
 ### 8.3 Referral and documented closure
 
 1. Coordinator picks a receiving clinic and writes a hand-off note →
-   `POST /referrals` sets `referralClinicId` and status `referred`.
-2. At sign-off, `POST /cases/close` stores `closurePlan`, `closureEvidence`,
-   `closedBy`, `closedAt` and status `closed`, and writes `case_closed` with both
-   texts to the audit trail.
-3. Closed cases reject new bookings; patient and dashboard read screens keep
+   `POST /referrals` creates a `sent` referral, sets `referralClinicId` and
+   status `referred`, and creates a receiving-clinic task.
+2. The receiving team accepts (assigning an owner and closing the task) or
+   declines with a reason (clearing the destination and creating an origin
+   re-route task). Either clinic can read and write clinical consult notes.
+3. At sign-off, `POST /cases/close` requires the clinician/admin role and a
+   named owner (otherwise 409), stores `closurePlan`, `closureEvidence`,
+   `closedBy`, `closedAt` and status `closed`, and writes `case_closed` with
+   both texts to the audit trail.
+4. Closed cases reject new bookings; patient and dashboard read screens keep
    showing the closure detail.
 
 ### 8.4 Documents
@@ -589,6 +645,7 @@ flowchart LR
   Cron --> Rem[queueVisitReminders]
   Cron --> Out[dispatchPending]
   SLA -->|past SLA or unacked window| Case[status escalated + in_app alert]
+  SLA -->|due nextReviewAt| Review[one surveillance_review task]
   SLA -->|unacked| SMS[sms_fallback queued]
   Rem -->|visit within 24h| Push[visit_reminder queued]
   Out -->|queued or retry due| Sink[NOTIFY_WEBHOOK_URL]
@@ -604,9 +661,11 @@ queued at most once per case.
 ### 8.7 Telemetry → metrics
 
 Mobile `trackEvent` posts to `/patients/:id/events` (fire-and-forget). `/metrics`
-reads cases, bookings, notifications and the last 14 days of events to compute
-acknowledgment speed, breach rate, referral conversion, push read rate, 7-day
-retention, closure count and booking latency.
+reads cases, bookings, notifications, referrals, feedback and the last 14 days of
+events to compute acknowledgment/notification/confirmation/consultation/treatment
+latency, breach and unresolved-actionable counts, referral acceptance and
+completion, appointment completion, documented closure, patient understanding
+and confidence, delay reasons, push read rate, retention and booking latency.
 
 ### 8.8 Staff authentication
 

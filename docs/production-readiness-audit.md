@@ -7,7 +7,9 @@ implementation pass completed on 6 November 2026.
 **Verdict: code-side launch blockers are closed.** The application now has
 patient authentication, invite-only staff accounts, clinic tenancy, guarded
 reads, signed webhooks, consent-aware delivery, web/mobile clients wired to the
-new contracts, and an operable readiness endpoint. Launch is still gated by
+new contracts, the full screening-to-closure loop (ownership, referral
+acceptance, confirmation, consultation, treatment, surveillance and patient
+understanding), and an operable readiness endpoint. Launch is still gated by
 external operations that cannot be completed in the repository: TLS/DNS, a live
 SMS gateway, off-host backups, error tracking/uptime alerting, a penetration
 test, store credentials and legal review.
@@ -57,8 +59,9 @@ and now carries a status and the evidence for it.
 | 2.2 | Duplicate ingestion race | P1 | **Done** | `care_cases.lab_payload_id` unique; insert race caught (`23505`) and resolved to the original case. |
 | 2.3 | Schema and query gaps | P1 | **Done** | Unique active booking per case, slot/case indexes, notification attempt indexes, clinic FK on routing rules, `webhook_receipts`. |
 | 2.4 | Booking inventory synthetic | P0 | **Partial** | Slots are generated for a rolling 14 days per clinic; booking validates clinic, future time, kind, slot hold, unique booking; cancel and reschedule implemented; closing/referring releases the hold. **Remaining:** integrate a real clinic calendar when one exists. |
-| 2.5 | Referral does not hand off | P1 | **Done** | Referral validates an active destination clinic, rejects same-clinic referral, sets `referralClinicId` + `referred`; the patient can read slots and book at the destination because access checks home **or** referred clinic. Verified booking at `specialty-1` for a `clinic-1` patient. |
-| 2.6 | Closure actor client-supplied | P1 | **Done** | `closedBy` is now the authenticated staff email; any `clinicianId` in the body is recorded as a requested clinician only. |
+| 2.5 | Referral does not hand off | P1 | **Done** | Referrals are first-class rows with `sent` / `accepted` / `declined` / `completed`, a hand-off note, decision actor/timestamp and decline reason. Active referrals widen case visibility and booking to the receiving clinic; acceptance assigns a named owner and creates a receiving task. Verified: receiving clinic reads the case, accepts it; a declined referral clears the destination and creates an origin-clinic re-route task. |
+| 2.6 | Closure actor client-supplied | P1 | **Done** | `closedBy` is the authenticated staff email. Closure now requires the `clinician` or `admin` role; a coordinator receives 401. Verified: coordinator close 401, clinician close 200. |
+| 2.13 | Brief loop lacks accountability and clinical states | P1 | **Done** | `assignedToId` names an owner: ingestion and referral acceptance assign a clinic coordinator by default, and closure is refused without an owner. `confirmationStatus`/`confirmedAt`, `consultedAt`/outcome, `treatmentStartedAt` and surveillance plan/next review are stored and audited. The cron sweep turns a due `nextReviewAt` into one deduplicated surveillance task, and negative teach-back opens an assigned patient follow-up. Tasks appear in a dedicated `/tasks` worklist. Internal clinician notes are restricted to clinicians/admins and omitted from coordinator case payloads. |
 | 2.7 | Triage hard-coded/unversioned | P1 | **Partial** | Rules are centralised in `triage.ts`, LOINC-normalised and unit-tested. **Remaining (clinical governance):** a versioned rule set and documented clinical sign-off. |
 | 2.8 | SLA numbers disagree | P1 | **Done** | API and marketing both use 4h / 48h / 168h; guide, hero and FAQ updated. |
 | 2.9 | Data protection and clinical compliance | P0 | **External** | `/privacy` and `/terms` pages ship with product-accurate copy. A DPIA, DPA/BAA with each subprocessor and counsel review remain external. |
@@ -75,7 +78,7 @@ and now carries a status and the evidence for it.
 | 3.3 | Queue usability at scale | P1 | **Deferred** | Server-side pagination and saved views are not in this pass; the queue remains filtered but unpaginated. |
 | 3.4 | Admin capabilities | P1/P2 | **Done** | Staff list, role/clinic change, ban/unban, invite create/list/revoke, clinic list, plus the existing delivery, webhook and routing views. |
 | 3.5 | Web UX resilience | P2 | **Done** | Route error boundary, not-found page and dashboard loading state; Eden errors keep the API message/status instead of a rewritten response. |
-| 3.6 | Accessibility and language | P2 | **External** | WCAG 2.2 AA audit and localisation review. |
+| 3.6 | Accessibility | P2 | **External** | The product is English-only by design: result summaries and SMS copy are English and there is no language preference or selection step. **External:** WCAG 2.2 AA audit. |
 | 3.7 | File handling | P2 | **Partial** | Server-side uploads, magic-byte MIME verification, size cap, UUID names. **External:** object storage and off-host replication. |
 
 ## 4. Reliability and operations
@@ -85,7 +88,7 @@ and now carries a status and the evidence for it.
 | 4.1 | Observability | P0 | **Partial** | Request ids, structured access/error logs, `/ready` database probe, cron failures logged. **External:** error tracking, uptime checks and alert routing. |
 | 4.2 | Background jobs in-process | P1 | **Partial** | Outbox claims rows with `SKIP LOCKED`; cron wraps all work in a logged try/catch; receipts pruned each run. **Remaining:** a separate worker process at scale. |
 | 4.3 | Graceful shutdown | P2 | **Done** | `SIGTERM`/`SIGINT` stop the Elysia server before exit. |
-| 4.4 | CI/CD and migrations | P0 | **Deferred** | Disabled on request: `.github/workflows/deploy.yml.disabled`. Migrations are versioned (`0005`, `0006`) and applied locally. Re-enable with lint, typecheck, tests, builds and a migration job. |
+| 4.4 | CI/CD and migrations | P0 | **Deferred** | Disabled on request: `.github/workflows/deploy.yml.disabled`. Migrations are versioned (`0005`–`0009`) and applied locally. Re-enable with lint, typecheck, tests, builds and a migration job. |
 | 4.5 | Docker packaging | P1 | **External** | Image hardening and resource limits are unchanged; review before deployment. |
 | 4.6 | Capacity and load | P1 | **External** | Load test at target volume with recorded results. |
 
@@ -121,15 +124,24 @@ and now carries a status and the evidence for it.
 | `bun run --cwd apps/mobile typecheck` | pass |
 | `bun run --cwd apps/www typecheck` | pass (0 errors) |
 | `bun run --cwd packages/validators typecheck` | pass |
-| `bun run --cwd apps/api test` | 18 pass |
+| `bun run --cwd apps/api test` | 25 pass (includes DB-backed ownership, referral, surveillance, teach-back and consult-visibility tests) |
+| `bun run --cwd apps/web build` | pass |
 | Patient auth + scoping (curl) | 200 own cases, 404 other patient, 401 anonymous |
 | Staff invite → accept → sign in (curl) | 200; coordinator sees only `clinic-1`; admin route 401 |
 | Webhook signature / unsigned / replay (curl) | 200 / 401 / 409 |
 | Booking at referred clinic + cancel (curl) | 200 / 200 |
+| Full loop: assign → confirm → consult → treat → refer → accept → close (curl) | 200 at each step; receiving clinic reads shared case 200 |
+| Coordinator closure attempt vs clinician closure (curl) | 401 / 200 |
+| Unowned case closure (curl) | 409 until an owner is assigned |
+| Teach-back `understood: false` then `true` (curl) | follow-up task opened, then closed |
+| Declined referral (curl) | destination cleared; origin re-route task created |
+| Internal consult notes (curl) | visible to receiving clinic, absent from patient response |
 | `/health`, `/ready` | 200 |
 
-Not run in this pass: web production build, Docker image build, browser click-through,
-physical-device mobile run, load test, penetration test, accessibility audit.
+Not run in this pass: Docker image build, full browser click-through, physical-device
+mobile run, load test, penetration test, accessibility audit. The dashboard queue
+and case file were rendered in the local browser after the build; the mobile app
+was typechecked but not run on a device.
 The unrelated Expo-generated `ios/**` files still fail formatting; they are
 untracked and were left untouched.
 
@@ -151,7 +163,9 @@ untracked and were left untouched.
 **Data and clinical**
 
 - [x] `patients`, `clinics` and FKs in place; tenant isolation tested
-- [x] Audit trail for case events
+- [x] Audit trail for case events and clinical milestones
+- [x] Named owner, receiving-clinic acceptance, clinician-only closure
+- [x] Confirmation, consultation, treatment, surveillance and patient understanding captured
 - [ ] Retention/deletion policy implemented (**partial; clinic policy needed**)
 - [ ] Backups automated off-host; restore drill passed (**external**)
 - [ ] DPA/BAA signed; DPIA complete (**external**)

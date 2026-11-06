@@ -4,7 +4,7 @@
 
 ### Patient Mobile App (Cross-Platform Mobile)
 
-**Purpose:** The secure, localized hub where patients receive push notifications, authenticate via biometrics (FaceID/Fingerprint), review screening results in plain language, book appointments, and track their care status in real-time.
+**Purpose:** The secure hub where patients receive push notifications, authenticate via biometrics (FaceID/Fingerprint), review screening results in plain language, book appointments, and track their care status in real-time.
 
 ### Clinician & Care Coordinator Dashboard (Web App - Desktop Optimized)
 
