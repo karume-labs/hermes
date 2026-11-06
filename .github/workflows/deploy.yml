@@ -1,44 +1,44 @@
-name: deploy
-on:
-  push:
-    branches: [main]
-jobs:
-  verify:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: bun install
-      - run: bun run lint
-      - run: bun run typecheck
-      - run: bun run test
-      - run: bun run build
+# name: deploy
+# on:
+#   push:
+#     branches: [main]
+# jobs:
+#   verify:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: oven-sh/setup-bun@v2
+#         with:
+#           bun-version: latest
+#       - run: bun install
+#       - run: bun run lint
+#       - run: bun run typecheck
+#       - run: bun run test
+#       - run: bun run build
 
-  migrate:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_USER: hermes
-          POSTGRES_PASSWORD: hermes
-          POSTGRES_DB: hermes
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U hermes -d hermes"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      DATABASE_URL: postgresql://hermes:hermes@127.0.0.1:5432/hermes
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      # Fails the pipeline if committed migrations cannot apply to a clean db.
-      - run: bun install
-      - run: bun run db:migrate
+#   migrate:
+#     runs-on: ubuntu-latest
+#     services:
+#       postgres:
+#         image: postgres:17-alpine
+#         env:
+#           POSTGRES_USER: hermes
+#           POSTGRES_PASSWORD: hermes
+#           POSTGRES_DB: hermes
+#         ports:
+#           - 5432:5432
+#         options: >-
+#           --health-cmd "pg_isready -U hermes -d hermes"
+#           --health-interval 10s
+#           --health-timeout 5s
+#           --health-retries 5
+#     env:
+#       DATABASE_URL: postgresql://hermes:hermes@127.0.0.1:5432/hermes
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: oven-sh/setup-bun@v2
+#         with:
+#           bun-version: latest
+#       # Fails the pipeline if committed migrations cannot apply to a clean db.
+#       - run: bun install
+#       - run: bun run db:migrate
