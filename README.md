@@ -4,7 +4,8 @@ Screening → sign-off loop closure for clinics. Bun monorepo: Next.js web
 (clinician queue + admin) in `apps/web`, Astro marketing site in `apps/www`,
 Elysia API in `apps/api`, Expo patient app in `apps/mobile`, shared contracts
 in `packages/*`. Conventions in `AGENTS.md`; product spec in
-`docs/multi-platform-ecosystem.md`.
+`docs/multi-platform-ecosystem.md`. Day-to-day usage, every screen control and
+the end-to-end data flows: `docs/hermes-guide.md`.
 
 ## Layout
 
