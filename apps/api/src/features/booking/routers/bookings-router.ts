@@ -4,6 +4,7 @@ import {
   ensureSlots,
   findBooking,
   patientHasCaseAtClinic,
+  recordBookingOutcome,
   rescheduleBooking,
 } from "@api/features/booking/services/booking-repository";
 import {
@@ -13,11 +14,13 @@ import {
 import {
   type CarePrincipal,
   requireCarePrincipal,
+  requireStaff,
   staffCanAccessClinic,
 } from "@api/features/shared/auth/index";
 import { NotFoundError } from "@api/features/shared/errors/index";
 import {
   BookingCancelSchema,
+  BookingOutcomeSchema,
   BookingRequestSchema,
   BookingRescheduleSchema,
 } from "@hermes/validators";
@@ -137,4 +140,26 @@ export const bookingsRouter = new Elysia()
       return booking;
     },
     { body: BookingRescheduleSchema, headers: authHeader },
+  )
+  .patch(
+    "/bookings/:id/outcome",
+    async ({ params, body, headers }) => {
+      const staff = await requireStaff(headers);
+      const booking = await recordBookingOutcome(
+        staff.clinicId,
+        params.id,
+        body.status,
+      );
+      if (booking === null) throw new NotFoundError("Booking not found");
+      await logAudit(
+        booking.caseId,
+        `staff:${staff.email}`,
+        body.status === "attended"
+          ? "appointment_attended"
+          : "appointment_no_show",
+        { bookingId: booking.id },
+      );
+      return booking;
+    },
+    { body: BookingOutcomeSchema, headers: authHeader },
   );

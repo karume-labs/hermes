@@ -19,8 +19,11 @@ const BookingScreen = () => {
     caseId?: string;
     clinicId?: string;
     kind?: string;
+    bookingId?: string;
   }>();
   const caseId = paramString(params.caseId);
+  const bookingId = paramString(params.bookingId);
+  const rescheduling = bookingId !== undefined;
   const clinicId = paramString(params.clinicId) ?? "clinic-1";
   const kind =
     paramString(params.kind) === "telehealth" ? "telehealth" : "in_person";
@@ -60,7 +63,10 @@ const BookingScreen = () => {
     setBusy(true);
     setError("");
     try {
-      const booking = await careApi.book(caseId, selected.id, selected.kind);
+      const booking =
+        bookingId === undefined
+          ? await careApi.book(caseId, selected.id, selected.kind)
+          : await careApi.reschedule(bookingId, selected.id, selected.kind);
       setConfirmed({ booking, slot: selected });
       const patientId = await getPatientId();
       trackEvent(patientId, "booking_confirmed", caseId);
@@ -99,7 +105,9 @@ const BookingScreen = () => {
           <View className="size-16 items-center justify-center rounded-full bg-emerald-100">
             <Icon as={CalendarCheck} className="size-8 text-emerald-700" />
           </View>
-          <Text variant="h3">Visit confirmed</Text>
+          <Text variant="h3">
+            {rescheduling ? "Visit rescheduled" : "Visit confirmed"}
+          </Text>
           <Text className="text-muted-foreground">
             {formatDateTime(confirmed.slot.startAt)}
           </Text>
@@ -135,7 +143,11 @@ const BookingScreen = () => {
       contentContainerClassName="gap-3 p-4 pb-12"
     >
       <Text variant="h3">
-        {kind === "telehealth" ? "Video review" : "In-person visit"}
+        {rescheduling
+          ? "Choose a new time"
+          : kind === "telehealth"
+            ? "Video review"
+            : "In-person visit"}
       </Text>
       <Text className="text-muted-foreground">
         Choose a slot that works for you. Prep instructions and a 24h reminder
@@ -190,7 +202,13 @@ const BookingScreen = () => {
         disabled={selected === null || busy || loading}
         onPress={confirm}
       >
-        <Text>{busy ? "Confirming…" : "Confirm booking"}</Text>
+        <Text>
+          {busy
+            ? "Confirming…"
+            : rescheduling
+              ? "Confirm new time"
+              : "Confirm booking"}
+        </Text>
       </Button>
     </ScrollView>
   );

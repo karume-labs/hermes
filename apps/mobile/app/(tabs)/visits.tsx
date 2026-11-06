@@ -2,7 +2,13 @@ import type { PatientBooking } from "@hermes/types";
 import { useFocusEffect, useRouter } from "expo-router";
 import { CalendarCheck, Clock, Video } from "lucide-react-native";
 import * as React from "react";
-import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  View,
+} from "react-native";
 import { TabScreen } from "@/components/layout/tab-screen";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -24,24 +30,64 @@ const Visits = () => {
   const [bookings, setBookings] = React.useState<PatientBooking[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState("");
+  const [cancelling, setCancelling] = React.useState<string | null>(null);
+
+  const load = React.useCallback(async (): Promise<void> => {
+    try {
+      setError("");
+      const patientId = await getPatientId();
+      setBookings(await careApi.patientBookings(patientId));
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "Could not load visits.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
-      void (async () => {
-        try {
-          setError("");
-          const patientId = await getPatientId();
-          setBookings(await careApi.patientBookings(patientId));
-        } catch (caught) {
-          setError(
-            caught instanceof Error ? caught.message : "Could not load visits.",
-          );
-        } finally {
-          setLoading(false);
-        }
-      })();
-    }, []),
+      void load();
+    }, [load]),
   );
+
+  const cancelVisit = async (item: PatientBooking): Promise<void> => {
+    setCancelling(item.booking.id);
+    try {
+      setError("");
+      await careApi.cancelBooking(
+        item.booking.id,
+        "Patient cancelled from the app",
+      );
+      await load();
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Could not cancel this visit.",
+      );
+    } finally {
+      setCancelling(null);
+    }
+  };
+
+  const confirmCancel = (item: PatientBooking): void => {
+    Alert.alert(
+      "Cancel this visit?",
+      "This frees the slot for another patient. Your care team will still see your result.",
+      [
+        { text: "Keep visit", style: "cancel" },
+        {
+          text: "Cancel visit",
+          style: "destructive",
+          onPress: () => {
+            void cancelVisit(item);
+          },
+        },
+      ],
+    );
+  };
 
   const now = Date.now();
   const upcoming = bookings
@@ -145,6 +191,33 @@ const Visits = () => {
                 }
               >
                 <Text>Open care plan</Text>
+              </Button>
+              <Button
+                variant="secondary"
+                onPress={() =>
+                  router.push({
+                    pathname: "/booking",
+                    params: {
+                      caseId: item.booking.caseId,
+                      bookingId: item.booking.id,
+                      clinicId: item.slot.clinicId,
+                      kind: item.slot.kind,
+                    },
+                  })
+                }
+              >
+                <Text>Reschedule visit</Text>
+              </Button>
+              <Button
+                variant="ghost"
+                disabled={cancelling !== null}
+                onPress={() => confirmCancel(item)}
+              >
+                <Text className="text-destructive">
+                  {cancelling === item.booking.id
+                    ? "Cancelling…"
+                    : "Cancel visit"}
+                </Text>
               </Button>
             </View>
           ))

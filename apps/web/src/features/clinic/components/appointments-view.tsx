@@ -5,6 +5,7 @@ import {
   Alert,
   Anchor,
   Badge,
+  Button,
   Group,
   SegmentedControl,
   SimpleGrid,
@@ -16,6 +17,10 @@ import dayjs from "dayjs";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
+import {
+  useCancelClinicBooking,
+  useRecordBookingOutcome,
+} from "@/features/clinic/services/mutations";
 import { useClinicAppointments } from "@/features/clinic/services/queries";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
 import { DataTable } from "@/features/shared/components/table/data-table";
@@ -28,6 +33,73 @@ const STATUS_COLOR = {
   cancelled: "gray",
   no_show: "red",
 } as const;
+
+const AppointmentActions = ({
+  appointment,
+}: {
+  appointment: ClinicAppointment;
+}): ReactNode => {
+  const cancel = useCancelClinicBooking();
+  const outcome = useRecordBookingOutcome();
+  const started = new Date(appointment.slot.startAt).getTime() <= Date.now();
+  const confirmed = appointment.booking.status === "confirmed";
+
+  return (
+    <Group gap={4} wrap="nowrap">
+      <Anchor
+        component={Link}
+        href={`/cases/${appointment.booking.caseId}`}
+        size="sm"
+        fw={600}
+      >
+        Open case
+      </Anchor>
+      {confirmed && !started ? (
+        <Button
+          size="compact-xs"
+          variant="subtle"
+          color="red"
+          loading={cancel.isPending}
+          onClick={() => cancel.mutate(appointment.booking.id)}
+        >
+          Cancel
+        </Button>
+      ) : null}
+      {confirmed && started ? (
+        <>
+          <Button
+            size="compact-xs"
+            variant="light"
+            color="teal"
+            loading={outcome.isPending}
+            onClick={() =>
+              outcome.mutate({
+                bookingId: appointment.booking.id,
+                status: "attended",
+              })
+            }
+          >
+            Attended
+          </Button>
+          <Button
+            size="compact-xs"
+            variant="light"
+            color="red"
+            loading={outcome.isPending}
+            onClick={() =>
+              outcome.mutate({
+                bookingId: appointment.booking.id,
+                status: "no_show",
+              })
+            }
+          >
+            No-show
+          </Button>
+        </>
+      ) : null}
+    </Group>
+  );
+};
 
 const columns: ColumnDef<ClinicAppointment>[] = [
   {
@@ -94,16 +166,7 @@ const columns: ColumnDef<ClinicAppointment>[] = [
     id: "actions",
     header: "",
     enableSorting: false,
-    cell: ({ row }) => (
-      <Anchor
-        component={Link}
-        href={`/cases/${row.original.booking.caseId}`}
-        size="sm"
-        fw={600}
-      >
-        Open case
-      </Anchor>
-    ),
+    cell: ({ row }) => <AppointmentActions appointment={row.original} />,
   },
 ];
 

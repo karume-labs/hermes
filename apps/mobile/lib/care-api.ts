@@ -95,6 +95,14 @@ export const careApi = {
     slotId: string,
     kind: Slot["kind"],
   ): Promise<Booking> => postJson("/bookings", { caseId, slotId, kind }),
+  cancelBooking: (bookingId: string, reason: string): Promise<unknown> =>
+    postJson(`/bookings/${bookingId}/cancel`, { reason }),
+  reschedule: (
+    bookingId: string,
+    slotId: string,
+    kind: Slot["kind"],
+  ): Promise<Booking> =>
+    postJson(`/bookings/${bookingId}/reschedule`, { slotId, kind }),
   messages: (patientId: string, caseId: string): Promise<CaseMessage[]> =>
     requestJson(`/patients/${patientId}/cases/${caseId}/messages`),
   sendMessage: (

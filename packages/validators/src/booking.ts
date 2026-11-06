@@ -28,3 +28,11 @@ export const bookingCancelSchema = Type.Object({
 });
 export type BookingCancel = Static<typeof bookingCancelSchema>;
 export const BookingCancelSchema = bookingCancelSchema;
+
+export const bookingOutcomeSchema = Type.Object({
+  status: Type.Union([Type.Literal("attended"), Type.Literal("no_show")], {
+    error: "Record whether the patient attended or missed the visit.",
+  }),
+});
+export type BookingOutcome = Static<typeof bookingOutcomeSchema>;
+export const BookingOutcomeSchema = bookingOutcomeSchema;
