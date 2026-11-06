@@ -11,7 +11,11 @@ import {
 } from "@api/features/notify/services/notification-service";
 import { sendCaseMessage } from "@api/features/patient/services/message-service";
 import { listMessages } from "@api/features/patient/services/patient-repository";
-import { assertCoordinator } from "@api/features/shared/auth/index";
+import { requirePatient } from "@api/features/patient-auth/services/patient-auth-service";
+import {
+  assertCoordinator,
+  requireStaff,
+} from "@api/features/shared/auth/index";
 import { NotFoundError } from "@api/features/shared/errors/index";
 import { AcknowledgeSchema, CaseMessageSchema } from "@hermes/validators";
 import { Type } from "@sinclair/typebox";
@@ -28,22 +32,42 @@ const authHeader = Type.Object({
 });
 
 export const casesRouter = new Elysia({ prefix: "/cases" })
-  .get("/", ({ query }) => listCases(query), { query: listQuery })
-  .get("/:id", async ({ params }) => {
-    const detail = await getCaseDetail(params.id);
-    if (detail === null) throw new NotFoundError("Case not found");
-    return detail;
-  })
-  .get("/:id/messages", async ({ params }) => {
-    const found = await findCase(params.id);
-    if (found === null) throw new NotFoundError("Case not found");
-    return listMessages(found.id);
-  })
+  .get(
+    "/",
+    async ({ query, headers }) => {
+      const staff = await requireStaff(headers);
+      return listCases(query, staff.clinicId);
+    },
+    { query: listQuery, headers: authHeader },
+  )
+  .get(
+    "/:id",
+    async ({ params, headers }) => {
+      const staff = await requireStaff(headers);
+      const detail = await getCaseDetail(params.id, staff.clinicId);
+      if (detail === null) throw new NotFoundError("Case not found");
+      return detail;
+    },
+    { headers: authHeader },
+  )
+  .get(
+    "/:id/messages",
+    async ({ params, headers }) => {
+      const staff = await requireStaff(headers);
+      const found = await findCase(params.id, staff.clinicId);
+      if (found === null) throw new NotFoundError("Case not found");
+      return listMessages(found.id);
+    },
+    { headers: authHeader },
+  )
   .post(
     "/acknowledge",
-    async ({ body }) => {
+    async ({ body, headers }) => {
+      const patient = await requirePatient(headers);
+      if (body.patientId !== patient.patientId)
+        throw new NotFoundError("Case not found");
       const found = await findCase(body.caseId);
-      if (found === null || found.patientId !== body.patientId)
+      if (found === null || found.patientId !== patient.patientId)
         throw new NotFoundError("Case not found");
       // Acknowledgment is idempotent: a replayed push tap must not move the
       // timestamp or reopen a closed case.
@@ -58,24 +82,24 @@ export const casesRouter = new Elysia({ prefix: "/cases" })
       await markCaseNotificationsRead(updated.id);
       await logAudit(
         updated.id,
-        `patient:${body.patientId}`,
+        `patient:${patient.patientId}`,
         "mobile_acknowledged",
         {},
       );
       return updated;
     },
-    { body: AcknowledgeSchema },
+    { body: AcknowledgeSchema, headers: authHeader },
   )
   .post(
     "/:id/messages",
     async ({ params, body, headers }) => {
-      await assertCoordinator(headers);
-      const found = await findCase(params.id);
+      const staff = await assertCoordinator(headers);
+      const found = await findCase(params.id, staff.clinicId);
       if (found === null) throw new NotFoundError("Case not found");
       return sendCaseMessage({
         caseId: found.id,
         sender: "coordinator",
-        senderId: body.senderId ?? "coordinator",
+        senderId: staff.email,
         body: body.body,
       });
     },
@@ -84,13 +108,13 @@ export const casesRouter = new Elysia({ prefix: "/cases" })
   .post(
     "/:id/outreach",
     async ({ params, body, headers }) => {
-      await assertCoordinator(headers);
-      const found = await findCase(params.id);
+      const staff = await assertCoordinator(headers);
+      const found = await findCase(params.id, staff.clinicId);
       if (found === null) throw new NotFoundError("Case not found");
       const message = await sendCaseMessage({
         caseId: found.id,
         sender: "coordinator",
-        senderId: body.senderId ?? "coordinator",
+        senderId: staff.email,
         body: body.body,
       });
       await queueNotification({
@@ -103,7 +127,7 @@ export const casesRouter = new Elysia({ prefix: "/cases" })
           messageId: message.id,
         },
       });
-      await logAudit(found.id, "coordinator", "outreach_triggered", {
+      await logAudit(found.id, `staff:${staff.email}`, "outreach_triggered", {
         channel: "push+sms",
       });
       return { message, channels: ["push", "sms"] };
@@ -113,8 +137,8 @@ export const casesRouter = new Elysia({ prefix: "/cases" })
   .post(
     "/:id/escalate",
     async ({ params, headers }) => {
-      await assertCoordinator(headers);
-      const found = await findCase(params.id);
+      const staff = await assertCoordinator(headers);
+      const found = await findCase(params.id, staff.clinicId);
       if (found === null) throw new NotFoundError("Case not found");
       const updated = await updateCase(found.id, {
         status: "escalated",
@@ -128,7 +152,7 @@ export const casesRouter = new Elysia({ prefix: "/cases" })
         kind: "escalation",
         payload: { reason: "coordinator_escalation" },
       });
-      await logAudit(updated.id, "coordinator", "escalated", {
+      await logAudit(updated.id, `staff:${staff.email}`, "escalated", {
         reason: "manual",
       });
       return updated;

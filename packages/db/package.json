@@ -11,6 +11,7 @@
     "./utils": "./src/utils.ts",
     "./seed": "./src/seed/index.ts",
     "./care-loop/schema": "./src/care-loop/schema/index.ts",
+    "./directory/schema": "./src/directory/schema/index.ts",
     "./booking/schema": "./src/booking/schema/index.ts",
     "./notify/schema": "./src/notify/schema/index.ts",
     "./patient/schema": "./src/patient/schema/index.ts",

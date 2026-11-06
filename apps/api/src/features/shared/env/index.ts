@@ -10,15 +10,19 @@ const envSchema = Type.Object({
   BETTER_AUTH_SECRET: Type.String({
     default: "hermes-development-secret-change-me-now",
   }),
-  // Google OAuth is optional; sign-in falls back to email + password when unset.
-  GOOGLE_CLIENT_ID: Type.String({ default: "" }),
-  GOOGLE_CLIENT_SECRET: Type.String({ default: "" }),
   // Case files (lab reports, referral letters) are written to this directory on
   // the API server's own disk; no object storage is involved.
   UPLOAD_DIR: Type.String({ default: "uploads" }),
   // Optional outbound sink for patient notifications (email/SMS gateway URL).
   // Empty means "queue only": the outbox keeps rows for the admin to inspect.
   NOTIFY_WEBHOOK_URL: Type.String({ default: "" }),
+  // Transactional SMS gateway for patient login codes. Receives
+  // `{ to, text }` as JSON. Empty means codes are only returned in dev.
+  SMS_WEBHOOK_URL: Type.String({ default: "" }),
+  // HMAC secret every lab feed must sign with (x-hermes-signature).
+  WEBHOOK_SECRET: Type.String({ default: "dev-webhook-secret-change-me" }),
+  PATIENT_SESSION_DAYS: Type.String({ default: "30" }),
+  PATIENT_CODE_TTL_MINUTES: Type.String({ default: "10" }),
   NODE_ENV: Type.Union(
     [
       Type.Literal("development"),
@@ -43,10 +47,31 @@ if (!Value.Check(envSchema, data)) {
 
 export const env: EnvSchemaType = data as EnvSchemaType;
 
-// Refuse to boot production with the documented development secret.
-if (
-  env.NODE_ENV === "production" &&
-  env.API_SECRET === "dev-secret-change-me"
-) {
-  throw new Error("API_SECRET must be set in production");
+// Production must not run on any documented development default: a missing
+// variable should fail the deploy, never silently point at localhost or sign
+// sessions with a public string.
+if (env.NODE_ENV === "production") {
+  const unsafe: string[] = [];
+  if (env.DATABASE_URL === "") unsafe.push("DATABASE_URL");
+  if (env.API_SECRET === "dev-secret-change-me") unsafe.push("API_SECRET");
+  if (
+    env.BETTER_AUTH_SECRET === "hermes-development-secret-change-me-now" ||
+    env.BETTER_AUTH_SECRET.length < 32
+  ) {
+    unsafe.push("BETTER_AUTH_SECRET");
+  }
+  if (env.WEBHOOK_SECRET === "dev-webhook-secret-change-me") {
+    unsafe.push("WEBHOOK_SECRET");
+  }
+  if (env.API_URL.includes("localhost")) unsafe.push("API_URL");
+  if (env.FRONTEND_URL.includes("localhost")) unsafe.push("FRONTEND_URL");
+  if (!env.API_URL.startsWith("https://")) unsafe.push("API_URL (https)");
+  if (!env.FRONTEND_URL.startsWith("https://")) {
+    unsafe.push("FRONTEND_URL (https)");
+  }
+  if (unsafe.length > 0) {
+    throw new Error(
+      `Refusing to start in production with unsafe env: ${unsafe.join(", ")}`,
+    );
+  }
 }

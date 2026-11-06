@@ -11,8 +11,11 @@ import { listNotifications } from "@api/features/notify/services/notification-se
 import { listMessages } from "@api/features/patient/services/patient-repository";
 
 // Full case file: everything the coordinator dashboard needs in one request.
-export const getCaseDetail = async (id: string) => {
-  const careCase = await findCase(id);
+export const getCaseDetail = async (
+  id: string,
+  clinicId: string | null = null,
+) => {
+  const careCase = await findCase(id, clinicId);
   if (careCase === null) return null;
   const appointment = await findBookingByCaseId(careCase.id);
   const slot = appointment === null ? null : await findSlot(appointment.slotId);

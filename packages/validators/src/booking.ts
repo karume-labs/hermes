@@ -15,3 +15,16 @@ export const bookingForm = Type.Object({
   kind: bookingRequestSchema.properties.kind,
 });
 export type BookingForm = Static<typeof bookingForm>;
+
+export const bookingRescheduleSchema = Type.Object({
+  slotId: bookingRequestSchema.properties.slotId,
+  kind: Type.Optional(bookingRequestSchema.properties.kind),
+});
+export type BookingReschedule = Static<typeof bookingRescheduleSchema>;
+export const BookingRescheduleSchema = bookingRescheduleSchema;
+
+export const bookingCancelSchema = Type.Object({
+  reason: Type.Optional(Type.String({ maxLength: 500 })),
+});
+export type BookingCancel = Static<typeof bookingCancelSchema>;
+export const BookingCancelSchema = bookingCancelSchema;

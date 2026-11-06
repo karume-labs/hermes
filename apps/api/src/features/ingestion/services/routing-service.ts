@@ -12,10 +12,13 @@ const toRule = (row: typeof routingRules.$inferSelect): RoutingRule => ({
   updatedAt: row.updatedAt.toISOString(),
 });
 
-export const listRoutingRules = async (): Promise<RoutingRule[]> => {
+export const listRoutingRules = async (
+  clinicId: string | null = null,
+): Promise<RoutingRule[]> => {
   const rows = await db
     .select()
     .from(routingRules)
+    .where(clinicId === null ? undefined : eq(routingRules.clinicId, clinicId))
     .orderBy(asc(routingRules.markerPrefix));
   return rows.map(toRule);
 };

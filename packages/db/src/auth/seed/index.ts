@@ -14,6 +14,7 @@ type SeedAccount = {
   email: string;
   password: string;
   role: StaffRole;
+  clinicId: string | null;
 };
 
 // Vaunt pattern: seed accounts through Better Auth itself so the password row is
@@ -35,12 +36,14 @@ const seedAccounts = (): SeedAccount[] => [
     email: seedEnv.COORDINATOR_EMAIL,
     password: seedEnv.COORDINATOR_PASSWORD,
     role: "coordinator",
+    clinicId: "clinic-1",
   },
   {
     name: "Avery Admin",
     email: seedEnv.ADMIN_EMAIL,
     password: seedEnv.ADMIN_PASSWORD,
     role: "admin",
+    clinicId: null,
   },
 ];
 
@@ -61,7 +64,7 @@ export const seedAuth = async (_context: SeedContext): Promise<number> => {
     if (existing !== null) {
       await db
         .update(user)
-        .set({ role: accountSeed.role })
+        .set({ role: accountSeed.role, clinicId: accountSeed.clinicId })
         .where(eq(user.id, existing.id));
       // Keep the seeded password in step with the configured one, so changing
       // the default does not strand an existing database on the old credential.
@@ -96,7 +99,7 @@ export const seedAuth = async (_context: SeedContext): Promise<number> => {
 
     await db
       .update(user)
-      .set({ role: accountSeed.role })
+      .set({ role: accountSeed.role, clinicId: accountSeed.clinicId })
       .where(eq(user.id, response.user.id));
     created += 1;
     console.log(

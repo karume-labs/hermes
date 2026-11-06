@@ -8,8 +8,14 @@ import {
   plainLanguageSummary,
   slaDueAt,
 } from "@api/features/care-loop/services/triage";
+import {
+  findClinic,
+  findPatient,
+} from "@api/features/directory/services/directory-service";
 import { resolveClinic } from "@api/features/ingestion/services/routing-service";
 import { queueNotification } from "@api/features/notify/services/notification-service";
+import { UnprocessableError } from "@api/features/shared/errors/index";
+import type { CareCase } from "@hermes/types";
 import type { IngestResult, NormalizedLab } from "../types/index";
 
 const DEFAULT_CLINIC = "clinic-1";
@@ -19,6 +25,12 @@ const sourceOf = (sourceMessageId: string): string => {
   if (sourceMessageId.startsWith("hl7_")) return "hl7";
   return "lab";
 };
+
+const isUniqueViolation = (error: unknown): boolean =>
+  typeof error === "object" &&
+  error !== null &&
+  "code" in error &&
+  error.code === "23505";
 
 // The single triage entry point. Duplicate feeds short-circuit before any
 // case, audit row or notification is created.
@@ -38,6 +50,16 @@ export const ingestLab = async (lab: NormalizedLab): Promise<IngestResult> => {
   const due = slaDueAt(severity);
   const clinicId =
     lab.clinicId ?? (await resolveClinic(lab.markerCode, DEFAULT_CLINIC));
+  const [clinic, patient] = await Promise.all([
+    findClinic(clinicId),
+    findPatient(lab.patientId),
+  ]);
+  if (clinic === null) {
+    throw new UnprocessableError(`Unknown clinic: ${clinicId}`);
+  }
+  if (patient === null) {
+    throw new UnprocessableError(`Unknown patient: ${lab.patientId}`);
+  }
   const summary = plainLanguageSummary(
     lab.markerCode,
     lab.markerValue,
@@ -45,15 +67,34 @@ export const ingestLab = async (lab: NormalizedLab): Promise<IngestResult> => {
     severity,
   );
 
-  const careCase = await createCase({
-    patientId: lab.patientId,
-    clinicId,
-    labPayloadId: lab.sourceMessageId,
-    severity,
-    status: "notified",
-    slaDueAt: due,
-    summaryPlainLanguage: summary,
-  });
+  let careCase: CareCase;
+  try {
+    careCase = await createCase({
+      patientId: lab.patientId,
+      clinicId,
+      labPayloadId: lab.sourceMessageId,
+      severity,
+      status: "notified",
+      slaDueAt: due,
+      summaryPlainLanguage: summary,
+    });
+  } catch (error) {
+    // Two feeds can race past the lookup above; the unique lab payload id
+    // decides the winner and the loser returns the original case.
+    if (isUniqueViolation(error)) {
+      const raced = await findCaseByLabPayloadId(lab.sourceMessageId);
+      if (raced !== null) {
+        return {
+          caseId: raced.id,
+          severity: raced.severity,
+          slaDueAt: raced.slaDueAt,
+          summary: raced.summaryPlainLanguage,
+          duplicate: true,
+        };
+      }
+    }
+    throw error;
+  }
 
   await logAudit(careCase.id, `facility:${lab.facilityId}`, "lab_ingested", {
     ...lab,

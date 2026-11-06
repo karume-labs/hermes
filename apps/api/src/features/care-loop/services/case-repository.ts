@@ -61,8 +61,14 @@ const isStatus = (value: string): value is CaseStatus =>
   value === "closed" ||
   value === "escalated";
 
-export const listCases = async (filters: CaseFilters): Promise<CareCase[]> => {
+// `clinicId` is the staff member's tenant: null means the caller is an admin
+// or a system job and may read every clinic.
+export const listCases = async (
+  filters: CaseFilters,
+  clinicId: string | null = null,
+): Promise<CareCase[]> => {
   const predicates = [];
+  if (clinicId !== null) predicates.push(eq(careCases.clinicId, clinicId));
   if (filters.severity !== undefined && isSeverity(filters.severity))
     predicates.push(eq(careCases.severity, filters.severity));
   if (filters.status !== undefined && isStatus(filters.status))
@@ -75,9 +81,19 @@ export const listCases = async (filters: CaseFilters): Promise<CareCase[]> => {
   return rows.map(toCareCase);
 };
 
-export const findCase = async (id: string): Promise<CareCase | null> => {
+export const findCase = async (
+  id: string,
+  clinicId: string | null = null,
+): Promise<CareCase | null> => {
   if (!isCaseId(id)) return null;
-  const [row] = await db.select().from(careCases).where(eq(careCases.id, id));
+  const [row] = await db
+    .select()
+    .from(careCases)
+    .where(
+      clinicId === null
+        ? eq(careCases.id, id)
+        : and(eq(careCases.id, id), eq(careCases.clinicId, clinicId)),
+    );
   if (row === undefined) return null;
   return toCareCase(row);
 };
@@ -96,8 +112,13 @@ export const findCaseByLabPayloadId = async (
   return toCareCase(row);
 };
 
-export const listAllCases = async (): Promise<CareCase[]> => {
-  const rows = await db.select().from(careCases);
+export const listAllCases = async (
+  clinicId: string | null = null,
+): Promise<CareCase[]> => {
+  const rows = await db
+    .select()
+    .from(careCases)
+    .where(clinicId === null ? undefined : eq(careCases.clinicId, clinicId));
   return rows.map(toCareCase);
 };
 

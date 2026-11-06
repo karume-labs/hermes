@@ -1,9 +1,6 @@
 import { listBookings } from "@api/features/booking/services/booking-repository";
 import { listAllCases } from "@api/features/care-loop/services/case-repository";
-import {
-  notificationRows,
-  notificationStats,
-} from "@api/features/notify/services/notification-service";
+import { notificationRows } from "@api/features/notify/services/notification-service";
 import { listMobileEvents } from "@api/features/patient/services/patient-repository";
 import type { CareCase } from "@hermes/types";
 import dayjs from "dayjs";
@@ -39,15 +36,31 @@ const avgAck = (cases: CareCase[]): number => {
 
 // Governance numbers the admin portal promises: SLA breach %, acknowledgment
 // speed, referral conversion, push read rate and 7-day mobile retention.
-export const buildMetrics = async () => {
+export const buildMetrics = async (clinicId: string | null = null) => {
   const now = dayjs();
   const since = now.subtract(7, "day").toDate();
   const previous = now.subtract(14, "day").toDate();
-  const all = await listAllCases();
-  const appointmentRows = await listBookings();
-  const notifications = await notificationRows();
-  const delivery = await notificationStats();
-  const events = await listMobileEvents(previous);
+  const all = await listAllCases(clinicId);
+  const caseIds = new Set(all.map((careCase) => careCase.id));
+  const patientIds = new Set(all.map((careCase) => careCase.patientId));
+  const appointmentRows = (await listBookings()).filter((booking) =>
+    caseIds.has(booking.caseId),
+  );
+  const notifications = (await notificationRows()).filter((row) =>
+    caseIds.has(row.caseId),
+  );
+  const delivery = {
+    queued: notifications.filter((row) => row.status === "queued").length,
+    sent: notifications.filter((row) => row.status === "sent").length,
+    failed: notifications.filter((row) => row.status === "failed").length,
+    read: notifications.filter((row) => row.status === "read").length,
+    smsQueued: notifications.filter(
+      (row) => row.kind === "sms_fallback" && row.status !== "failed",
+    ).length,
+  };
+  const events = (await listMobileEvents(previous)).filter((event) =>
+    patientIds.has(event.patientId),
+  );
 
   const breaches = all.filter((careCase) => breached(careCase, now)).length;
   const acked = all.filter((careCase) => careCase.acknowledgedAt !== null);

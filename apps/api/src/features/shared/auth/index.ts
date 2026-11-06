@@ -1,5 +1,9 @@
 import { timingSafeEqual } from "node:crypto";
 import { auth } from "@api/features/auth/services/config";
+import {
+  type PatientContext,
+  requirePatient,
+} from "@api/features/patient-auth/services/patient-auth-service";
 import { env } from "@api/features/shared/env/index";
 import { UnauthorizedError } from "@api/features/shared/errors/index";
 import type { StaffRole } from "@hermes/types";
@@ -8,6 +12,8 @@ export type StaffContext = {
   id: string;
   email: string;
   role: StaffRole;
+  /** Home clinic; null for admins, who may read every clinic. */
+  clinicId: string | null;
   via: "session" | "service";
 };
 
@@ -36,6 +42,7 @@ const serviceContext = (): StaffContext => ({
   id: "service",
   email: "service",
   role: "admin",
+  clinicId: null,
   via: "service",
 });
 
@@ -69,11 +76,20 @@ export const requireStaff = async (
   const { role } = session.user;
   if (!isStaffRole(role)) throw new UnauthorizedError("Not permitted");
   if (!hasRole(role, roles)) throw new UnauthorizedError("Not permitted");
+  // A coordinator without a clinic would otherwise fall through the scoped
+  // queries as if they were an admin.
+  const clinicId = session.user.clinicId ?? null;
+  if (role === "coordinator" && clinicId === null) {
+    throw new UnauthorizedError(
+      "This account is not assigned to a clinic. Ask an administrator.",
+    );
+  }
 
   return {
     id: session.user.id,
     email: session.user.email,
     role,
+    clinicId,
     via: "session",
   };
 };
@@ -81,6 +97,34 @@ export const requireStaff = async (
 /** Coordinator write guard shared by cases, ingestion, notify and referrals. */
 export const assertCoordinator = async (
   headers: RequestHeaders,
-): Promise<void> => {
-  await requireStaff(headers, ["coordinator", "admin"]);
+): Promise<StaffContext> => requireStaff(headers, ["coordinator", "admin"]);
+
+/** Admin-only guard for staff management, webhook logs and tenant settings. */
+export const requireAdmin = async (
+  headers: RequestHeaders,
+): Promise<StaffContext> => requireStaff(headers, ["admin"]);
+
+/**
+ * Admins span clinics; a coordinator may only touch their own. Anything
+ * outside that boundary is reported as not found so ids cannot be probed.
+ */
+export const staffCanAccessClinic = (
+  staff: StaffContext,
+  clinicId: string,
+): boolean => staff.role === "admin" || staff.clinicId === clinicId;
+
+/** Either a staff session/API secret or a patient bearer token. */
+export type CarePrincipal =
+  | { kind: "staff"; staff: StaffContext }
+  | { kind: "patient"; patient: PatientContext };
+
+export const requireCarePrincipal = async (
+  headers: RequestHeaders,
+): Promise<CarePrincipal> => {
+  try {
+    return { kind: "staff", staff: await requireStaff(headers) };
+  } catch (error) {
+    if (!(error instanceof UnauthorizedError)) throw error;
+  }
+  return { kind: "patient", patient: await requirePatient(headers) };
 };

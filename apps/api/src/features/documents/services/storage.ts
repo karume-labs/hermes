@@ -23,6 +23,34 @@ export const ensureUploadsDirectory = async (): Promise<void> => {
   await mkdir(uploadsDirectory(), { recursive: true });
 };
 
+const startsWith = (bytes: Uint8Array, signature: number[]): boolean =>
+  signature.every((byte, index) => bytes[index] === byte);
+
+const ascii = (bytes: Uint8Array, start: number, end: number): string =>
+  new TextDecoder("ascii").decode(bytes.subarray(start, end));
+
+// The client-declared MIME type selects the extension and is also the type the
+// browser later renders, so verify the bytes actually match before storing.
+const contentMatches = (mimeType: string, bytes: Uint8Array): boolean => {
+  switch (mimeType) {
+    case "application/pdf":
+      return ascii(bytes, 0, 5) === "%PDF-";
+    case "image/png":
+      return startsWith(
+        bytes,
+        [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
+      );
+    case "image/jpeg":
+      return startsWith(bytes, [0xff, 0xd8, 0xff]);
+    case "image/webp":
+      return ascii(bytes, 0, 4) === "RIFF" && ascii(bytes, 8, 12) === "WEBP";
+    case "text/plain":
+      return !bytes.includes(0);
+    default:
+      return false;
+  }
+};
+
 export const storeUpload = async (
   file: File,
 ): Promise<{ storedName: string; sizeBytes: number }> => {
@@ -35,6 +63,12 @@ export const storeUpload = async (
   if (file.size === 0) throw new UnprocessableError("The file is empty.");
   if (file.size > MAX_UPLOAD_BYTES) {
     throw new UnprocessableError("Files must be 10 MB or smaller.");
+  }
+  const header = new Uint8Array(await file.slice(0, 64).arrayBuffer());
+  if (!contentMatches(file.type, header)) {
+    throw new UnprocessableError(
+      "The file contents do not match the declared file type.",
+    );
   }
 
   await ensureUploadsDirectory();

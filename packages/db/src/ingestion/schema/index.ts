@@ -1,3 +1,4 @@
+import { clinics } from "@db/directory/schema/index";
 import { lifecycleTimestamps } from "@db/utils";
 import { boolean, pgTable, text, uuid } from "drizzle-orm/pg-core";
 
@@ -6,7 +7,9 @@ import { boolean, pgTable, text, uuid } from "drizzle-orm/pg-core";
 export const routingRules = pgTable("routing_rules", {
   id: uuid("id").primaryKey().defaultRandom(),
   markerPrefix: text("marker_prefix").notNull().unique(),
-  clinicId: text("clinic_id").notNull(),
+  clinicId: text("clinic_id")
+    .notNull()
+    .references(() => clinics.id, { onDelete: "restrict" }),
   active: boolean("active").notNull().default(true),
   ...lifecycleTimestamps(),
 });

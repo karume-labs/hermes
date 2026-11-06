@@ -1,5 +1,13 @@
+import { clinics } from "@db/directory/schema/index";
 import type { StaffRole } from "@hermes/types";
-import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 // Better Auth core tables (drizzle adapter). Column names and shapes follow the
 // auth CLI contract; `role` plus the ban columns come from the admin plugin.
@@ -20,7 +28,35 @@ export const user = pgTable("user", {
   banned: boolean("banned").default(false),
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires", { withTimezone: true }),
+  // Coordinators are scoped to one clinic; admins keep this null and can see
+  // every clinic. Set by the seeder and by admin invite management.
+  clinicId: text("clinic_id").references(() => clinics.id, {
+    onDelete: "set null",
+  }),
 });
+
+// Single-use staff invitations. Only the token hash is stored; the raw token is
+// returned once to the admin who created it and delivered as a link.
+export const staffInvites = pgTable(
+  "staff_invites",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    email: text("email").notNull(),
+    name: text("name").notNull(),
+    role: text("role").notNull().default("coordinator").$type<StaffRole>(),
+    clinicId: text("clinic_id").references(() => clinics.id, {
+      onDelete: "cascade",
+    }),
+    tokenHash: text("token_hash").notNull().unique(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+    createdBy: text("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("staff_invites_email_idx").on(table.email)],
+);
 
 export const session = pgTable(
   "session",

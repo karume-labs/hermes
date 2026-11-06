@@ -36,9 +36,6 @@ export const webEnvSchema = Type.Object({
     minLength: 1,
     error: "NEXT_PUBLIC_API_URL must point at the API origin.",
   }),
-  // Google OAuth is opt-in: the button only renders when the API has client
-  // credentials configured and the flag is switched on for the dashboard.
-  NEXT_PUBLIC_GOOGLE_AUTH_ENABLED: Type.Optional(Type.String()),
   NODE_ENV: Type.Optional(
     Type.Union([
       Type.Literal("development"),
@@ -50,18 +47,15 @@ export const webEnvSchema = Type.Object({
 
 export type WebEnv = {
   NEXT_PUBLIC_API_URL: string;
-  NEXT_PUBLIC_GOOGLE_AUTH_ENABLED: boolean;
   NODE_ENV: "development" | "production" | "test";
 };
 
 export const parseWebEnv = (input: {
   NEXT_PUBLIC_API_URL: string | undefined;
-  NEXT_PUBLIC_GOOGLE_AUTH_ENABLED: string | undefined;
   NODE_ENV: string | undefined;
 }): WebEnv => {
   const data = {
     NEXT_PUBLIC_API_URL: input.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_GOOGLE_AUTH_ENABLED: input.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED,
     NODE_ENV: input.NODE_ENV,
   };
   Value.Default(webEnvSchema, data);
@@ -73,8 +67,6 @@ export const parseWebEnv = (input: {
   }
   return {
     NEXT_PUBLIC_API_URL: String(data.NEXT_PUBLIC_API_URL),
-    NEXT_PUBLIC_GOOGLE_AUTH_ENABLED:
-      data.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true",
     NODE_ENV:
       data.NODE_ENV === "production"
         ? "production"

@@ -6,9 +6,20 @@ import {
   removeRoutingRule,
   upsertRoutingRule,
 } from "@api/features/ingestion/services/routing-service";
+import {
+  rememberRawBody,
+  verifyWebhook,
+} from "@api/features/ingestion/services/webhook-auth";
 import { recordWebhook } from "@api/features/notify/services/notification-service";
-import { assertCoordinator } from "@api/features/shared/auth/index";
-import { UnprocessableError } from "@api/features/shared/errors/index";
+import {
+  requireStaff,
+  staffCanAccessClinic,
+} from "@api/features/shared/auth/index";
+import {
+  ForbiddenError,
+  NotFoundError,
+  UnprocessableError,
+} from "@api/features/shared/errors/index";
 import {
   type FhirObservationInput,
   FhirObservationSchema,
@@ -56,6 +67,14 @@ const webhookSourceFor = (path: string): string | null => {
 // Registered before the routes so it also covers schema-validation failures,
 // which never reach a handler: the admin audit must see rejected feeds too.
 export const ingestionRouter = new Elysia()
+  // Keep the exact bytes the sender signed; the handler verifies against them
+  // rather than a re-serialised object whose key order may differ.
+  .onParse(async (context, contentType) => {
+    if (contentType === null || !contentType.includes("json")) return;
+    const raw = await context.request.text();
+    rememberRawBody(context.request, raw);
+    return JSON.parse(raw);
+  })
   .onError(async ({ code, error, request }) => {
     const source = webhookSourceFor(new URL(request.url).pathname);
     if (source === null || code !== "VALIDATION") return;
@@ -65,8 +84,9 @@ export const ingestionRouter = new Elysia()
   })
   .post(
     "/webhooks/lab",
-    async ({ body }) => {
+    async ({ body, request }) => {
       try {
+        await verifyWebhook(request, "lab");
         const result = await ingestLab({
           patientId: body.patientId,
           clinicId: body.clinicId,
@@ -91,8 +111,9 @@ export const ingestionRouter = new Elysia()
   )
   .post(
     "/webhooks/fhir",
-    async ({ body }) => {
+    async ({ body, request }) => {
       try {
+        await verifyWebhook(request, "fhir");
         const observation: FhirObservationInput = body;
         const result = await ingestLab(fromFhirObservation(observation));
         await recordWebhook("fhir", true, "accepted", {
@@ -109,8 +130,9 @@ export const ingestionRouter = new Elysia()
   )
   .post(
     "/webhooks/hl7",
-    async ({ body }) => {
+    async ({ body, request }) => {
       try {
+        await verifyWebhook(request, "hl7");
         const labs = parseHl7Oru(body.message).map((lab) => ({
           ...lab,
           clinicId: lab.clinicId ?? body.clinicId ?? null,
@@ -129,11 +151,21 @@ export const ingestionRouter = new Elysia()
     },
     { body: Hl7MessageSchema },
   )
-  .get("/routing-rules", () => listRoutingRules())
+  .get(
+    "/routing-rules",
+    async ({ headers }) => {
+      const staff = await requireStaff(headers);
+      return listRoutingRules(staff.clinicId);
+    },
+    { headers: authHeader },
+  )
   .put(
     "/routing-rules",
     async ({ body, headers }) => {
-      await assertCoordinator(headers);
+      const staff = await requireStaff(headers);
+      if (!staffCanAccessClinic(staff, body.clinicId)) {
+        throw new ForbiddenError("You can only route to your own clinic.");
+      }
       return upsertRoutingRule(body);
     },
     { body: RoutingRuleSchema, headers: authHeader },
@@ -141,7 +173,13 @@ export const ingestionRouter = new Elysia()
   .delete(
     "/routing-rules/:id",
     async ({ params, headers }) => {
-      await assertCoordinator(headers);
+      const staff = await requireStaff(headers);
+      if (staff.role !== "admin") {
+        const own = await listRoutingRules(staff.clinicId);
+        if (!own.some((rule) => rule.id === params.id)) {
+          throw new NotFoundError("Routing rule not found");
+        }
+      }
       const removed = await removeRoutingRule(params.id);
       return { removed };
     },

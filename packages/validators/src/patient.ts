@@ -28,3 +28,34 @@ export const notificationReadSchema = Type.Object({
   notificationId: Type.String({ minLength: 1 }),
 });
 export type NotificationReadBody = Static<typeof notificationReadSchema>;
+
+/** E.164 phone number, the patient's login identity. */
+export const patientPhoneSchema = Type.String({
+  pattern: "^\\+[1-9][0-9]{7,14}$",
+  error: "Enter your phone number with the country code, e.g. +254712345678.",
+});
+
+export const patientCodeSchema = Type.String({
+  pattern: "^[0-9]{6}$",
+  error: "Enter the 6-digit code from the SMS.",
+});
+
+export const patientCodeRequestSchema = Type.Object({
+  phone: patientPhoneSchema,
+});
+export type PatientCodeRequest = Static<typeof patientCodeRequestSchema>;
+export const PatientCodeRequestSchema = patientCodeRequestSchema;
+
+export const patientCodeVerifySchema = Type.Object({
+  phone: patientPhoneSchema,
+  code: patientCodeSchema,
+});
+export type PatientCodeVerify = Static<typeof patientCodeVerifySchema>;
+export const PatientCodeVerifySchema = patientCodeVerifySchema;
+
+export const patientConsentSchema = Type.Object({
+  pushConsent: Type.Boolean(),
+  smsConsent: Type.Boolean(),
+});
+export type PatientConsent = Static<typeof patientConsentSchema>;
+export const PatientConsentSchema = patientConsentSchema;

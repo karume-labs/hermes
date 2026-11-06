@@ -1,7 +1,14 @@
 import { careCases } from "@db/care-loop/schema/index";
 import type { BookingStatus, SlotKind } from "@hermes/types";
-import { relations } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { relations, sql } from "drizzle-orm";
+import {
+  index,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 // Slot ids are clinic-scoped strings (`<clinic>-slot-1`) so the mobile client
 // can reason about them offline before a booking is confirmed.
@@ -19,6 +26,7 @@ export const slots = pgTable(
   },
   (table) => [
     index("slots_clinic_start_idx").on(table.clinicId, table.startAt),
+    index("slots_held_by_case_idx").on(table.heldByCaseId),
   ],
 );
 
@@ -38,7 +46,18 @@ export const bookings = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [index("bookings_case_idx").on(table.caseId)],
+  (table) => [
+    index("bookings_case_idx").on(table.caseId),
+    index("bookings_slot_idx").on(table.slotId),
+    // A case holds at most one live appointment, and a slot holds at most one
+    // live booking; cancelled rows are excluded so the slot can be rebooked.
+    uniqueIndex("bookings_case_confirmed_idx")
+      .on(table.caseId)
+      .where(sql`${table.status} = 'confirmed'`),
+    uniqueIndex("bookings_slot_active_idx")
+      .on(table.slotId)
+      .where(sql`${table.status} in ('held', 'confirmed')`),
+  ],
 );
 
 export const bookingsRelations = relations(bookings, ({ one }) => ({

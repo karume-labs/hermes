@@ -1,14 +1,65 @@
 import { careCases } from "@db/care-loop/schema/index";
+import { patients } from "@db/directory/schema/index";
 import type { MessageSender, MobileEventType } from "@hermes/types";
 import { relations } from "drizzle-orm";
 import {
   index,
+  integer,
   pgTable,
   text,
   timestamp,
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+
+// Opaque bearer tokens for the patient app. Only the SHA-256 hash is stored;
+// the raw token is returned once at verification and lives in SecureStore.
+export const patientSessions = pgTable(
+  "patient_sessions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    patientId: text("patient_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("patient_sessions_patient_idx").on(table.patientId, table.expiresAt),
+  ],
+);
+
+// One-time SMS codes. Rows carry the hash, an expiry and an attempt counter so
+// a stolen or guessed code cannot be replayed indefinitely.
+export const patientLoginCodes = pgTable(
+  "patient_login_codes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    patientId: text("patient_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
+    codeHash: text("code_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("patient_login_codes_patient_idx").on(
+      table.patientId,
+      table.createdAt,
+    ),
+  ],
+);
 
 // One row per installed device. Tokens rotate, so the unique key is the token
 // and `lastSeenAt` tells the dispatcher which devices are still reachable.

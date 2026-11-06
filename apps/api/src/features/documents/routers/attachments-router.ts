@@ -11,10 +11,8 @@ import {
   readUpload,
   storeUpload,
 } from "@api/features/documents/services/storage";
-import {
-  assertCoordinator,
-  requireStaff,
-} from "@api/features/shared/auth/index";
+import { requirePatient } from "@api/features/patient-auth/services/patient-auth-service";
+import { requireStaff } from "@api/features/shared/auth/index";
 import {
   NotFoundError,
   UnauthorizedError,
@@ -49,7 +47,7 @@ export const caseAttachmentsRouter = new Elysia({ prefix: "/cases" })
     "/:id/attachments",
     async ({ params, body, headers }) => {
       const staff = await requireStaff(headers);
-      const found = await findCase(params.id);
+      const found = await findCase(params.id, staff.clinicId);
       if (found === null) throw new NotFoundError("Case not found");
 
       const stored = await storeUpload(body.file);
@@ -72,39 +70,53 @@ export const caseAttachmentsRouter = new Elysia({ prefix: "/cases" })
     },
     { body: UploadBody, headers: authHeader },
   )
-  .get("/:id/attachments", async ({ params, headers }) => {
-    await assertCoordinator(headers);
-    const found = await findCase(params.id);
-    if (found === null) throw new NotFoundError("Case not found");
-    return listAttachments(found.id);
-  });
+  .get(
+    "/:id/attachments",
+    async ({ params, headers }) => {
+      const staff = await requireStaff(headers);
+      const found = await findCase(params.id, staff.clinicId);
+      if (found === null) throw new NotFoundError("Case not found");
+      return listAttachments(found.id);
+    },
+    { headers: authHeader },
+  );
 
-// Download: staff read any file; the mobile app passes the patient id it is
-// already scoped by, and the case must belong to that patient.
+// Download: staff read files inside their clinic; the patient app must present
+// a patient session and the case must belong to that patient. There is no
+// query-parameter shortcut.
 export const attachmentDownloadRouter = new Elysia({
   prefix: "/attachments",
 }).get(
   "/:id",
-  async ({ params, query, headers, set }) => {
+  async ({ params, headers, set }) => {
     const attachment = await findAttachment(params.id);
     if (attachment === null) throw new NotFoundError("File not found");
-    const careCase = await findCase(attachment.caseId);
-    if (careCase === null) throw new NotFoundError("File not found");
 
-    if (query.patientId === undefined) {
-      await assertCoordinator(headers);
-    } else if (query.patientId !== careCase.patientId) {
-      throw new UnauthorizedError("Not permitted");
+    let staff: Awaited<ReturnType<typeof requireStaff>> | null = null;
+    try {
+      staff = await requireStaff(headers);
+    } catch (error) {
+      if (!(error instanceof UnauthorizedError)) throw error;
     }
 
+    if (staff !== null) {
+      const careCase = await findCase(attachment.caseId, staff.clinicId);
+      if (careCase === null) throw new NotFoundError("File not found");
+    } else {
+      const patient = await requirePatient(headers);
+      const careCase = await findCase(attachment.caseId);
+      if (careCase === null || careCase.patientId !== patient.patientId) {
+        throw new NotFoundError("File not found");
+      }
+    }
+
+    const safeName = attachment.filename.replace(/[^\w.\- ]/g, "_");
     set.headers["content-type"] = attachment.mimeType;
-    set.headers["content-disposition"] =
-      `inline; filename="${attachment.filename.replace(/"/g, "")}"`;
+    set.headers["content-disposition"] = `inline; filename="${safeName}"`;
     set.headers["cache-control"] = "private, no-store";
+    set.headers["x-content-type-options"] = "nosniff";
+    set.headers["content-security-policy"] = "sandbox";
     return readUpload(attachment.storedName);
   },
-  {
-    query: t.Object({ patientId: t.Optional(t.String()) }),
-    headers: authHeader,
-  },
+  { headers: authHeader },
 );

@@ -6,9 +6,6 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 
-const googleConfigured =
-  env.GOOGLE_CLIENT_ID !== "" && env.GOOGLE_CLIENT_SECRET !== "";
-
 // Hermes has no Better Auth instance of its own: this is the single source of
 // truth for staff identity. Sessions are cookie-backed, accounts are hashed in
 // `account`, and the dashboard reads them through `/auth/get-session`.
@@ -22,7 +19,17 @@ export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   trustedOrigins: [env.FRONTEND_URL],
 
-  rateLimit: { enabled: false },
+  // Brute-force protection is on by default; the auth pages hit these limits
+  // per IP and per account.
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 30,
+    customRules: {
+      "/sign-in/email": { window: 60, max: 5 },
+      "/request-password-reset": { window: 300, max: 3 },
+    },
+  },
 
   advanced: {
     // The dashboard (:3100) and the API (:18003) are different origins on the
@@ -42,19 +49,23 @@ export const auth = betterAuth({
     },
   },
 
+  // Public sign-up is closed: staff are created through the admin invite flow
+  // (see features/staff). `clinicId` is set by that flow, never by the client.
   emailAndPassword: {
     enabled: true,
+    disableSignUp: true,
     minPasswordLength: 8,
   },
 
-  socialProviders: googleConfigured
-    ? {
-        google: {
-          clientId: env.GOOGLE_CLIENT_ID,
-          clientSecret: env.GOOGLE_CLIENT_SECRET,
-        },
-      }
-    : {},
+  user: {
+    additionalFields: {
+      clinicId: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+    },
+  },
 
   session: {
     cookieCache: { enabled: true, maxAge: 5 * 60 },
@@ -62,5 +73,3 @@ export const auth = betterAuth({
 
   plugins: [admin({ defaultRole: "coordinator", adminRoles: ["admin"] })],
 });
-
-export const googleSignInEnabled = googleConfigured;

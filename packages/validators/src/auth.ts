@@ -35,23 +35,32 @@ export const sessionResponseSchema = Type.Object({
   expiresAt: Type.String(),
 });
 
-export const signUpBody = Type.Object({
-  name: Type.String({
-    minLength: 2,
-    maxLength: 80,
-    error: "Enter the full name you use at the clinic.",
-  }),
-  email: Type.String({
-    format: "email",
-    minLength: 3,
-    error: "Enter the email address your clinic issued you.",
-  }),
-  password: Type.String({
-    minLength: 8,
-    maxLength: 128,
-    error: "Passwords need at least 8 characters.",
-  }),
+// Staff are invited by an admin; public sign-up stays disabled.
+export const createStaffInviteSchema = Type.Object({
+  email: Type.String({ format: "email", minLength: 3 }),
+  name: Type.String({ minLength: 2, maxLength: 80 }),
+  role: staffRoleSchema,
+  clinicId: Type.Optional(Type.String({ minLength: 1 })),
 });
+export type CreateStaffInvite = Static<typeof createStaffInviteSchema>;
+export const CreateStaffInviteSchema = createStaffInviteSchema;
 
-export const signUpBodySchema = signUpBody;
-export type SignUpBody = Static<typeof signUpBody>;
+export const acceptStaffInviteSchema = Type.Object({
+  token: Type.String({ minLength: 16 }),
+  password: Type.String({ minLength: 8, maxLength: 128 }),
+});
+export type AcceptStaffInvite = Static<typeof acceptStaffInviteSchema>;
+export const AcceptStaffInviteSchema = acceptStaffInviteSchema;
+
+export const updateStaffUserSchema = Type.Object({
+  role: Type.Optional(staffRoleSchema),
+  clinicId: Type.Optional(
+    Type.Union([Type.String({ minLength: 1 }), Type.Null()]),
+  ),
+  banned: Type.Optional(Type.Boolean()),
+  banReason: Type.Optional(
+    Type.Union([Type.String({ maxLength: 400 }), Type.Null()]),
+  ),
+});
+export type UpdateStaffUser = Static<typeof updateStaffUserSchema>;
+export const UpdateStaffUserSchema = updateStaffUserSchema;

@@ -1,6 +1,7 @@
 import type * as authSchema from "@hermes/db/auth/schema";
 import type { bookings, slots } from "@hermes/db/booking/schema";
 import type { auditTrail, careCases } from "@hermes/db/care-loop/schema";
+import type { clinics, patients } from "@hermes/db/directory/schema";
 import type { caseAttachments } from "@hermes/db/documents/schema";
 import type { routingRules } from "@hermes/db/ingestion/schema";
 import type { notifications, webhookLogs } from "@hermes/db/notify/schema";
@@ -8,6 +9,7 @@ import type {
   caseMessages,
   deviceTokens,
   mobileEvents,
+  patientSessions,
 } from "@hermes/db/patient/schema";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
@@ -99,6 +101,22 @@ export type CaseAttachment = Serialized<
 
 /** Better Auth user row; credentials live in `account`, never here. */
 export type StaffUser = Serialized<InferSelectModel<typeof authSchema.user>>;
+
+/** Clinic (tenant) row. */
+export type Clinic = Serialized<InferSelectModel<typeof clinics>>;
+
+/** Patient directory row; `id` is the clinic's stable patient identifier. */
+export type Patient = Serialized<InferSelectModel<typeof patients>>;
+
+/** Patient bearer session (token itself never leaves SecureStore). */
+export type PatientSession = Serialized<
+  InferSelectModel<typeof patientSessions>
+>;
+
+/** Staff invitation row; the raw token is only returned at creation. */
+export type StaffInvite = Serialized<
+  InferSelectModel<typeof authSchema.staffInvites>
+>;
 
 /** Session row as returned by `/auth/get-session`. */
 export type AuthSession = Serialized<

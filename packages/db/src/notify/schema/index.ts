@@ -41,6 +41,7 @@ export const notifications = pgTable(
   },
   (table) => [
     index("notifications_case_idx").on(table.caseId, table.createdAt),
+    index("notifications_patient_idx").on(table.patientId, table.createdAt),
     index("notifications_status_idx").on(table.status, table.nextAttemptAt),
   ],
 );
@@ -58,4 +59,19 @@ export const webhookLogs = pgTable(
       .notNull(),
   },
   (table) => [index("webhook_logs_created_idx").on(table.createdAt)],
+);
+
+// A verified signature may be used once. The primary key is the hash of the
+// source + signature header, so replaying a captured request is rejected even
+// inside the timestamp window.
+export const webhookReceipts = pgTable(
+  "webhook_receipts",
+  {
+    id: text("id").primaryKey(),
+    source: text("source").notNull(),
+    receivedAt: timestamp("received_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("webhook_receipts_received_idx").on(table.receivedAt)],
 );

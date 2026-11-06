@@ -1,6 +1,7 @@
 import { seedAuth } from "@db/auth/seed/index";
 import { seedBooking } from "@db/booking/seed/index";
 import { seedCareLoop } from "@db/care-loop/seed/index";
+import { seedDirectory } from "@db/directory/seed/index";
 import { seedDocuments } from "@db/documents/seed/index";
 import { seedRouting } from "@db/ingestion/seed/index";
 import { seedNotify } from "@db/notify/seed/index";
@@ -12,6 +13,7 @@ import { Type } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
 
 const features = [
+  "directory",
   "care-loop",
   "documents",
   "booking",
@@ -25,6 +27,7 @@ type Seeder = (context: SeedContext) => Promise<number>;
 
 // Order matters: children (notifications, messages) read the seeded cases.
 const seeders: Record<FeatureName, Seeder> = {
+  directory: seedDirectory,
   "care-loop": seedCareLoop,
   documents: seedDocuments,
   booking: seedBooking,
@@ -36,6 +39,8 @@ const seeders: Record<FeatureName, Seeder> = {
 
 const toFeature = (value: string): FeatureName | null => {
   switch (value) {
+    case "directory":
+      return "directory";
     case "care-loop":
       return "care-loop";
     case "documents":
@@ -66,7 +71,7 @@ const parseArgs = (argv: string[]): FeatureName[] => {
   const unknown = flags.filter((_, index) => !isFeature(parsed[index]));
   if (unknown.length > 0) {
     throw new Error(
-      `Unknown seed flag(s): ${unknown.join(", ")}. Use --care-loop, --documents, --booking, --notify, --patient, --routing, --auth or --force.`,
+      `Unknown seed flag(s): ${unknown.join(", ")}. Use --directory, --care-loop, --documents, --booking, --notify, --patient, --routing, --auth or --force.`,
     );
   }
   const selected = parsed.filter(isFeature);
