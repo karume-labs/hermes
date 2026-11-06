@@ -59,6 +59,27 @@ export const useClinics = () =>
     staleTime: 5 * 60_000,
   });
 
+export const useAdminClinics = () =>
+  useQuery({
+    queryKey: queryKeys.admin.clinics,
+    queryFn: async () => {
+      const response = await api.admin.clinics.get();
+      if (response.error) throw response.error;
+      return response.data;
+    },
+  });
+
+export const useAdminAudit = () =>
+  useQuery({
+    queryKey: queryKeys.admin.audit,
+    queryFn: async () => {
+      const response = await api.admin.audit.get();
+      if (response.error) throw response.error;
+      return response.data;
+    },
+    refetchInterval: 30_000,
+  });
+
 export const useStaffUsers = () =>
   useQuery({
     queryKey: queryKeys.staff.users,

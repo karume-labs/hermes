@@ -12,6 +12,11 @@ import {
 } from "@mantine/core";
 import {
   IconActivityHeartbeat,
+  IconArrowsExchange,
+  IconBuildingHospital,
+  IconCalendarEvent,
+  IconChecklist,
+  IconHistory,
   IconLayoutDashboard,
   IconRoute,
   IconSend,
@@ -37,9 +42,33 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: "Queue", href: "/queue", icon: <IconStethoscope size={20} /> },
   {
+    label: "Appointments",
+    href: "/appointments",
+    icon: <IconCalendarEvent size={20} />,
+  },
+  { label: "Patients", href: "/patients", icon: <IconUsers size={20} /> },
+  {
+    label: "Referrals",
+    href: "/referrals",
+    icon: <IconArrowsExchange size={20} />,
+  },
+  { label: "Tasks", href: "/tasks", icon: <IconChecklist size={20} /> },
+  {
     label: "Overview",
     href: "/admin",
     icon: <IconLayoutDashboard size={20} />,
+    adminOnly: true,
+  },
+  {
+    label: "Clinics",
+    href: "/admin/clinics",
+    icon: <IconBuildingHospital size={20} />,
+    adminOnly: true,
+  },
+  {
+    label: "Audit trail",
+    href: "/admin/audit",
+    icon: <IconHistory size={20} />,
     adminOnly: true,
   },
   {
