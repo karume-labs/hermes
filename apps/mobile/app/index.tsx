@@ -16,7 +16,11 @@ import { SeverityPill } from "@/components/care/severity-pill";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
-import { loadPatientProfile, signOutPatient } from "@/lib/auth";
+import {
+  getCachedPatient,
+  loadPatientProfile,
+  signOutPatient,
+} from "@/lib/auth";
 import { careApi } from "@/lib/care-api";
 import { journeyLabel, statusLabel } from "@/lib/case-format";
 import { registerPushToken } from "@/lib/notifications";
@@ -47,7 +51,11 @@ const HomeScreen = () => {
 
   React.useEffect(() => {
     void (async () => {
-      const profile = await loadPatientProfile().catch(() => null);
+      // A transient network failure must not sign the patient out; fall back
+      // to the profile cached at sign-in when the refresh cannot reach the API.
+      const profile =
+        (await loadPatientProfile().catch(() => null)) ??
+        (await getCachedPatient());
       if (profile === null) {
         router.replace("/sign-in");
         return;
