@@ -13,6 +13,7 @@ import {
 } from "@mantine/core";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { authClient } from "@/features/auth/services/client";
 import { CaseActions } from "@/features/cases/components/case-actions";
 import { CaseAttachments } from "@/features/cases/components/case-attachments";
 import { CaseAudit } from "@/features/cases/components/case-audit";
@@ -22,6 +23,7 @@ import {
   SlaBadge,
   StatusBadge,
 } from "@/features/cases/components/case-badges";
+import { CaseConsultNotes } from "@/features/cases/components/case-consult-notes";
 import { CaseMessages } from "@/features/cases/components/case-messages";
 import { useCaseDetail } from "@/features/cases/services/queries";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
@@ -40,6 +42,11 @@ const asSentence = (value: string | null): string => {
 
 export const CaseDetailView = ({ caseId }: CaseDetailViewProps): ReactNode => {
   const detail = useCaseDetail(caseId);
+  const { data: session } = authClient.useSession();
+  // The internal consult thread is clinical: coordinators never receive or
+  // render it, matching the API restriction.
+  const canSeeConsult =
+    session?.user.role === "clinician" || session?.user.role === "admin";
 
   if (detail.isLoading) return <Text c="dimmed">Loading case…</Text>;
   if (detail.isError || detail.data === undefined)
@@ -110,6 +117,45 @@ export const CaseDetailView = ({ caseId }: CaseDetailViewProps): ReactNode => {
         </Group>
       </Card>
 
+      <Card radius="sm" p="lg" bd={CARD_STYLE}>
+        <Group justify="space-between" align="flex-start">
+          <Stack gap={2}>
+            <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+              Care continuity
+            </Text>
+            <Text size="sm">
+              Owner: {careCase.assignee?.name ?? "Unassigned"} · Confirmation:{" "}
+              {careCase.confirmationStatus} · Consultation:{" "}
+              {careCase.consultedAt === null ? "pending" : "recorded"} ·
+              Treatment:{" "}
+              {careCase.treatmentStartedAt === null ? "pending" : "started"}
+            </Text>
+            <Text size="sm" c="dimmed">
+              Surveillance:{" "}
+              {careCase.surveillancePlan === null
+                ? "not set"
+                : careCase.surveillancePlan}
+            </Text>
+          </Stack>
+          {careCase.feedback === null ? (
+            <Badge color="orange" variant="light">
+              No patient feedback
+            </Badge>
+          ) : (
+            <Badge
+              color={careCase.feedback.understood ? "teal" : "orange"}
+              variant="light"
+            >
+              Patient{" "}
+              {careCase.feedback.understood
+                ? "understood"
+                : "did not understand"}{" "}
+              · confidence {careCase.feedback.confidence}/5
+            </Badge>
+          )}
+        </Group>
+      </Card>
+
       {careCase.escalatedAt !== null && careCase.status !== "closed" ? (
         <Alert color="orange" title="Escalated">
           No mobile acknowledgment by the SLA window. Escalated{" "}
@@ -138,6 +184,14 @@ export const CaseDetailView = ({ caseId }: CaseDetailViewProps): ReactNode => {
               {careCase.messages.length}
             </Badge>
           </Tabs.Tab>
+          {canSeeConsult ? (
+            <Tabs.Tab value="consult">
+              Clinical consult
+              <Badge ml={6} size="xs" variant="light">
+                {careCase.consultNotes.length}
+              </Badge>
+            </Tabs.Tab>
+          ) : null}
           <Tabs.Tab value="documents">
             Documents
             <Badge ml={6} size="xs" variant="light">
@@ -152,6 +206,11 @@ export const CaseDetailView = ({ caseId }: CaseDetailViewProps): ReactNode => {
         <Tabs.Panel value="messages" pt="md">
           <CaseMessages detail={careCase} />
         </Tabs.Panel>
+        {canSeeConsult ? (
+          <Tabs.Panel value="consult" pt="md">
+            <CaseConsultNotes detail={careCase} />
+          </Tabs.Panel>
+        ) : null}
         <Tabs.Panel value="documents" pt="md">
           <CaseAttachments detail={careCase} />
         </Tabs.Panel>

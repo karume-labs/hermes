@@ -2,8 +2,14 @@
 
 import type {
   AcknowledgeBody,
+  AssignCaseBody,
   BookingRequestBody,
   CloseCaseForm,
+  RecordConfirmationBody,
+  RecordConsultationBody,
+  RecordDropOffBody,
+  RecordSurveillanceBody,
+  RecordTreatmentBody,
   ReferralBody,
 } from "@hermes/validators";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -57,6 +63,150 @@ export const useCloseCase = () => {
   return useMutation({
     mutationFn: async (input: CloseCaseForm) => {
       const response = await api.cases.close.post(input);
+      if (response.error) throw response.error;
+      return response.data;
+    },
+    onSuccess: invalidate,
+  });
+};
+
+export const useAssignCase = () => {
+  const invalidate = useInvalidateCases();
+  return useMutation({
+    mutationFn: async (input: AssignCaseBody & { caseId: string }) => {
+      const response = await api.cases({ id: input.caseId }).assign.post({
+        assignedToId: input.assignedToId,
+      });
+      if (response.error) throw response.error;
+      return response.data;
+    },
+    onSuccess: invalidate,
+  });
+};
+
+export const useRecordConfirmation = () => {
+  const invalidate = useInvalidateCases();
+  return useMutation({
+    mutationFn: async (input: RecordConfirmationBody & { caseId: string }) => {
+      const response = await api.cases({ id: input.caseId }).confirmation.post({
+        status: input.status,
+        notes: input.notes,
+        occurredAt: input.occurredAt,
+      });
+      if (response.error) throw response.error;
+      return response.data;
+    },
+    onSuccess: invalidate,
+  });
+};
+
+export const useRecordConsultation = () => {
+  const invalidate = useInvalidateCases();
+  return useMutation({
+    mutationFn: async (input: RecordConsultationBody & { caseId: string }) => {
+      const response = await api.cases({ id: input.caseId }).consultation.post({
+        outcome: input.outcome,
+        notes: input.notes,
+        occurredAt: input.occurredAt,
+      });
+      if (response.error) throw response.error;
+      return response.data;
+    },
+    onSuccess: invalidate,
+  });
+};
+
+export const useRecordTreatment = () => {
+  const invalidate = useInvalidateCases();
+  return useMutation({
+    mutationFn: async (input: RecordTreatmentBody & { caseId: string }) => {
+      const response = await api.cases({ id: input.caseId }).treatment.post({
+        summary: input.summary,
+        startedAt: input.startedAt,
+      });
+      if (response.error) throw response.error;
+      return response.data;
+    },
+    onSuccess: invalidate,
+  });
+};
+
+export const useRecordSurveillance = () => {
+  const invalidate = useInvalidateCases();
+  return useMutation({
+    mutationFn: async (input: RecordSurveillanceBody & { caseId: string }) => {
+      const response = await api.cases({ id: input.caseId }).surveillance.post({
+        plan: input.plan,
+        nextReviewAt: input.nextReviewAt,
+      });
+      if (response.error) throw response.error;
+      return response.data;
+    },
+    onSuccess: invalidate,
+  });
+};
+
+export const useRecordDropOff = () => {
+  const invalidate = useInvalidateCases();
+  return useMutation({
+    mutationFn: async (input: RecordDropOffBody & { caseId: string }) => {
+      const response = await api.cases({ id: input.caseId })["drop-off"].post({
+        reason: input.reason,
+        note: input.note,
+      });
+      if (response.error) throw response.error;
+      return response.data;
+    },
+    onSuccess: invalidate,
+  });
+};
+
+export const useReferralDecision = () => {
+  const invalidate = useInvalidateCases();
+  return useMutation({
+    mutationFn: async (input: {
+      referralId: string;
+      action: "accept" | "decline" | "complete";
+      reason?: string;
+      assignedToId?: string;
+    }) => {
+      const target = api.referrals({ id: input.referralId });
+      const response =
+        input.action === "accept"
+          ? await target.accept.post({ assignedToId: input.assignedToId })
+          : input.action === "decline"
+            ? await target.decline.post({ reason: input.reason })
+            : await target.complete.post();
+      if (response.error) throw response.error;
+      return response.data;
+    },
+    onSuccess: invalidate,
+  });
+};
+
+export const useCompleteTask = () => {
+  const invalidate = useInvalidateCases();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (taskId: string) => {
+      const response = await api.tasks({ id: taskId }).complete.post();
+      if (response.error) throw response.error;
+      return response.data;
+    },
+    onSuccess: () => {
+      invalidate();
+      void queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+    },
+  });
+};
+
+export const useAddConsultNote = () => {
+  const invalidate = useInvalidateCases();
+  return useMutation({
+    mutationFn: async (input: { caseId: string; body: string }) => {
+      const response = await api
+        .cases({ id: input.caseId })
+        ["consult-notes"].post({ body: input.body });
       if (response.error) throw response.error;
       return response.data;
     },

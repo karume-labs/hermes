@@ -21,6 +21,7 @@ import { errorMessage } from "@/features/shared/utils/form-errors";
 
 const ROLES: { value: StaffRole; label: string }[] = [
   { value: "coordinator", label: "Coordinator" },
+  { value: "clinician", label: "Clinician" },
   { value: "admin", label: "Administrator" },
 ];
 
@@ -39,7 +40,7 @@ export const StaffInviteCard = (): ReactNode => {
 
   const submit = (): void => {
     create.mutate(
-      role === "coordinator" && clinicId !== null
+      role !== "admin" && clinicId !== null
         ? { name, email, role, clinicId }
         : { name, email, role },
     );
@@ -106,13 +107,19 @@ export const StaffInviteCard = (): ReactNode => {
             data={ROLES}
             value={role}
             onChange={(value) =>
-              setRole(value === "admin" ? "admin" : "coordinator")
+              setRole(
+                value === "admin"
+                  ? "admin"
+                  : value === "clinician"
+                    ? "clinician"
+                    : "coordinator",
+              )
             }
             allowDeselect={false}
           />
           <Select
             label="Clinic"
-            description="Coordinators must be assigned to one clinic."
+            description="Coordinators and clinicians must be assigned to one clinic."
             data={clinicOptions}
             value={clinicId}
             onChange={setClinicId}
@@ -128,7 +135,7 @@ export const StaffInviteCard = (): ReactNode => {
             disabled={
               name.trim().length < 2 ||
               email.trim().length < 3 ||
-              (role === "coordinator" && clinicId === null)
+              (role !== "admin" && clinicId === null)
             }
             onClick={submit}
           >

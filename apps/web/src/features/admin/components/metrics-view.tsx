@@ -93,9 +93,9 @@ export const MetricsView = (): ReactNode => {
           tone={m.slaBreachPct > 10 ? "red.7" : "brandSlate.9"}
         />
         <MetricCard
-          label="Referral conversion"
-          value={pctLabel(m.referralConversionPct)}
-          hint={`${m.referrals} cases referred onward`}
+          label="Referral acceptance"
+          value={pctLabel(m.referralAcceptancePct)}
+          hint={`${m.referralsAccepted} accepted · ${m.referralsCompleted} completed`}
         />
         <MetricCard
           label="Push read rate"
@@ -117,7 +117,68 @@ export const MetricsView = (): ReactNode => {
           value={`${m.avgTimeToBookingHours}h`}
           hint={`${m.appointments} appointments booked`}
         />
+        <MetricCard
+          label="Time to notification"
+          value={`${m.avgTimeToNotificationHours}h`}
+          hint="Result received to patient alert"
+        />
+        <MetricCard
+          label="Time to confirmation"
+          value={`${m.avgTimeToConfirmationHours}h`}
+          hint="Result received to confirmatory test"
+        />
+        <MetricCard
+          label="Time to consultation"
+          value={`${m.avgTimeToConsultationHours}h`}
+          hint="Result received to clinical review"
+        />
+        <MetricCard
+          label="Time to treatment"
+          value={`${m.avgTimeToTreatmentHours}h`}
+          hint="Result received to treatment start"
+        />
+        <MetricCard
+          label="Unresolved actionable"
+          value={m.unresolvedActionable}
+          hint={`${m.overdue} past SLA · ${m.pendingAcknowledgement} awaiting ack`}
+          tone={m.unresolvedActionable > 0 ? "orange.7" : "brandSlate.9"}
+        />
+        <MetricCard
+          label="Documented closure"
+          value={pctLabel(m.documentedClosurePct)}
+          hint="Closed with evidence and a follow-up plan"
+        />
+        <MetricCard
+          label="Patient understanding"
+          value={pctLabel(m.patientUnderstandingPct)}
+          hint={`${m.feedbackCount} responses · confidence ${m.avgConfidence}/5`}
+          tone={m.patientUnderstandingPct < 80 ? "orange.7" : "brandSlate.9"}
+        />
       </SimpleGrid>
+
+      <Card
+        radius="sm"
+        p="xl"
+        bg="brandChalk.0"
+        bd="1px solid var(--mantine-color-brandChalk-3)"
+      >
+        <Text size="md" fw={700} mb="sm">
+          Delay and drop-off reasons
+        </Text>
+        {Object.entries(m.delayReasons).length === 0 ? (
+          <Text size="sm" c="dimmed">
+            No reasons recorded yet.
+          </Text>
+        ) : (
+          <Group gap="lg">
+            {Object.entries(m.delayReasons).map(([reason, count]) => (
+              <Text size="sm" key={reason}>
+                {reason}: {count}
+              </Text>
+            ))}
+          </Group>
+        )}
+      </Card>
 
       <SimpleGrid cols={{ base: 1, lg: 2 }}>
         <Card

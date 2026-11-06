@@ -8,6 +8,7 @@ import {
   Select,
   SimpleGrid,
   Stack,
+  Switch,
 } from "@mantine/core";
 import { IconPlus, IconRefresh } from "@tabler/icons-react";
 import { parseAsString, useQueryState } from "nuqs";
@@ -43,7 +44,21 @@ export const QueueView = (): ReactNode => {
     "status",
     parseAsString.withDefault(""),
   );
-  const list = useQueueCases(severity, status);
+  const [ownership, setOwnership] = useQueryState(
+    "ownership",
+    parseAsString.withDefault(""),
+  );
+  const [overdue, setOverdue] = useQueryState(
+    "overdue",
+    parseAsString.withDefault(""),
+  );
+  const list = useQueueCases(
+    severity,
+    status,
+    ownership === "mine" ? "me" : "",
+    ownership === "unassigned" ? "true" : "",
+    overdue,
+  );
   const escalate = useEscalateCase();
   const ingest = useIngestLabResult();
 
@@ -58,9 +73,10 @@ export const QueueView = (): ReactNode => {
       new Date(item.slaDueAt).getTime() < Date.now() &&
       item.acknowledgedAt === null,
   ).length;
-  const urgent = cases.filter((item) => item.severity === "Urgent").length;
+  const unassigned = cases.filter((item) => item.assignedToId === null).length;
   const oldestId = cases[0]?.id;
-  const filtersActive = severity !== "" || status !== "";
+  const filtersActive =
+    severity !== "" || status !== "" || ownership !== "" || overdue !== "";
 
   const columns = useMemo(
     () =>
@@ -126,10 +142,10 @@ export const QueueView = (): ReactNode => {
           tone={breached > 0 ? "red.7" : "brandSlate.9"}
         />
         <MetricCard
-          label="Urgent"
-          value={urgent}
-          hint="Graded urgent by triage"
-          tone={urgent > 0 ? "red.7" : "brandSlate.9"}
+          label="Unassigned"
+          value={unassigned}
+          hint="No named owner yet"
+          tone={unassigned > 0 ? "orange.7" : "brandSlate.9"}
         />
       </SimpleGrid>
 
@@ -138,10 +154,17 @@ export const QueueView = (): ReactNode => {
         description="Filter by clinical severity or workflow status"
         meta={<Badge variant="light">{cases.length}</Badge>}
         filtersActive={filtersActive}
-        activeFilterCount={(severity === "" ? 0 : 1) + (status === "" ? 0 : 1)}
+        activeFilterCount={
+          (severity === "" ? 0 : 1) +
+          (status === "" ? 0 : 1) +
+          (ownership === "" ? 0 : 1) +
+          (overdue === "" ? 0 : 1)
+        }
         onClear={() => {
           void setSeverity("");
           void setStatus("");
+          void setOwnership("");
+          void setOverdue("");
         }}
       >
         <Select
@@ -151,6 +174,24 @@ export const QueueView = (): ReactNode => {
           onChange={(value) => void setSeverity(value ?? "")}
           data={severityOptions}
           clearable
+        />
+        <Select
+          label="Ownership"
+          placeholder="Everyone"
+          value={ownership === "" ? null : ownership}
+          onChange={(value) => void setOwnership(value ?? "")}
+          data={[
+            { value: "mine", label: "My cases" },
+            { value: "unassigned", label: "Unassigned" },
+          ]}
+          clearable
+        />
+        <Switch
+          label="Overdue only"
+          checked={overdue === "true"}
+          onChange={(event) =>
+            void setOverdue(event.currentTarget.checked ? "true" : "")
+          }
         />
         <Select
           label="Workflow status"
@@ -170,6 +211,8 @@ export const QueueView = (): ReactNode => {
         onClearFilters={() => {
           void setSeverity("");
           void setStatus("");
+          void setOwnership("");
+          void setOverdue("");
         }}
         rowClassName={(row) => {
           const breached =

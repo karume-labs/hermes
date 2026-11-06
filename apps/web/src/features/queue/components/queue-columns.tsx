@@ -76,6 +76,21 @@ export const createQueueColumns = ({
     ),
   },
   {
+    id: "owner",
+    header: "Owner",
+    accessorFn: (row) => row.assignedToId ?? "unassigned",
+    cell: ({ row }): ReactNode =>
+      row.original.assignedToId === null ? (
+        <Badge color="orange" variant="light">
+          Unassigned
+        </Badge>
+      ) : (
+        <Text size="xs" ff="monospace">
+          {row.original.assignedToId.slice(0, 8)}
+        </Text>
+      ),
+  },
+  {
     id: "ack",
     header: "Mobile ack",
     enableSorting: false,

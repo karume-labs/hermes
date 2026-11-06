@@ -50,4 +50,9 @@ const fetcher = Object.assign(
   },
 );
 
-export const api = treaty<App>(env.NEXT_PUBLIC_API_URL, { fetcher });
+// Contracts carry ISO strings; Eden's implicit Date conversion makes free text
+// that looks like a date (for example a treatment date) render as an object.
+export const api = treaty<App>(env.NEXT_PUBLIC_API_URL, {
+  fetcher,
+  parseDate: false,
+});

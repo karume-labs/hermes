@@ -26,3 +26,23 @@ export const useClinicSlots = (clinicId: string) =>
     },
     enabled: clinicId !== "",
   });
+
+export const useCareTeam = () =>
+  useQuery({
+    queryKey: queryKeys.staff.team,
+    queryFn: async () => {
+      const response = await api.staff.team.get();
+      if (response.error) throw response.error;
+      return response.data;
+    },
+  });
+
+export const useReferralClinics = () =>
+  useQuery({
+    queryKey: queryKeys.clinics,
+    queryFn: async () => {
+      const response = await api.clinics.get();
+      if (response.error) throw response.error;
+      return response.data;
+    },
+  });

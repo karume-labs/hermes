@@ -112,11 +112,10 @@ export const CaseMessages = ({ detail }: { detail: CaseDetail }): ReactNode => {
             placeholder="Your HbA1c result needs a follow-up visit. We can book it for you."
             minRows={2}
             error={errors.body?.message}
-            disabled={closed}
             {...register("body")}
           />
           <Group>
-            <Button type="submit" loading={send.isPending} disabled={closed}>
+            <Button type="submit" loading={send.isPending}>
               Send secure message
             </Button>
             <Button

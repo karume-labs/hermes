@@ -13,29 +13,27 @@ import {
 import type { ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { useLinkReferral } from "@/features/cases/services/mutations";
+import { useReferralClinics } from "@/features/cases/services/queries";
 import {
   errorMessage,
   friendlyTypeboxResolver,
 } from "@/features/shared/utils/form-errors";
 
-const CLINICS = [
-  { value: "specialty-1", label: "Specialty clinic 1" },
-  { value: "specialty-2", label: "Specialty clinic 2" },
-  { value: "clinic-1", label: "Primary care · clinic 1" },
-];
-
 interface ReferralFormProps {
   caseId: string;
   currentClinicId: string | null;
+  originClinicId: string;
   disabled: boolean;
 }
 
 export const CaseReferralForm = ({
   caseId,
   currentClinicId,
+  originClinicId,
   disabled,
 }: ReferralFormProps): ReactNode => {
   const refer = useLinkReferral();
+  const clinics = useReferralClinics();
   const {
     register,
     handleSubmit,
@@ -45,8 +43,12 @@ export const CaseReferralForm = ({
     formState: { errors },
   } = useForm<ReferralForm>({
     resolver: friendlyTypeboxResolver(referralForm),
-    defaultValues: { toClinicId: "specialty-1", note: "" },
+    defaultValues: { toClinicId: "", note: "" },
   });
+
+  const options = (clinics.data ?? [])
+    .filter((clinic) => clinic.isActive && clinic.id !== originClinicId)
+    .map((clinic) => ({ value: clinic.id, label: clinic.name }));
 
   const onSubmit = (values: ReferralForm) => {
     refer.mutate(
@@ -68,17 +70,17 @@ export const CaseReferralForm = ({
         ) : null}
         <Select
           label="Receiving clinic"
-          data={CLINICS}
-          value={watch("toClinicId")}
-          onChange={(value) => {
-            if (value !== null) setValue("toClinicId", value);
-          }}
+          placeholder="Choose a clinic"
+          data={options}
+          value={watch("toClinicId") === "" ? null : watch("toClinicId")}
+          onChange={(value) => setValue("toClinicId", value ?? "")}
           error={errors.toClinicId?.message}
           disabled={disabled}
+          searchable
         />
         <TextInput
           label="Hand-off note"
-          placeholder="Routine specialist review requested"
+          placeholder="Reason for referral and what the receiving team should do"
           error={errors.note?.message}
           disabled={disabled}
           {...register("note")}
@@ -88,9 +90,9 @@ export const CaseReferralForm = ({
             type="submit"
             variant="light"
             loading={refer.isPending}
-            disabled={disabled}
+            disabled={disabled || options.length === 0}
           >
-            Link referral
+            Send referral
           </Button>
         </Group>
       </Stack>

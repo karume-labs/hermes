@@ -1,11 +1,26 @@
 "use client";
 
 import type { CaseDetail, Slot } from "@hermes/types";
-import { Alert, Button, Card, Group, Stack, Text, Title } from "@mantine/core";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Group,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import type { ReactNode } from "react";
+import { CaseAssignment } from "@/features/cases/components/case-assignment";
+import { CaseMilestones } from "@/features/cases/components/case-milestones";
+import { CaseReferrals } from "@/features/cases/components/case-referrals";
 import { CaseCloseForm } from "@/features/cases/components/close-case-form";
 import { CaseReferralForm } from "@/features/cases/components/referral-form";
-import { useBookSlot } from "@/features/cases/services/mutations";
+import {
+  useBookSlot,
+  useCompleteTask,
+} from "@/features/cases/services/mutations";
 import { useClinicSlots } from "@/features/cases/services/queries";
 import { errorMessage } from "@/features/shared/utils/form-errors";
 
@@ -22,8 +37,13 @@ const slotLabel = (slot: Slot): string => {
 };
 
 export const CaseActions = ({ detail }: { detail: CaseDetail }): ReactNode => {
-  const slots = useClinicSlots(detail.clinicId);
+  const bookingClinicId =
+    detail.referralClinicId === null
+      ? detail.clinicId
+      : detail.referralClinicId;
+  const slots = useClinicSlots(bookingClinicId);
   const book = useBookSlot();
+  const completeTask = useCompleteTask();
   const closed = detail.status === "closed";
   const bookedSlotId =
     detail.appointment === null ? null : detail.appointment.slotId;
@@ -78,11 +98,15 @@ export const CaseActions = ({ detail }: { detail: CaseDetail }): ReactNode => {
           ))}
           {slots.data !== undefined && availableSlots.length === 0 ? (
             <Text size="sm" c="dimmed">
-              No open slots at {detail.clinicId}.
+              No open slots at {bookingClinicId}.
             </Text>
           ) : null}
         </Stack>
       </Card>
+
+      <CaseAssignment detail={detail} />
+
+      <CaseMilestones detail={detail} />
 
       <Card withBorder radius="md" p="lg">
         <Title order={3}>Referral hand-off</Title>
@@ -92,8 +116,45 @@ export const CaseActions = ({ detail }: { detail: CaseDetail }): ReactNode => {
         <CaseReferralForm
           caseId={detail.id}
           currentClinicId={detail.referralClinicId}
+          originClinicId={detail.clinicId}
           disabled={closed}
         />
+      </Card>
+
+      <CaseReferrals detail={detail} />
+
+      <Card withBorder radius="md" p="lg">
+        <Group justify="space-between" mb="sm">
+          <Title order={3}>Open work</Title>
+          <Badge variant="light">{detail.tasks.length}</Badge>
+        </Group>
+        <Stack gap="sm">
+          {detail.tasks.map((task) => (
+            <Group key={task.id} justify="space-between" align="flex-start">
+              <Stack gap={0}>
+                <Text size="sm" fw={600}>
+                  {task.title}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  {task.kind} · {task.detail ?? "No detail"}
+                </Text>
+              </Stack>
+              <Button
+                size="xs"
+                variant="light"
+                loading={completeTask.isPending}
+                onClick={() => completeTask.mutate(task.id)}
+              >
+                Done
+              </Button>
+            </Group>
+          ))}
+          {detail.tasks.length === 0 ? (
+            <Text size="sm" c="dimmed">
+              No open escalation or referral tasks.
+            </Text>
+          ) : null}
+        </Stack>
       </Card>
 
       <Card withBorder radius="md" p="lg">
