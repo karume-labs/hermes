@@ -75,6 +75,11 @@ export const AppNavbar = ({
   toggleMobile,
 }: AppNavbarProps): ReactNode => {
   const pathname = usePathname();
+  // The mobile drawer overlays the page, so any tap that navigates has to
+  // dismiss it — otherwise the next screen opens behind an open sidebar.
+  const closeOnMobile = (): void => {
+    if (mobileOpened) toggleMobile();
+  };
   const items = NAV_ITEMS.filter((item) => item.adminOnly !== true || isAdmin);
   // Right mark for the surface: the clinic plus inside the care dashboard,
   // the admin shield once you are in administration.
@@ -102,6 +107,7 @@ export const AppNavbar = ({
           component={Link}
           href="/queue"
           aria-label="Hermes queue"
+          onClick={closeOnMobile}
           style={{
             display: "flex",
             alignItems: "center",
@@ -155,9 +161,7 @@ export const AppNavbar = ({
                   aria-label={item.label}
                   leftSection={item.icon}
                   active={active}
-                  onClick={() => {
-                    if (mobileOpened) toggleMobile();
-                  }}
+                  onClick={closeOnMobile}
                   fw={active ? 700 : 600}
                   variant="subtle"
                   className="hermes-nav-link"
