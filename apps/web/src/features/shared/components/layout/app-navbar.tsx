@@ -16,6 +16,7 @@ import {
   IconRoute,
   IconSend,
   IconStethoscope,
+  IconUsers,
   IconWebhook,
 } from "@tabler/icons-react";
 import Link from "next/link";
@@ -57,6 +58,12 @@ const NAV_ITEMS: NavItem[] = [
     label: "Routing rules",
     href: "/admin/routing",
     icon: <IconRoute size={20} />,
+    adminOnly: true,
+  },
+  {
+    label: "Staff access",
+    href: "/admin/staff",
+    icon: <IconUsers size={20} />,
     adminOnly: true,
   },
 ];

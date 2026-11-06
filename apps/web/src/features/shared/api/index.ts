@@ -31,21 +31,9 @@ const fetcher = Object.assign(
         : { "content-type": "application/json", ...options?.headers },
       cache: "no-store",
     });
-    if (!response.ok) {
-      logRequest(method, response.status);
-      return {
-        ...response,
-        json: async () => ({
-          success: false,
-          code: `HTTP_${response.status}`,
-          message:
-            response.status === 401
-              ? "Your session expired. Sign in again."
-              : `Request failed with status ${response.status}`,
-        }),
-      } as Response;
-    }
     logRequest(method, response.status);
+    // Errors flow back through Eden as `{ status, value }`; rewriting the
+    // Response here would lose the API's message and status.
     return response;
   },
   // Bun's fetch type carries a preconnect hook; Eden expects `typeof fetch`.

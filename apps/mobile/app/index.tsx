@@ -16,14 +16,16 @@ import { SeverityPill } from "@/components/care/severity-pill";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+import { loadPatientProfile, signOutPatient } from "@/lib/auth";
 import { careApi } from "@/lib/care-api";
 import { journeyLabel, statusLabel } from "@/lib/case-format";
 import { registerPushToken } from "@/lib/notifications";
-import { getPatientId, nextPatient, trackEvent } from "@/lib/session";
+import { getPatientId, trackEvent } from "@/lib/session";
 
 const HomeScreen = () => {
   const router = useRouter();
   const [patientId, setPatientId] = React.useState<string | null>(null);
+  const [patientLabel, setPatientLabel] = React.useState("");
   const [cases, setCases] = React.useState<PatientCase[]>([]);
   const [error, setError] = React.useState("");
   const [loading, setLoading] = React.useState(true);
@@ -45,20 +47,25 @@ const HomeScreen = () => {
 
   React.useEffect(() => {
     void (async () => {
-      const id = await getPatientId();
-      setPatientId(id);
-      trackEvent(id, "app_open");
+      const profile = await loadPatientProfile().catch(() => null);
+      if (profile === null) {
+        router.replace("/sign-in");
+        return;
+      }
+      setPatientId(profile.id);
+      setPatientLabel(`${profile.name} · ${profile.clinicName}`);
+      trackEvent(profile.id, "app_open");
       const token = await registerPushToken();
       if (token !== null) {
         await careApi
-          .registerDevice(id, token, Platform.OS)
+          .registerDevice(profile.id, token, Platform.OS)
           .catch((caught: unknown) =>
             console.warn("Device registration failed", caught),
           );
       }
-      await load(id);
+      await load(profile.id);
     })();
-  }, [load]);
+  }, [load, router]);
 
   React.useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(
@@ -82,12 +89,9 @@ const HomeScreen = () => {
     return () => subscription.remove();
   }, [router]);
 
-  const switchPatient = async (): Promise<void> => {
-    if (patientId === null) return;
-    setLoading(true);
-    const next = await nextPatient(patientId);
-    setPatientId(next);
-    await load(next);
+  const signOut = async (): Promise<void> => {
+    await signOutPatient();
+    router.replace("/sign-in");
   };
 
   return (
@@ -118,7 +122,9 @@ const HomeScreen = () => {
           {patientId === null ? null : (
             <View className="mt-2 flex-row items-center gap-2 self-start rounded-full border border-border bg-card px-3 py-1">
               <View className="h-1.5 w-1.5 rounded-full bg-success" />
-              <Text className="text-xs text-muted-foreground">{patientId}</Text>
+              <Text className="text-xs text-muted-foreground">
+                {patientLabel === "" ? patientId : patientLabel}
+              </Text>
             </View>
           )}
         </View>
@@ -218,8 +224,8 @@ const HomeScreen = () => {
           >
             <Text>Care journey</Text>
           </Button>
-          <Button variant="ghost" size="sm" onPress={switchPatient}>
-            <Text>Switch patient</Text>
+          <Button variant="ghost" size="sm" onPress={signOut}>
+            <Text>Sign out</Text>
           </Button>
         </View>
       </ScrollView>

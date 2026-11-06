@@ -8,6 +8,7 @@ import type {
   PatientCase,
   Slot,
 } from "@hermes/types";
+import { getPatientToken } from "@/lib/auth";
 import { env } from "@/lib/env/index";
 
 export interface PatientNotification {
@@ -29,9 +30,14 @@ export interface PatientCaseDetail extends PatientCase {
 }
 
 const requestJson = async <T>(path: string, init?: RequestInit): Promise<T> => {
+  const token = await getPatientToken();
   const response = await fetch(`${env.apiBase}${path}`, {
     ...init,
-    headers: { "content-type": "application/json", ...init?.headers },
+    headers: {
+      "content-type": "application/json",
+      ...(token === null ? {} : { authorization: `Bearer ${token}` }),
+      ...init?.headers,
+    },
   });
   if (!response.ok) {
     const body: unknown = await response.json().catch(() => null);

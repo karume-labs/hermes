@@ -1,6 +1,6 @@
 "use client";
 
-import type { SignInBody, SignUpBody } from "@hermes/validators";
+import type { SignInBody } from "@hermes/validators";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/features/auth/services/client";
@@ -32,34 +32,6 @@ export const useSignIn = () => {
     onSuccess: onAuthenticated,
   });
 };
-
-export const useSignUp = () => {
-  const onAuthenticated = useAuthSuccess();
-  return useMutation({
-    mutationFn: async (input: SignUpBody) => {
-      const response = await authClient.signUp.email(input);
-      if (response.error !== null) {
-        throw new Error(failureMessage(response.error.message));
-      }
-      return response.data;
-    },
-    onSuccess: onAuthenticated,
-  });
-};
-
-export const useGoogleSignIn = () =>
-  useMutation({
-    mutationFn: async () => {
-      const response = await authClient.signIn.social({
-        provider: "google",
-        callbackURL: `${window.location.origin}/queue`,
-      });
-      if (response.error !== null) {
-        throw new Error(failureMessage(response.error.message));
-      }
-      return response.data;
-    },
-  });
 
 export const useSignOut = () => {
   const queryClient = useQueryClient();

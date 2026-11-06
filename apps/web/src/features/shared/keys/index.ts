@@ -17,5 +17,10 @@ export const queryKeys = {
   },
   webhooks: ["webhooks", "logs"] as const,
   routingRules: ["routing-rules"] as const,
+  clinics: ["clinics"] as const,
+  staff: {
+    users: ["staff", "users"] as const,
+    invites: ["staff", "invites"] as const,
+  },
   slots: (clinicId: string) => ["slots", clinicId] as const,
 } as const;

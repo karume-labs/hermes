@@ -15,6 +15,18 @@ export const errorMessage = (error: unknown): string => {
   if ("message" in error && typeof error.message === "string") {
     return error.message;
   }
+  // The API envelope is `{ error: { code, message } }`.
+  if ("error" in error) {
+    const nested = error.error;
+    if (
+      nested !== null &&
+      typeof nested === "object" &&
+      "message" in nested &&
+      typeof nested.message === "string"
+    ) {
+      return nested.message;
+    }
+  }
   if ("value" in error) return errorMessage(error.value);
   return "Something went wrong. Try again.";
 };

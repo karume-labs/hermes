@@ -48,6 +48,37 @@ export const useWebhookLogs = () =>
     refetchInterval: 30_000,
   });
 
+export const useClinics = () =>
+  useQuery({
+    queryKey: queryKeys.clinics,
+    queryFn: async () => {
+      const response = await api.clinics.get();
+      if (response.error) throw response.error;
+      return response.data;
+    },
+    staleTime: 5 * 60_000,
+  });
+
+export const useStaffUsers = () =>
+  useQuery({
+    queryKey: queryKeys.staff.users,
+    queryFn: async () => {
+      const response = await api.staff.users.get();
+      if (response.error) throw response.error;
+      return response.data;
+    },
+  });
+
+export const useStaffInvites = () =>
+  useQuery({
+    queryKey: queryKeys.staff.invites,
+    queryFn: async () => {
+      const response = await api.staff.invites.get();
+      if (response.error) throw response.error;
+      return response.data;
+    },
+  });
+
 export const useRoutingRules = () =>
   useQuery({
     queryKey: queryKeys.routingRules,
