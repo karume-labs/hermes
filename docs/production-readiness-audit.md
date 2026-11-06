@@ -653,9 +653,10 @@ signal handling, pool/query timeouts and compose resource limits.
 
 ### 4.4 CI/CD and migrations — P0
 
-`.github/workflows/deploy.yml` is fully commented out. There is no pipeline
-that installs, lints, typechecks, tests, builds images, pushes them or applies
-migrations. Compose references `ghcr.io/hermes/*` images with no build or push
+`.github/workflows/deploy.yml` is fully commented out and has been renamed to
+`deploy.yml.disabled` (`799cad0` onward), so GitHub Actions runs nothing at all.
+There is no pipeline that installs, lints, typechecks, tests, builds images,
+pushes them or applies migrations. Compose references `ghcr.io/hermes/*` images with no build or push
 workflow. No staging environment, no smoke test after deploy, no rollback
 procedure, no migration safety check (drizzle migrations are applied with
 `db:migrate` by hand).

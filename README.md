@@ -137,6 +137,7 @@ bun run build      # production Next.js build
 `infra/docker/docker-compose.yml` + `infra/caddy/Caddyfile` (Caddy fronts
 `:80/443`, `/api/*` → API; Postgres 17 with a named volume sits behind the
 API healthcheck). Images build from `infra/docker/Dockerfile.{api,web}`; the web
-image runs the Next standalone server traced from the workspace root. CI in
-`.github/workflows/deploy.yml` runs install → lint → typecheck → test → build,
-then applies migrations against a throwaway Postgres service.
+image runs the Next standalone server traced from the workspace root. The CI
+pipeline is currently disabled and kept as
+`.github/workflows/deploy.yml.disabled`; rename it back to `.yml` when the
+deploy workflow is ready.
