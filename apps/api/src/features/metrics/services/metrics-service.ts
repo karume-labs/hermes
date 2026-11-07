@@ -155,6 +155,15 @@ export const buildMetrics = async (clinicId: string | null = null) => {
       (careCase) =>
         careCase.severity !== "Routine" && careCase.status !== "closed",
     ).length,
+    unassignedOpen: all.filter(
+      (careCase) =>
+        careCase.assignedToId === null && careCase.status !== "closed",
+    ).length,
+    referralsDeclined: referralRows.filter((row) => row.status === "declined")
+      .length,
+    referralsPending: referralRows.filter((row) => row.status === "sent")
+      .length,
+    avgTimeToClosureHours: measure(closed, (careCase) => careCase.closedAt),
     avgAckHours: measure(all, (careCase) => careCase.acknowledgedAt),
     avgAckBySeverity: {
       Routine: measure(
