@@ -45,7 +45,7 @@ if (!Value.Check(envSchema, data)) {
   );
 }
 
-export const env: EnvSchemaType = data as EnvSchemaType;
+export const env: EnvSchemaType = Value.Parse(envSchema, data);
 
 // Production must not run on any documented development default: a missing
 // variable should fail the deploy, never silently point at localhost or sign

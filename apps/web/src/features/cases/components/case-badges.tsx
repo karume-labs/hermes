@@ -36,7 +36,12 @@ const severityIcon = (severity: string): ReactNode => {
   return <IconCircleCheck size={13} stroke={1.75} />;
 };
 
-const STATUS: Record<string, { label: string; tone: Tone }> = {
+const UNKNOWN_STATUS: { label: string; tone: Tone } = {
+  label: "",
+  tone: "info",
+};
+
+const STATUS: Partial<Record<string, { label: string; tone: Tone }>> = {
   received: { label: "Result received", tone: "info" },
   triaged: { label: "Triaged", tone: "info" },
   notified: { label: "Outreach in progress", tone: "actionable" },
@@ -85,7 +90,7 @@ export const SeverityBadge = ({
 );
 
 export const StatusBadge = ({ status }: { status: string }): ReactNode => {
-  const entry = STATUS[status] ?? { label: status, tone: "info" as Tone };
+  const entry = STATUS[status] ?? { ...UNKNOWN_STATUS, label: status };
   const icon =
     entry.tone === "urgent" ? (
       <IconAlertTriangle size={13} stroke={1.75} />

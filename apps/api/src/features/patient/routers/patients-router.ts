@@ -9,21 +9,23 @@ import {
   markNotificationReadForPatient,
 } from "@api/features/notify/services/notification-service";
 import { sendCaseMessage } from "@api/features/patient/services/message-service";
+import { listPatientBookings } from "@api/features/patient/services/patient-bookings";
 import {
-  findCaseFeedback,
-  findPatientCase,
-  listMessages,
-  listPatientBookings,
-  listPatientCases,
-  markInboundMessagesRead,
   recordMobileEvent,
   registerDevice,
-  saveCaseFeedback,
-} from "@api/features/patient/services/patient-repository";
+} from "@api/features/patient/services/patient-device-service";
 import {
-  type PatientContext,
-  requirePatient,
-} from "@api/features/patient-auth/services/patient-auth-service";
+  findCaseFeedback,
+  saveCaseFeedback,
+} from "@api/features/patient/services/patient-feedback";
+import {
+  findPatientCase,
+  listMessages,
+  listPatientCases,
+  markInboundMessagesRead,
+} from "@api/features/patient/services/patient-repository";
+import type { PatientContext } from "@api/features/patient-auth/services/patient-auth-dto";
+import { requirePatient } from "@api/features/patient-auth/services/patient-session-service";
 import { NotFoundError } from "@api/features/shared/errors/index";
 import {
   CaseFeedbackSchema,

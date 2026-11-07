@@ -19,7 +19,7 @@ const toSlot = (row: typeof slots.$inferSelect): Slot => ({
   startAt: row.startAt.toISOString(),
   endAt: row.endAt.toISOString(),
   kind: row.kind,
-  heldByCaseId: row.heldByCaseId ?? null,
+  heldByCaseId: row.heldByCaseId,
 });
 
 const toBooking = (row: typeof bookings.$inferSelect): Booking => ({

@@ -11,7 +11,7 @@ import {
   readUpload,
   storeUpload,
 } from "@api/features/documents/services/storage";
-import { requirePatient } from "@api/features/patient-auth/services/patient-auth-service";
+import { requirePatient } from "@api/features/patient-auth/services/patient-session-service";
 import { requireStaff } from "@api/features/shared/auth/index";
 import {
   NotFoundError,

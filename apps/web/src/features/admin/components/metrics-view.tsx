@@ -1,56 +1,14 @@
 "use client";
 
-import {
-  Alert,
-  Card,
-  Group,
-  Progress,
-  SimpleGrid,
-  Stack,
-  Text,
-} from "@mantine/core";
+import { Alert, SimpleGrid, Stack, Text } from "@mantine/core";
 import type { ReactNode } from "react";
+import { DelayReasonsCard } from "@/features/admin/components/metrics-delays";
+import { SeveritySection } from "@/features/admin/components/metrics-severity";
 import { useCareMetrics } from "@/features/admin/services/queries";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
 import { MetricCard } from "@/features/shared/components/ui/metric-card";
 
 const pctLabel = (value: number): string => `${value}%`;
-
-const SEVERITY_TONE = {
-  Routine: "brandSlate.4",
-  Actionable: "orange.5",
-  Urgent: "red.6",
-} as const;
-
-interface SeverityBarProps {
-  label: string;
-  hours: number;
-  tone: string;
-  target: string;
-}
-
-const SeverityBar = ({
-  label,
-  hours,
-  tone,
-  target,
-}: SeverityBarProps): ReactNode => (
-  <Stack gap={6}>
-    <Group justify="space-between">
-      <Text size="sm" fw={600}>
-        {label}
-      </Text>
-      <Text size="sm" c="dimmed">
-        {hours}h · target {target}
-      </Text>
-    </Group>
-    <Progress
-      value={Math.min((hours / 72) * 100, 100)}
-      color={tone}
-      size="sm"
-    />
-  </Stack>
-);
 
 export const MetricsView = (): ReactNode => {
   const metrics = useCareMetrics();
@@ -91,6 +49,29 @@ export const MetricsView = (): ReactNode => {
           value={pctLabel(m.slaBreachPct)}
           hint={`${m.slaBreaches} of ${m.total} cases breached`}
           tone={m.slaBreachPct > 10 ? "red.7" : "brandSlate.9"}
+        />
+        <MetricCard
+          label="Time to closure"
+          value={`${m.avgTimeToClosureHours}h`}
+          hint="Result received to a closed case"
+        />
+        <MetricCard
+          label="Unassigned open cases"
+          value={m.unassignedOpen}
+          hint="Open cases without a named owner"
+          tone={m.unassignedOpen > 0 ? "orange.7" : "brandSlate.9"}
+        />
+        <MetricCard
+          label="Referrals pending"
+          value={m.referralsPending}
+          hint="Sent and awaiting the receiving clinic"
+          tone={m.referralsPending > 0 ? "orange.7" : "brandSlate.9"}
+        />
+        <MetricCard
+          label="Referrals declined"
+          value={m.referralsDeclined}
+          hint="Declined and returned with a re-route task"
+          tone={m.referralsDeclined > 0 ? "red.7" : "brandSlate.9"}
         />
         <MetricCard
           label="Referral acceptance"
@@ -156,99 +137,12 @@ export const MetricsView = (): ReactNode => {
         />
       </SimpleGrid>
 
-      <Card
-        radius="sm"
-        p="xl"
-        bg="brandChalk.0"
-        bd="1px solid var(--mantine-color-brandChalk-3)"
-      >
-        <Text size="md" fw={700} mb="sm">
-          Delay and drop-off reasons
-        </Text>
-        {Object.entries(m.delayReasons).length === 0 ? (
-          <Text size="sm" c="dimmed">
-            No reasons recorded yet.
-          </Text>
-        ) : (
-          <Group gap="lg">
-            {Object.entries(m.delayReasons).map(([reason, count]) => (
-              <Text size="sm" key={reason}>
-                {reason}: {count}
-              </Text>
-            ))}
-          </Group>
-        )}
-      </Card>
-
-      <SimpleGrid cols={{ base: 1, lg: 2 }}>
-        <Card
-          radius="sm"
-          p="xl"
-          bg="brandChalk.0"
-          bd="1px solid var(--mantine-color-brandChalk-3)"
-        >
-          <Text size="md" fw={700} mb="lg">
-            Acknowledgment speed by severity
-          </Text>
-          <Stack gap="lg">
-            <SeverityBar
-              label="Routine"
-              hours={m.avgAckBySeverity.Routine}
-              tone={SEVERITY_TONE.Routine}
-              target="< 72h"
-            />
-            <SeverityBar
-              label="Actionable"
-              hours={m.avgAckBySeverity.Actionable}
-              tone={SEVERITY_TONE.Actionable}
-              target="< 24h"
-            />
-            <SeverityBar
-              label="Urgent"
-              hours={m.avgAckBySeverity.Urgent}
-              tone={SEVERITY_TONE.Urgent}
-              target="< 4h"
-            />
-          </Stack>
-        </Card>
-
-        <Card
-          radius="sm"
-          p="xl"
-          bg="brandChalk.0"
-          bd="1px solid var(--mantine-color-brandChalk-3)"
-        >
-          <Text size="md" fw={700} mb="lg">
-            Severity mix
-          </Text>
-          <Stack gap="lg">
-            {(
-              [
-                ["Routine", m.bySeverity.Routine],
-                ["Actionable", m.bySeverity.Actionable],
-                ["Urgent", m.bySeverity.Urgent],
-              ] as const
-            ).map(([label, value]) => (
-              <Stack gap={6} key={label}>
-                <Group justify="space-between">
-                  <Text size="sm" fw={600}>
-                    {label}
-                  </Text>
-                  <Text size="sm" c="dimmed">
-                    {value} ·{" "}
-                    {m.total === 0 ? 0 : Math.round((value / m.total) * 100)}%
-                  </Text>
-                </Group>
-                <Progress
-                  value={m.total === 0 ? 0 : (value / m.total) * 100}
-                  color={SEVERITY_TONE[label]}
-                  size="sm"
-                />
-              </Stack>
-            ))}
-          </Stack>
-        </Card>
-      </SimpleGrid>
+      <DelayReasonsCard delayReasons={m.delayReasons} />
+      <SeveritySection
+        ackBySeverity={m.avgAckBySeverity}
+        mix={m.bySeverity}
+        total={m.total}
+      />
     </Stack>
   );
 };

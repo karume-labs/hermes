@@ -1,12 +1,14 @@
 import {
-  bookSlot,
   cancelBooking,
-  ensureSlots,
+  rescheduleBooking,
+} from "@api/features/booking/services/booking-cancel";
+import { recordBookingOutcome } from "@api/features/booking/services/booking-outcome";
+import {
+  bookSlot,
   findBooking,
   patientHasCaseAtClinic,
-  recordBookingOutcome,
-  rescheduleBooking,
 } from "@api/features/booking/services/booking-repository";
+import { ensureSlots } from "@api/features/booking/services/slot-service";
 import {
   findCase,
   logAudit,

@@ -8,9 +8,9 @@ type IconProps = LucideProps & {
   as: LucideIcon;
 } & React.RefAttributes<LucideIcon>;
 
-function IconImpl({ as: IconComponent, ...props }: IconProps) {
-  return <IconComponent {...props} />;
-}
+const IconImpl = ({ as: IconComponent, ...props }: IconProps) => (
+  <IconComponent {...props} />
+);
 
 const StyledIcon = withUniwind(IconImpl, {
   size: {
@@ -43,7 +43,7 @@ const StyledIcon = withUniwind(IconImpl, {
  * @param {number} size - Icon size (overrides the size class).
  * @param {...LucideProps} ...props - Additional Lucide icon props passed to the "as" icon.
  */
-function Icon({ as: IconComponent, className, ...props }: IconProps) {
+const Icon = ({ as: IconComponent, className, ...props }: IconProps) => {
   const textClass = React.useContext(TextClassContext);
   return (
     <StyledIcon
@@ -52,6 +52,6 @@ function Icon({ as: IconComponent, className, ...props }: IconProps) {
       {...props}
     />
   );
-}
+};
 
 export { Icon };

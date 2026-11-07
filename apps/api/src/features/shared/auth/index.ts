@@ -1,9 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { auth } from "@api/features/auth/services/config";
-import {
-  type PatientContext,
-  requirePatient,
-} from "@api/features/patient-auth/services/patient-auth-service";
+import type { PatientContext } from "@api/features/patient-auth/services/patient-auth-dto";
+import { requirePatient } from "@api/features/patient-auth/services/patient-session-service";
 import { env } from "@api/features/shared/env/index";
 import { UnauthorizedError } from "@api/features/shared/errors/index";
 import type { StaffRole } from "@hermes/types";

@@ -24,7 +24,7 @@ type TeamRow = {
 
 const toTeamMember = (row: TeamRow) => ({
   ...row,
-  clinicName: row.clinicName ?? null,
+  clinicName: row.clinicName,
 });
 
 export const listTeam = async (staff: StaffContext): Promise<TeamRow[]> => {
@@ -65,7 +65,7 @@ const findAssignee = async (id: string) => {
     .leftJoin(clinics, eq(user.clinicId, clinics.id))
     .where(and(eq(user.id, id), eq(user.banned, false)))
     .limit(1);
-  return row ?? null;
+  return row;
 };
 
 export const assignCase = async (
@@ -113,7 +113,7 @@ const findDefaultAssignee = async (
     )
     .orderBy(asc(user.createdAt), asc(user.id));
   const preferred = rows.find((row) => row.role === "coordinator") ?? rows[0];
-  return preferred?.id ?? null;
+  return preferred?.id;
 };
 
 export const defaultAssigneeId = async (

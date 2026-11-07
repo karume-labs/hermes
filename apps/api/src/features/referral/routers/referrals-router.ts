@@ -1,4 +1,4 @@
-import { releaseCaseBooking } from "@api/features/booking/services/booking-repository";
+import { releaseCaseBooking } from "@api/features/booking/services/booking-cancel";
 import {
   findCase,
   logAudit,

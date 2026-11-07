@@ -1,66 +1,17 @@
+import { toBooking, toSlot } from "@api/features/booking/services/booking-dto";
 import { toCareCase } from "@api/features/care-loop/services/case-repository";
-import { bookings, slots } from "@db/booking/schema/index";
-import { careCases, caseFeedback } from "@db/care-loop/schema/index";
-import { db } from "@db/client";
-import { clinics } from "@db/directory/schema/index";
 import {
-  caseMessages,
-  deviceTokens,
-  mobileEvents,
-} from "@db/patient/schema/index";
-import type {
-  Booking,
-  CareCase,
-  CaseFeedback,
-  CaseMessage,
-  JourneyStep,
-  MessageSender,
-  MobileEventType,
-  PatientBooking,
-  PatientCase,
-  Slot,
-} from "@hermes/types";
+  journeyStage,
+  toMessage,
+} from "@api/features/patient/services/patient-dto";
+import { bookings, slots } from "@db/booking/schema/index";
+import { careCases } from "@db/care-loop/schema/index";
+import { db } from "@db/client";
+import { caseMessages } from "@db/patient/schema/index";
+import type { CaseMessage, MessageSender, PatientCase } from "@hermes/types";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 
-const toSlot = (row: typeof slots.$inferSelect): Slot => ({
-  id: row.id,
-  clinicId: row.clinicId,
-  startAt: row.startAt.toISOString(),
-  endAt: row.endAt.toISOString(),
-  kind: row.kind,
-  heldByCaseId: row.heldByCaseId ?? null,
-});
-
-const toBooking = (row: typeof bookings.$inferSelect): Booking => ({
-  id: row.id,
-  caseId: row.caseId,
-  slotId: row.slotId,
-  status: row.status,
-  prepInstructions: row.prepInstructions,
-  createdAt: row.createdAt.toISOString(),
-});
-
-const toMessage = (row: typeof caseMessages.$inferSelect): CaseMessage => ({
-  id: row.id,
-  caseId: row.caseId,
-  sender: row.sender,
-  senderId: row.senderId,
-  body: row.body,
-  createdAt: row.createdAt.toISOString(),
-  readAt: row.readAt ? row.readAt.toISOString() : null,
-});
-
-export const journeyStage = (careCase: CareCase): JourneyStep => {
-  if (careCase.status === "closed") return "completed";
-  if (careCase.consultedAt !== null || careCase.treatmentStartedAt !== null)
-    return "specialist_consultation";
-  if (
-    careCase.appointmentId !== null ||
-    careCase.status === "appointment_booked"
-  )
-    return "appointment_booked";
-  return "result_received";
-};
+export { journeyStage } from "@api/features/patient/services/patient-dto";
 
 const decorate = async (
   rows: Array<typeof careCases.$inferSelect>,
@@ -164,117 +115,9 @@ export const markInboundMessagesRead = async (
     );
 };
 
-export const registerDevice = async (input: {
-  patientId: string;
-  token: string;
-  platform: string;
-}): Promise<void> => {
-  await db
-    .insert(deviceTokens)
-    .values(input)
-    .onConflictDoUpdate({
-      target: deviceTokens.token,
-      set: {
-        patientId: input.patientId,
-        platform: input.platform,
-        lastSeenAt: new Date(),
-      },
-    });
-};
-
-export const recordMobileEvent = async (input: {
-  patientId: string;
-  caseId?: string | null;
-  type: MobileEventType;
-}): Promise<void> => {
-  await db.insert(mobileEvents).values({
-    patientId: input.patientId,
-    caseId: input.caseId ?? null,
-    type: input.type,
-  });
-};
-
-export const listMobileEvents = async (since: Date) => {
-  const rows = await db.select().from(mobileEvents);
-  return rows.filter((row) => row.createdAt >= since);
-};
-
 export const listBookingsForPatient = async (patientId: string) => {
   const patientCases = await listPatientCases(patientId);
   return patientCases.flatMap((item) =>
     item.appointment === null ? [] : [item.appointment],
   );
-};
-
-/** Every visit the patient has, including cancelled and past ones. */
-export const listPatientBookings = async (
-  patientId: string,
-): Promise<PatientBooking[]> => {
-  const rows = await db
-    .select({
-      booking: bookings,
-      slot: slots,
-      clinicName: clinics.name,
-      summary: careCases.summaryPlainLanguage,
-      severity: careCases.severity,
-    })
-    .from(bookings)
-    .innerJoin(slots, eq(bookings.slotId, slots.id))
-    .innerJoin(careCases, eq(bookings.caseId, careCases.id))
-    .innerJoin(clinics, eq(careCases.clinicId, clinics.id))
-    .where(eq(careCases.patientId, patientId))
-    .orderBy(desc(slots.startAt));
-  return rows.map((row) => ({
-    booking: toBooking(row.booking),
-    slot: toSlot(row.slot),
-    clinicName: row.clinicName,
-    summary: row.summary,
-    severity: row.severity,
-  }));
-};
-
-const toFeedback = (row: typeof caseFeedback.$inferSelect): CaseFeedback => ({
-  ...row,
-  createdAt: row.createdAt.toISOString(),
-});
-
-export const findCaseFeedback = async (
-  caseId: string,
-): Promise<CaseFeedback | null> => {
-  const [row] = await db
-    .select()
-    .from(caseFeedback)
-    .where(eq(caseFeedback.caseId, caseId))
-    .limit(1);
-  return row === undefined ? null : toFeedback(row);
-};
-
-// A patient may revise their teach-back answer; the latest response wins.
-export const saveCaseFeedback = async (input: {
-  caseId: string;
-  patientId: string;
-  understood: boolean;
-  confidence: number;
-  comment?: string;
-}): Promise<CaseFeedback> => {
-  const [row] = await db
-    .insert(caseFeedback)
-    .values({
-      caseId: input.caseId,
-      patientId: input.patientId,
-      understood: input.understood,
-      confidence: input.confidence,
-      comment: input.comment ?? null,
-    })
-    .onConflictDoUpdate({
-      target: caseFeedback.caseId,
-      set: {
-        understood: input.understood,
-        confidence: input.confidence,
-        comment: input.comment ?? null,
-        createdAt: new Date(),
-      },
-    })
-    .returning();
-  return toFeedback(row);
 };

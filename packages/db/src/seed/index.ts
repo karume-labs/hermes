@@ -105,5 +105,5 @@ export const seed = async (
   }
 };
 
-const isMain = (import.meta as unknown as { main?: boolean }).main;
+const isMain = import.meta.main;
 if (isMain) await seed();

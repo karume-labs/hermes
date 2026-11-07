@@ -15,4 +15,4 @@ if (!Value.Check(envSchema, data)) {
   throw new Error("Invalid db env — set DATABASE_URL to a postgres URL");
 }
 
-export const env: EnvSchemaType = data as EnvSchemaType;
+export const env: EnvSchemaType = Value.Parse(envSchema, data);

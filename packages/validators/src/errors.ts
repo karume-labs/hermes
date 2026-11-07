@@ -1,4 +1,4 @@
-import { FormatRegistry, type TSchema } from "@sinclair/typebox";
+import { FormatRegistry } from "@sinclair/typebox";
 import {
   DefaultErrorFunction,
   SetErrorFunction,
@@ -28,9 +28,12 @@ export const installFriendlyTypeBoxErrors = (): void => {
   installed = true;
 
   SetErrorFunction((error) => {
-    const schema = error.schema as TSchema & { error?: unknown };
-    if (typeof schema.error === "string" && schema.error.trim().length > 0) {
-      return schema.error;
+    if (
+      "error" in error.schema &&
+      typeof error.schema.error === "string" &&
+      error.schema.error.trim().length > 0
+    ) {
+      return error.schema.error;
     }
 
     const message = DefaultErrorFunction(error);

@@ -12,7 +12,7 @@ import {
 } from "@api/features/notify/services/notification-service";
 import { sendCaseMessage } from "@api/features/patient/services/message-service";
 import { listMessages } from "@api/features/patient/services/patient-repository";
-import { requirePatient } from "@api/features/patient-auth/services/patient-auth-service";
+import { requirePatient } from "@api/features/patient-auth/services/patient-session-service";
 import {
   assertCoordinator,
   requireStaff,

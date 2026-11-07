@@ -1,7 +1,5 @@
-import {
-  findBookingByCaseId,
-  findSlot,
-} from "@api/features/booking/services/booking-repository";
+import { findBookingByCaseId } from "@api/features/booking/services/booking-repository";
+import { findSlot } from "@api/features/booking/services/slot-service";
 import { teamMember } from "@api/features/care-loop/services/assignment-service";
 import {
   findCase,

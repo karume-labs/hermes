@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { bookingsRouter } from "@api/features/booking/routers/bookings-router";
+import { recordBookingOutcome } from "@api/features/booking/services/booking-outcome";
 import {
   bookSlot,
-  ensureSlots,
   findBooking,
-  recordBookingOutcome,
 } from "@api/features/booking/services/booking-repository";
+import { ensureSlots } from "@api/features/booking/services/slot-service";
 import { findCase } from "@api/features/care-loop/services/case-repository";
 import {
   generateSessionToken,

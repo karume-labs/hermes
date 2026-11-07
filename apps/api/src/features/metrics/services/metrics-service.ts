@@ -1,7 +1,7 @@
 import { listBookings } from "@api/features/booking/services/booking-repository";
 import { listAllCases } from "@api/features/care-loop/services/case-repository";
-import { notificationRows } from "@api/features/notify/services/notification-service";
-import { listMobileEvents } from "@api/features/patient/services/patient-repository";
+import { notificationRows } from "@api/features/notify/services/notification-stats";
+import { listMobileEvents } from "@api/features/patient/services/patient-device-service";
 import { caseFeedback, caseReferrals } from "@db/care-loop/schema/index";
 import { db } from "@db/client";
 import type { CareCase } from "@hermes/types";
@@ -132,8 +132,10 @@ export const buildMetrics = async (clinicId: string | null = null) => {
   const closed = all.filter((careCase) => careCase.status === "closed");
   const documented = closed.filter(
     (careCase) =>
-      (careCase.closureEvidence ?? "").trim() !== "" &&
-      (careCase.closurePlan ?? "").trim() !== "",
+      careCase.closureEvidence !== null &&
+      careCase.closureEvidence.trim() !== "" &&
+      careCase.closurePlan !== null &&
+      careCase.closurePlan.trim() !== "",
   );
   const understood = feedbackRows.filter((row) => row.understood).length;
   const delayReasons: Record<string, number> = {};

@@ -47,7 +47,7 @@ const findReferral = async (id: string): Promise<ReferralRow | null> => {
     .from(caseReferrals)
     .where(eq(caseReferrals.id, id))
     .limit(1);
-  return row ?? null;
+  return row;
 };
 
 const assertReceivedBy = (referral: ReferralRow, staff: StaffContext): void => {
@@ -181,7 +181,7 @@ export const acceptReferral = async (
   });
   await logAudit(referral.caseId, `staff:${staff.email}`, "referral_accepted", {
     referralId: id,
-    assignedToId: assignedToId ?? null,
+    assignedToId: assignedToId,
   });
   return toReferral(row);
 };

@@ -1,11 +1,13 @@
 import {
-  parseBearerToken,
-  requestPatientCode,
-  requirePatient,
-  revokePatientToken,
   updatePatientConsent,
   verifyPatientCode,
 } from "@api/features/patient-auth/services/patient-auth-service";
+import { requestPatientCode } from "@api/features/patient-auth/services/patient-code-service";
+import {
+  parseBearerToken,
+  requirePatient,
+  revokePatientToken,
+} from "@api/features/patient-auth/services/patient-session-service";
 import { UnauthorizedError } from "@api/features/shared/errors/index";
 import {
   clientAddress,

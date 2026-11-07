@@ -37,10 +37,8 @@ const resolveEnv = (): SeedEnv => {
       .join("; ");
     throw new Error(`Invalid seed env: ${message}`);
   }
-  cached = data as SeedEnv;
+  cached = Value.Parse(seedEnvSchema, data);
   return cached;
 };
 
-export const seedEnv: SeedEnv = new Proxy({} as SeedEnv, {
-  get: (_, key: string) => resolveEnv()[key as keyof SeedEnv],
-});
+export const seedEnv: SeedEnv = resolveEnv();

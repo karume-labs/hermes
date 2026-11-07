@@ -1,5 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 import { env } from "@/lib/env/index";
+import { readJson } from "@/lib/http";
 
 const TOKEN_KEY = "hermes-patient-token";
 const PROFILE_KEY = "hermes-patient-profile";
@@ -51,7 +52,7 @@ const post = async <T>(path: string, payload: unknown): Promise<T> => {
     body: JSON.stringify(payload),
   });
   if (!response.ok) throw new Error(await parseError(response));
-  return (await response.json()) as T;
+  return await readJson<T>(response);
 };
 
 export const getPatientToken = (): Promise<string | null> =>
@@ -144,5 +145,5 @@ export const updateConsent = async (
     body: JSON.stringify({ pushConsent, smsConsent }),
   });
   if (!response.ok) throw new Error(await parseError(response));
-  return (await response.json()) as PatientProfile;
+  return await readJson<PatientProfile>(response);
 };

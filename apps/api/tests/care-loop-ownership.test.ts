@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import {
   bookSlot,
-  ensureSlots,
   findBooking,
 } from "@api/features/booking/services/booking-repository";
+import { ensureSlots } from "@api/features/booking/services/slot-service";
 import { findCaseByLabPayloadId } from "@api/features/care-loop/services/case-repository";
 import {
   acceptReferral,

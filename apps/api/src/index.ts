@@ -21,7 +21,7 @@ import {
   notifyRouter,
   webhookLogRouter,
 } from "@api/features/notify/routers/notify-router";
-import { dispatchPending } from "@api/features/notify/services/notification-service";
+import { dispatchPending } from "@api/features/notify/services/notification-dispatch";
 import { patientsRouter } from "@api/features/patient/routers/patients-router";
 import { patientAuthRouter } from "@api/features/patient-auth/routers/patient-auth-router";
 import { referralsRouter } from "@api/features/referral/routers/referrals-router";
@@ -101,7 +101,7 @@ new Cron("*/5 * * * *", async () => {
   }
 });
 
-const isMain = (import.meta as unknown as { main?: boolean }).main;
+const isMain = import.meta.main;
 if (isMain) {
   await ensureUploadsDirectory();
   app.listen(Number(env.PORT));

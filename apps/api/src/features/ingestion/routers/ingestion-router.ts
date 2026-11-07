@@ -10,7 +10,7 @@ import {
   rememberRawBody,
   verifyWebhook,
 } from "@api/features/ingestion/services/webhook-auth";
-import { recordWebhook } from "@api/features/notify/services/notification-service";
+import { recordWebhook } from "@api/features/notify/services/notification-webhooks";
 import {
   requireStaff,
   staffCanAccessClinic,

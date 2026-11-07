@@ -12,6 +12,7 @@ import type {
 } from "@hermes/types";
 import { getPatientToken } from "@/lib/auth";
 import { env } from "@/lib/env/index";
+import { readJson } from "@/lib/http";
 
 export interface PatientNotification {
   id: string;
@@ -56,8 +57,7 @@ const requestJson = async <T>(path: string, init?: RequestInit): Promise<T> => {
       message === undefined ? `Request failed (${response.status})` : message,
     );
   }
-  const data: unknown = await response.json();
-  return data as T;
+  return await readJson<T>(response);
 };
 
 const postJson = <T>(path: string, payload: unknown): Promise<T> =>
