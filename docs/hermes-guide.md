@@ -69,10 +69,12 @@ The auth seeder **refreshes the password hash of existing accounts** each run, s
 changing `COORDINATOR_PASSWORD` / `ADMIN_PASSWORD` in `packages/db/.env` takes
 effect without deleting users. Seeded identity is realistic, not placeholder:
 
-- 3 clinic ids (`clinic-1`, `clinic-2`, `specialty-1`) and 4 patients
-  (`patient-1-clinic-1` … `patient-4-clinic-1`)
-- 18 cases across every status and severity, with matching triage summaries,
-  SLA deadlines, acknowledgments, escalations and closures
+- 3 clinic ids (`clinic-1`, `clinic-2`, `specialty-1`) and 19 patients
+  (`patient-1-clinic-1` … `patient-4-clinic-1`), each with a unique phone
+- 72 cases: 18 hand-written fixtures plus eight weeks of generated history
+  (`care-loop/seed/generate.ts`) spread across every patient, severity and
+  status, with triage summaries, SLA deadlines, acknowledgements, escalations
+  and closures that agree with each other
 - 9 routing rules (one intentionally inactive), 6 bookings over future and past
   slots, 14 case messages, 28 notifications, 8 webhook-log rows, 4 device
   tokens, 20 mobile events and 3 case documents
@@ -208,24 +210,24 @@ follow-up**. Overdue rows use the same breach treatment as the queue.
 
 ### 3.7 Queue — `/queue`
 
-The worklist, sorted by SLA due time and refetched every 30 seconds. Filters live
-in the URL (`?severity=Urgent&status=notified`) so a view can be shared.
+A lane board rather than a flat table: **Past the window**, **Due within the
+hour** and **On track**, refetched every 30 seconds. Filters live in the URL
+(`?severity=urgent&status=notified`, lowercase values) so a view can be shared.
 
 | Control | What it does |
 | --- | --- |
-| **Ingest lab result** | posts a realistic LDL result for a seeded patient to `POST /webhooks/lab`, then refreshes the queue — a one-click way to watch triage run |
-| **Escalate oldest** | escalates the top row (the case closest to/over its SLA) |
-| **Severity** select | Routine / Actionable / Urgent |
-| **Workflow status** select | received, triaged, notified, acknowledged, appointment_booked, referred, escalated, closed |
-| **Clear** (toolbar) | resets both filters |
+| **Send a test result** | `POST /cases/demo-result` as the signed-in staff member; the API picks a patient in the caller's clinic, posts a realistic marker through the same triage path as a lab feed, then the board refreshes |
+| **Narrow the queue** (toolbar) | search by patient, phone or case reference; sort newest/oldest; **Clear all** resets every filter |
+| **Severity / Stage / Owner** | how fast the result needs a decision, where it sits on the way to sign-off, and whether anyone owns it |
+| **Only cases past their deadline** | checkbox that hides everything still inside its window |
+| **Take the N unassigned cases** | assigns every unowned case in view to you |
 | **Open** (row) | `/cases/{id}` |
-| **Escalate** (row) | `POST /cases/{id}/escalate`; disabled for closed cases |
+| **⋯ (row)** | assign to me, escalate, or open the case file — destructive actions sit last |
 
-Metric cards: **In view**, **Pending ack** (notified/escalated with no
-acknowledgment), **SLA breached** (past due and unacknowledged), **Unassigned**.
-Filters cover severity, workflow status, ownership (my cases/unassigned) and
-overdue-only. Rows turn red when breached and carry an orange treatment when
-escalated.
+Metric cards: **In view**, **Waiting on the patient**, **Past the deadline** and
+**No owner**. Lanes show a count, a one-line description and an empty state, and
+each row carries the severity pill, the plain-language summary the patient saw,
+the case reference, phone number and remaining (or elapsed) time.
 
 ### 3.8 Case file — `/cases/[id]`
 

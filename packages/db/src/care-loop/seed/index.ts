@@ -1,9 +1,11 @@
 import { auditTrail, careCases } from "@db/care-loop/schema/index";
 import { db } from "@db/client";
+import { patients } from "@db/directory/schema/index";
 import type { SeedContext } from "@db/seed/types";
 import { Type } from "@sinclair/typebox";
 import { Value } from "@sinclair/typebox/value";
 import data from "./data.json";
+import { generateCaseHistory } from "./generate";
 
 // Mirrors `SLA_HOURS` in the API's triage service. Kept here so the fixtures
 // grade the same way a live payload would.
@@ -49,8 +51,8 @@ const AuditTemplate = Type.Object({
   detail: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
 });
 
-const cases = Value.Parse(Type.Array(CaseTemplate), data.cases);
-const audit = Value.Parse(Type.Array(AuditTemplate), data.audit);
+const curated = Value.Parse(Type.Array(CaseTemplate), data.cases);
+const curatedAudit = Value.Parse(Type.Array(AuditTemplate), data.audit);
 
 const at = (context: SeedContext, hoursAgo: number): Date =>
   new Date(context.now.getTime() - hours(hoursAgo));
@@ -63,6 +65,15 @@ export const seedCareLoop = async (context: SeedContext): Promise<number> => {
     .from(careCases)
     .limit(1);
   if (existing.length > 0) return 0;
+
+  // Working history on top of the curated demo cases, so filters, metrics and
+  // the audit trail have enough spread to behave like a real clinic.
+  const seededPatients = await db
+    .select({ id: patients.id, clinicId: patients.clinicId })
+    .from(patients);
+  const history = generateCaseHistory({ patients: seededPatients });
+  const cases = [...curated, ...history.cases];
+  const audit = [...curatedAudit, ...history.audit];
 
   const createdAtBySlug = new Map<string, Date>();
   const rows = cases.map((template) => {
