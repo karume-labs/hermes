@@ -3,14 +3,16 @@ import { useRouter } from "expo-router";
 import {
   CalendarDays,
   CheckCircle2,
+  HeartHandshake,
   MessageSquare,
   Stethoscope,
   Video,
 } from "lucide-react-native";
 import { useState } from "react";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { IconTile, ListRow, ListSection } from "@/components/ui/list";
 import { Text } from "@/components/ui/text";
 import { formatDateTime } from "@/lib/case-format";
 
@@ -24,15 +26,20 @@ export const AckCard = ({ careCase, busy, onAcknowledge }: AckCardProps) => {
   if (careCase.status === "closed") return null;
   if (careCase.acknowledgedAt !== null) {
     return (
-      <Text className="text-xs text-muted-foreground">
-        Seen {formatDateTime(careCase.acknowledgedAt)}
-      </Text>
+      <View className="mx-4 flex-row items-center gap-2">
+        <Icon as={CheckCircle2} className="size-4 text-success" />
+        <Text className="text-[13px] text-muted-foreground">
+          Seen {formatDateTime(careCase.acknowledgedAt)}
+        </Text>
+      </View>
     );
   }
   return (
-    <View className="gap-2 rounded-xl border border-border bg-secondary/40 p-4">
-      <Text className="font-semibold">Confirm you have seen this</Text>
-      <Text className="text-sm text-muted-foreground">
+    <View className="mx-4 gap-3 rounded-[16px] bg-secondary/50 p-4">
+      <Text className="text-[17px] font-semibold">
+        Confirm you have seen this
+      </Text>
+      <Text className="text-[13px] leading-[19px] text-muted-foreground">
         This tells your care team they can stop the reminder calls.
       </Text>
       <Button onPress={onAcknowledge} disabled={busy} size="lg">
@@ -56,33 +63,54 @@ export const VisitCard = ({
   calendarNote,
   onSyncCalendar,
 }: VisitCardProps) => (
-  <View className="gap-2 rounded-xl border border-border p-4">
-    <Text className="font-semibold">Your visit</Text>
-    <Text>{formatDateTime(slot.startAt)}</Text>
-    <Text className="text-sm text-muted-foreground">
-      {slot.kind === "telehealth" ? "Video visit" : "In person"} ·{" "}
-      {appointment.prepInstructions}
-    </Text>
-    <Button variant="outline" size="sm" onPress={onSyncCalendar}>
-      <Icon as={CalendarDays} />
-      <Text>Add to device calendar</Text>
+  <View className="mx-4 gap-3 rounded-[16px] bg-secondary/40 p-4">
+    <View className="flex-row items-center gap-3">
+      <IconTile tone="info">
+        <Icon
+          as={slot.kind === "telehealth" ? Video : CalendarDays}
+          className="size-[18px] text-accent-foreground"
+        />
+      </IconTile>
+      <View className="flex-1 gap-0.5">
+        <Text className="text-[15px] font-semibold">
+          {formatDateTime(slot.startAt)}
+        </Text>
+        <Text className="text-[12px] leading-[17px] text-muted-foreground">
+          {slot.kind === "telehealth" ? "Video visit" : "In person"} ·{" "}
+          {appointment.prepInstructions}
+        </Text>
+      </View>
+    </View>
+    <Button
+      variant="outline"
+      size="sm"
+      className="self-start"
+      onPress={onSyncCalendar}
+    >
+      <Icon as={CalendarDays} className="size-4" />
+      <Text>Add to calendar</Text>
     </Button>
     {calendarNote === "" ? null : (
-      <Text className="text-xs text-muted-foreground">{calendarNote}</Text>
+      <Text className="text-[12px] text-muted-foreground">{calendarNote}</Text>
     )}
   </View>
 );
 
 export const ClosureCard = ({ careCase }: { careCase: CareCase }) => (
-  <View className="gap-2 rounded-xl border border-success/30 bg-success/10 p-4">
-    <Text className="font-semibold text-success">Case closed</Text>
-    <Text className="text-sm text-foreground">
+  <View className="mx-4 gap-2 rounded-[16px] bg-success/10 p-4">
+    <View className="flex-row items-center gap-2">
+      <Icon as={CheckCircle2} className="size-[18px] text-success" />
+      <Text className="text-[15px] font-semibold text-success">
+        Care plan signed off
+      </Text>
+    </View>
+    <Text className="text-[14px] leading-[21px] text-foreground">
       {careCase.closurePlan === null
         ? "Your clinician signed off your care plan."
         : careCase.closurePlan}
     </Text>
-    <Text className="text-xs text-emerald-800">
-      Keep this plan and contact your clinic if new symptoms appear.
+    <Text className="text-[12px] leading-[17px] text-muted-foreground">
+      Contact your clinic if new symptoms appear.
     </Text>
   </View>
 );
@@ -95,10 +123,17 @@ export const NextSteps = ({ careCase }: { careCase: CareCase }) => {
       : careCase.referralClinicId;
   if (careCase.status === "closed") return null;
   return (
-    <View className="gap-2">
-      <Text className="font-semibold">Next steps</Text>
-      <Button
-        size="lg"
+    <ListSection title="Next steps">
+      <ListRow
+        first
+        title="Book an in-person visit"
+        subtitle="Confirmatory check at your clinic"
+        leading={
+          <IconTile tone="spark">
+            <Icon as={Stethoscope} className="size-[18px] text-primary" />
+          </IconTile>
+        }
+        chevron
         onPress={() =>
           router.push({
             pathname: "/booking",
@@ -109,12 +144,16 @@ export const NextSteps = ({ careCase }: { careCase: CareCase }) => {
             },
           })
         }
-      >
-        <Icon as={Stethoscope} className="text-primary-foreground" />
-        <Text>Book an in-person visit</Text>
-      </Button>
-      <Button
-        variant="secondary"
+      />
+      <ListRow
+        title="Request a video review"
+        subtitle="Talk to a clinician from home"
+        leading={
+          <IconTile tone="info">
+            <Icon as={Video} className="size-[18px] text-accent-foreground" />
+          </IconTile>
+        }
+        chevron
         onPress={() =>
           router.push({
             pathname: "/booking",
@@ -125,34 +164,46 @@ export const NextSteps = ({ careCase }: { careCase: CareCase }) => {
             },
           })
         }
-      >
-        <Icon as={Video} />
-        <Text>Request a video review</Text>
-      </Button>
-      <Button
-        variant="ghost"
+      />
+      <ListRow
+        title="Message your care team"
+        subtitle="Secure, attached to this result"
+        leading={
+          <IconTile tone="muted">
+            <Icon
+              as={MessageSquare}
+              className="size-[18px] text-muted-foreground"
+            />
+          </IconTile>
+        }
+        chevron
         onPress={() =>
           router.push({
             pathname: "/messages",
             params: { caseId: careCase.id },
           })
         }
-      >
-        <Icon as={MessageSquare} />
-        <Text>Message your care team</Text>
-      </Button>
-      <Button
-        variant="ghost"
+      />
+      <ListRow
+        title="Track your care journey"
+        subtitle="See every step so far"
+        leading={
+          <IconTile tone="muted">
+            <Icon
+              as={HeartHandshake}
+              className="size-[18px] text-muted-foreground"
+            />
+          </IconTile>
+        }
+        chevron
         onPress={() =>
           router.push({
             pathname: "/journey",
             params: { caseId: careCase.id },
           })
         }
-      >
-        <Text>Track your care journey</Text>
-      </Button>
-    </View>
+      />
+    </ListSection>
   );
 };
 
@@ -178,12 +229,20 @@ export const FeedbackCard = ({
     feedback === null ? 3 : feedback.confidence,
   );
   return (
-    <View className="gap-3 rounded-xl border border-border p-4">
-      <Text className="font-semibold">Did you understand your result?</Text>
-      <Text className="text-sm text-muted-foreground">
-        This helps your clinic know whether the explanation was clear. It does
-        not change your care.
-      </Text>
+    <View className="mx-4 gap-3">
+      <View className="gap-1">
+        <Text className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+          Teach-back
+        </Text>
+        <Text className="text-[17px] font-semibold">
+          Did you understand your result?
+        </Text>
+        <Text className="text-[13px] leading-[19px] text-muted-foreground">
+          This helps your clinic know whether the explanation was clear. It does
+          not change your care.
+        </Text>
+      </View>
+
       <View className="flex-row gap-2">
         {(
           [
@@ -191,32 +250,60 @@ export const FeedbackCard = ({
             [false, "No, I need help"],
           ] as const
         ).map(([value, label]) => (
-          <Button
+          <Pressable
             key={String(value)}
-            size="sm"
-            variant={understood === value ? "default" : "outline"}
+            accessibilityRole="button"
             onPress={() => setUnderstood(value)}
+            className={
+              understood === value
+                ? "flex-1 items-center rounded-[10px] bg-primary px-3 py-2.5"
+                : "flex-1 items-center rounded-[10px] border border-border bg-card px-3 py-2.5"
+            }
           >
-            <Text>{label}</Text>
-          </Button>
+            <Text
+              className={
+                understood === value
+                  ? "text-[13px] font-semibold text-primary-foreground"
+                  : "text-[13px] font-medium"
+              }
+            >
+              {label}
+            </Text>
+          </Pressable>
         ))}
       </View>
-      <Text className="text-sm font-medium">
+
+      <Text className="text-[13px] font-medium">
         How reassured do you feel? {confidence}/5
       </Text>
       <View className="flex-row gap-2">
         {[1, 2, 3, 4, 5].map((value) => (
-          <Button
+          <Pressable
             key={value}
-            size="sm"
-            variant={confidence === value ? "default" : "outline"}
+            accessibilityRole="button"
+            accessibilityLabel={`${value} of 5`}
             onPress={() => setConfidence(value)}
+            className={
+              confidence === value
+                ? "size-11 items-center justify-center rounded-full bg-primary"
+                : "size-11 items-center justify-center rounded-full border border-border bg-card"
+            }
           >
-            <Text>{value}</Text>
-          </Button>
+            <Text
+              className={
+                confidence === value
+                  ? "text-[15px] font-bold text-primary-foreground"
+                  : "text-[15px] font-medium"
+              }
+            >
+              {value}
+            </Text>
+          </Pressable>
         ))}
       </View>
+
       <Button
+        size="lg"
         disabled={understood === null || busy || careCase.id === ""}
         onPress={() => {
           if (understood !== null) onSubmit(understood, confidence);
@@ -225,7 +312,7 @@ export const FeedbackCard = ({
         <Text>{busy ? "Saving…" : "Send my answer"}</Text>
       </Button>
       {feedback === null ? null : (
-        <Text className="text-xs text-muted-foreground">
+        <Text className="text-[12px] text-muted-foreground">
           Last saved {formatDateTime(feedback.createdAt)}.
         </Text>
       )}

@@ -1,25 +1,25 @@
 import type { PatientCase } from "@hermes/types";
 import * as Notifications from "expo-notifications";
 import { useFocusEffect, useRouter } from "expo-router";
-import { ChevronRight, HeartPulse, RefreshCw } from "lucide-react-native";
+import { HeartPulse, RefreshCw } from "lucide-react-native";
 import * as React from "react";
 import {
   ActivityIndicator,
   Platform,
-  Pressable,
   RefreshControl,
   ScrollView,
   View,
 } from "react-native";
 import { BiometricGate } from "@/components/care/biometric-gate";
-import { SeverityPill } from "@/components/care/severity-pill";
+import { ResultRow } from "@/components/care/result-row";
 import { TabScreen } from "@/components/layout/tab-screen";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { IconTile, ListSection } from "@/components/ui/list";
+import { ScreenHeader } from "@/components/ui/screen-header";
 import { Text } from "@/components/ui/text";
 import { getCachedPatient, loadPatientProfile } from "@/lib/auth";
 import { careApi } from "@/lib/care-api";
-import { journeyLabel, statusLabel } from "@/lib/case-format";
 import { registerPushToken } from "@/lib/notifications";
 import { getPatientId, trackEvent } from "@/lib/session";
 
@@ -102,12 +102,15 @@ const HomeScreen = () => {
     return () => subscription.remove();
   }, [router]);
 
+  const open = cases.filter((item) => item.careCase.status !== "closed");
+  const closed = cases.filter((item) => item.careCase.status === "closed");
+
   return (
     <BiometricGate>
       <TabScreen>
         <ScrollView
           className="flex-1 bg-background"
-          contentContainerClassName="gap-4 p-4 pb-10"
+          contentContainerClassName="gap-5 pb-12"
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -118,41 +121,40 @@ const HomeScreen = () => {
             />
           }
         >
-          <View className="gap-1">
-            <Text className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-              Blood results
-            </Text>
-            <Text variant="h3" className="text-[26px] leading-tight">
-              Your care loop
-            </Text>
-            <Text className="text-sm text-muted-foreground">
-              Screening results, bookings and follow-up in one place.
-            </Text>
-            {patientId === null ? null : (
-              <View className="mt-2 flex-row items-center gap-2 self-start rounded-full border border-border bg-card px-3 py-1">
-                <View className="h-1.5 w-1.5 rounded-full bg-success" />
-                <Text className="text-xs text-muted-foreground">
+          <ScreenHeader
+            eyebrow="Blood results"
+            title="Your care loop"
+            subtitle="Screening results, bookings and follow-up in one place."
+          />
+
+          {patientId === null ? null : (
+            <View className="-mt-2 px-5">
+              <View className="flex-row items-center gap-2 self-start rounded-full border border-border/80 bg-card px-3 py-1.5">
+                <View className="size-1.5 rounded-full bg-success" />
+                <Text className="text-[12px] text-muted-foreground">
                   {patientLabel === "" ? patientId : patientLabel}
                 </Text>
               </View>
-            )}
-          </View>
+            </View>
+          )}
 
           {loading ? (
-            <View className="items-center gap-2 py-10">
+            <View className="items-center gap-2 py-16">
               <ActivityIndicator />
-              <Text className="text-muted-foreground">
+              <Text className="text-[13px] text-muted-foreground">
                 Loading your results…
               </Text>
             </View>
           ) : null}
 
           {error === "" ? null : (
-            <View className="gap-3 rounded-xl border border-destructive/40 bg-destructive/5 p-4">
-              <Text className="font-medium">
+            <View className="mx-4 gap-3 rounded-[16px] border border-destructive/40 bg-destructive/5 p-4">
+              <Text className="text-[15px] font-semibold">
                 We could not reach your clinic.
               </Text>
-              <Text className="text-sm text-muted-foreground">{error}</Text>
+              <Text className="text-[13px] leading-[19px] text-muted-foreground">
+                {error}
+              </Text>
               <Button
                 variant="outline"
                 onPress={() => {
@@ -160,70 +162,68 @@ const HomeScreen = () => {
                   if (patientId !== null) void load(patientId);
                 }}
               >
-                <Icon as={RefreshCw} />
+                <Icon as={RefreshCw} className="size-4" />
                 <Text>Try again</Text>
               </Button>
             </View>
           )}
 
           {loading || error !== "" ? null : cases.length === 0 ? (
-            <View className="items-center gap-2 rounded-xl border border-border p-6">
-              <Icon as={HeartPulse} className="size-8 text-muted-foreground" />
-              <Text className="font-medium">No screening updates yet</Text>
-              <Text className="text-center text-sm text-muted-foreground">
+            <View className="mx-4 items-center gap-2 rounded-[18px] border border-dashed border-border px-6 py-10">
+              <IconTile tone="muted">
+                <Icon
+                  as={HeartPulse}
+                  className="size-[18px] text-muted-foreground"
+                />
+              </IconTile>
+              <Text className="text-[16px] font-semibold">
+                No screening updates yet
+              </Text>
+              <Text className="text-center text-[13px] leading-[19px] text-muted-foreground">
                 When a partner lab sends a result, it appears here and we send
                 you a secure push notification.
               </Text>
             </View>
           ) : (
             <>
-              <View className="mt-1 flex-row items-center justify-between">
-                <Text className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                  Latest results
-                </Text>
-                <Text className="text-xs text-muted-foreground">
-                  {
-                    cases.filter((item) => item.careCase.status !== "closed")
-                      .length
-                  }{" "}
-                  active
-                </Text>
-              </View>
-
-              {cases.map((item) => (
-                <Pressable
-                  key={item.careCase.id}
-                  className="gap-3 rounded-xl border border-border bg-card p-4 active:bg-accent"
-                  onPress={() =>
-                    router.push({
-                      pathname: "/care-action",
-                      params: { caseId: item.careCase.id },
-                    })
-                  }
+              {open.length === 0 ? null : (
+                <ListSection
+                  title="Needs attention"
+                  footer="Tap a result to see what it means and choose a next step."
                 >
-                  <View className="flex-row items-center justify-between gap-2">
-                    <SeverityPill severity={item.careCase.severity} />
-                    <Text className="text-xs text-muted-foreground">
-                      {statusLabel(item.careCase)}
-                    </Text>
-                  </View>
-                  <Text className="font-medium">
-                    {item.careCase.summaryPlainLanguage}
-                  </Text>
-                  <View className="flex-row items-center justify-between gap-2">
-                    <Text className="text-xs text-muted-foreground">
-                      {journeyLabel(item.journeyStage)}
-                      {item.unreadMessages > 0
-                        ? ` · ${item.unreadMessages} new message`
-                        : ""}
-                    </Text>
-                    <Icon
-                      as={ChevronRight}
-                      className="size-4 text-muted-foreground"
+                  {open.map((item, index) => (
+                    <ResultRow
+                      key={item.careCase.id}
+                      item={item}
+                      first={index === 0}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/care-action",
+                          params: { caseId: item.careCase.id },
+                        })
+                      }
                     />
-                  </View>
-                </Pressable>
-              ))}
+                  ))}
+                </ListSection>
+              )}
+
+              {closed.length === 0 ? null : (
+                <ListSection title="Past results">
+                  {closed.map((item, index) => (
+                    <ResultRow
+                      key={item.careCase.id}
+                      item={item}
+                      first={index === 0}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/care-action",
+                          params: { caseId: item.careCase.id },
+                        })
+                      }
+                    />
+                  ))}
+                </ListSection>
+              )}
             </>
           )}
         </ScrollView>

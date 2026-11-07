@@ -1,4 +1,5 @@
 import type { CareCase } from "@hermes/types";
+import { CheckCircle2 } from "lucide-react-native";
 import { View } from "react-native";
 import { Chip } from "@/components/care/chip";
 import { SeverityPill } from "@/components/care/severity-pill";
@@ -14,37 +15,51 @@ interface ResultSummaryProps {
   careCase: CareCase;
 }
 
-export const ResultSummary = ({ careCase }: ResultSummaryProps) => (
-  <>
-    <View className="flex-row flex-wrap items-center gap-2">
-      <SeverityPill severity={careCase.severity} />
-      <Chip
-        label={statusLabel(careCase)}
-        className="bg-secondary"
-        textClassName="text-secondary-foreground"
-      />
-    </View>
-    <Text variant="h3" className="text-[22px] leading-snug">
-      {careCase.summaryPlainLanguage}
-    </Text>
-    <Text className="text-xs text-muted-foreground">
-      Received {formatDateTime(careCase.createdAt)} · {careCase.clinicId}
-    </Text>
-    <View className="gap-2 rounded-xl border border-border bg-card p-4">
-      <Text className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-        What this means
+export const ResultSummary = ({ careCase }: ResultSummaryProps) => {
+  const closed = careCase.status === "closed";
+  return (
+    <View className="gap-3 px-4">
+      <View className="flex-row flex-wrap items-center gap-2">
+        {closed ? (
+          <Chip
+            label="Reviewed"
+            className="bg-success-fill"
+            textClassName="text-success"
+            icon={<CheckCircle2 size={12} color="#166534" />}
+          />
+        ) : (
+          <SeverityPill severity={careCase.severity} />
+        )}
+        {closed ? null : (
+          <Chip
+            label={statusLabel(careCase)}
+            className="bg-secondary"
+            textClassName="text-secondary-foreground"
+          />
+        )}
+      </View>
+
+      <Text className="text-[24px] font-bold leading-[31px] tracking-[-0.01em]">
+        {careCase.summaryPlainLanguage}
       </Text>
-      <Text className="text-sm leading-relaxed text-foreground">
-        {meaningForSeverity(careCase.severity)}
+      <Text className="text-[12px] text-muted-foreground">
+        Received {formatDateTime(careCase.createdAt)} · {careCase.clinicId}
       </Text>
-      <Text className="text-sm leading-relaxed text-muted-foreground">
-        {whyItMatters(careCase.severity)}
-      </Text>
-      <View className="mt-1 rounded-lg bg-muted px-3 py-2">
-        <Text className="text-xs leading-relaxed text-muted-foreground">
+
+      <View className="gap-2 border-t border-border/70 pt-3">
+        <Text className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+          What this means
+        </Text>
+        <Text className="text-[15px] leading-[23px] text-foreground">
+          {meaningForSeverity(careCase.severity)}
+        </Text>
+        <Text className="text-[15px] leading-[23px] text-muted-foreground">
+          {whyItMatters(careCase.severity)}
+        </Text>
+        <Text className="text-[12px] leading-[17px] text-muted-foreground">
           This is a screening flag, not a diagnosis. A clinician confirms it.
         </Text>
       </View>
     </View>
-  </>
-);
+  );
+};

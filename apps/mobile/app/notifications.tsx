@@ -10,11 +10,10 @@ import {
 import * as React from "react";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { TabScreen } from "@/components/layout/tab-screen";
-import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { IconTile, ListRow, ListSection } from "@/components/ui/list";
 import { Text } from "@/components/ui/text";
 import { careApi, type PatientNotification } from "@/lib/care-api";
-import { formatDateTime } from "@/lib/case-format";
 import { getPatientId } from "@/lib/session";
 
 const KIND_LABEL: Record<NotificationKind, string> = {
@@ -32,6 +31,43 @@ const KIND_ICON: Record<NotificationKind, typeof Bell> = {
   secure_message: MessageSquare,
   visit_reminder: CalendarClock,
 };
+
+const timeLabel = (iso: string): string =>
+  new Date(iso).toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+const dayLabel = (iso: string): string => {
+  const date = new Date(iso);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (date.toDateString() === today.toDateString()) return "Today";
+  if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+  return date.toLocaleDateString(undefined, {
+    weekday: "long",
+    day: "numeric",
+    month: "short",
+  });
+};
+
+interface NotificationGroup {
+  label: string;
+  items: PatientNotification[];
+}
+
+const groupByDay = (items: PatientNotification[]): NotificationGroup[] =>
+  items.reduce<NotificationGroup[]>((groups, item) => {
+    const label = dayLabel(item.createdAt);
+    const last = groups[groups.length - 1];
+    if (last === undefined || last.label !== label) {
+      groups.push({ label, items: [item] });
+      return groups;
+    }
+    last.items.push(item);
+    return groups;
+  }, []);
 
 const Notifications = () => {
   const router = useRouter();
@@ -93,93 +129,102 @@ const Notifications = () => {
     }
   };
 
+  const groups = groupByDay(items);
+
   return (
     <TabScreen>
       <ScrollView
         className="flex-1 bg-background"
-        contentContainerClassName="gap-3 p-4 pb-12"
+        contentContainerClassName="gap-5 pb-12"
       >
-        <View className="flex-row items-center gap-2">
+        <View className="flex-row items-center px-2 pt-1">
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Back to profile"
             hitSlop={8}
+            className="size-10 items-center justify-center rounded-full active:bg-secondary/60"
             onPress={() =>
               router.canGoBack() ? router.back() : router.replace("/profile")
             }
           >
-            <Icon as={ChevronLeft} className="size-5 text-foreground" />
+            <Icon as={ChevronLeft} className="size-6 text-foreground" />
           </Pressable>
-          <Text variant="h3">Notifications</Text>
+          <Text className="flex-1 text-center text-[16px] font-semibold">
+            Notifications
+          </Text>
+          <View className="size-10" />
         </View>
-        <Text className="text-sm text-muted-foreground">
+
+        <Text className="px-5 text-[13px] leading-[19px] text-muted-foreground">
           Result alerts, visit reminders and secure messages from your care
           team.
         </Text>
 
         {loading ? (
-          <View className="items-center gap-2 py-10">
+          <View className="items-center gap-2 py-16">
             <ActivityIndicator />
-            <Text className="text-muted-foreground">Loading alerts…</Text>
+            <Text className="text-[13px] text-muted-foreground">
+              Loading alerts…
+            </Text>
           </View>
         ) : null}
 
         {error === "" ? null : (
-          <Text className="text-sm text-destructive">{error}</Text>
+          <Text className="px-5 text-[13px] text-destructive">{error}</Text>
         )}
 
         {!loading && error === "" && items.length === 0 ? (
-          <View className="items-center gap-2 rounded-xl border border-border p-6">
-            <Icon as={Bell} className="size-8 text-muted-foreground" />
-            <Text className="font-medium">No notifications yet</Text>
-            <Text className="text-center text-sm text-muted-foreground">
+          <View className="mx-4 items-center gap-2 rounded-[18px] border border-dashed border-border px-6 py-10">
+            <IconTile tone="muted">
+              <Icon as={Bell} className="size-[18px] text-muted-foreground" />
+            </IconTile>
+            <Text className="text-[16px] font-semibold">
+              No notifications yet
+            </Text>
+            <Text className="text-center text-[13px] leading-[19px] text-muted-foreground">
               When your clinic sends an update, it will appear here.
             </Text>
           </View>
         ) : null}
 
-        {items.map((item) => {
-          const unread = item.readAt === null;
-          return (
-            <Pressable
-              key={item.id}
-              className={
-                unread
-                  ? "gap-2 rounded-xl border border-primary/30 bg-secondary p-4"
-                  : "gap-2 rounded-xl border border-border bg-card p-4"
-              }
-              onPress={() => {
-                void open(item);
-              }}
-            >
-              <View className="flex-row items-center justify-between gap-2">
-                <View className="flex-row items-center gap-2">
-                  <Icon
-                    as={KIND_ICON[item.kind]}
-                    className="size-4 text-primary"
-                  />
-                  <Text className="font-medium">{KIND_LABEL[item.kind]}</Text>
-                </View>
-                {unread ? (
-                  <View className="size-2 rounded-full bg-primary" />
-                ) : null}
-              </View>
-              <Text className="text-xs text-muted-foreground">
-                {formatDateTime(item.createdAt)} ·{" "}
-                {item.status === "failed" ? "Not delivered" : "Delivered"}
-              </Text>
-              {item.caseId === "" ? null : (
-                <Text className="text-sm text-muted-foreground">
-                  Open your result for the full details.
-                </Text>
-              )}
-            </Pressable>
-          );
-        })}
-
-        <Button variant="ghost" onPress={() => router.back()}>
-          <Text>Back to profile</Text>
-        </Button>
+        {groups.map((group) => (
+          <ListSection key={group.label} title={group.label}>
+            {group.items.map((item, index) => {
+              const unread = item.readAt === null;
+              return (
+                <ListRow
+                  key={item.id}
+                  first={index === 0}
+                  leading={
+                    <IconTile tone={unread ? "spark" : "muted"}>
+                      <Icon
+                        as={KIND_ICON[item.kind]}
+                        className={
+                          unread
+                            ? "size-[18px] text-primary"
+                            : "size-[18px] text-muted-foreground"
+                        }
+                      />
+                    </IconTile>
+                  }
+                  title={KIND_LABEL[item.kind]}
+                  subtitle={`${timeLabel(item.createdAt)} · ${
+                    item.status === "failed" ? "Not delivered" : "Delivered"
+                  }`}
+                  trailing={
+                    unread ? (
+                      <View className="size-2 rounded-full bg-primary" />
+                    ) : undefined
+                  }
+                  chevron={item.caseId !== ""}
+                  onPress={() => {
+                    void open(item);
+                  }}
+                />
+              );
+            })}
+          </ListSection>
+        ))}
       </ScrollView>
     </TabScreen>
   );

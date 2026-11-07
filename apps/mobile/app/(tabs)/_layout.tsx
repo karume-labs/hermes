@@ -1,17 +1,26 @@
+import * as Haptics from "expo-haptics";
 import { Tabs } from "expo-router";
 import {
-  CalendarCheck,
-  ChevronRight,
+  CalendarDays,
+  HeartHandshake,
   HeartPulse,
   MessageSquare,
-  ShieldCheck,
+  UserRound,
 } from "lucide-react-native";
+import { useCallback } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUniwind } from "uniwind";
-import { NAV_THEME } from "@/lib/theme";
+import { NAV_THEME, THEME } from "@/lib/theme";
 
 const TabsLayout = () => {
   const { theme } = useUniwind();
-  const navTheme = NAV_THEME[theme === "dark" ? "dark" : "light"];
+  const scheme = theme === "dark" ? "dark" : "light";
+  const navTheme = NAV_THEME[scheme];
+  const insets = useSafeAreaInsets();
+
+  const haptic = useCallback(() => {
+    void Haptics.selectionAsync().catch(() => undefined);
+  }, []);
 
   return (
     <Tabs
@@ -19,48 +28,92 @@ const TabsLayout = () => {
         headerShown: false,
         sceneStyle: { backgroundColor: navTheme.colors.background },
         tabBarActiveTintColor: navTheme.colors.primary,
-        tabBarInactiveTintColor: navTheme.colors.text,
+        tabBarInactiveTintColor: THEME[scheme].mutedForeground,
         tabBarStyle: {
           backgroundColor: navTheme.colors.card,
           borderTopColor: navTheme.colors.border,
+          borderTopWidth: 0.5,
+          height: 56 + insets.bottom,
+          paddingTop: 6,
+          paddingBottom: insets.bottom + 4,
+          elevation: 0,
         },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontFamily: "PlusJakartaSans_500Medium",
+        },
+        tabBarItemStyle: { paddingTop: 2 },
         tabBarHideOnKeyboard: true,
       }}
     >
       <Tabs.Screen
         name="index"
+        listeners={{ tabPress: haptic }}
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => <HeartPulse size={22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <HeartPulse
+              size={focused ? 23 : 22}
+              strokeWidth={focused ? 2.4 : 1.9}
+              color={color}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="journey"
+        listeners={{ tabPress: haptic }}
         options={{
           title: "Care",
-          tabBarIcon: ({ color }) => <ChevronRight size={22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <HeartHandshake
+              size={focused ? 23 : 22}
+              strokeWidth={focused ? 2.4 : 1.9}
+              color={color}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="visits"
+        listeners={{ tabPress: haptic }}
         options={{
           title: "Visits",
-          tabBarIcon: ({ color }) => <CalendarCheck size={22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <CalendarDays
+              size={focused ? 23 : 22}
+              strokeWidth={focused ? 2.4 : 1.9}
+              color={color}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="messages"
+        listeners={{ tabPress: haptic }}
         options={{
           title: "Messages",
-          tabBarIcon: ({ color }) => <MessageSquare size={22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <MessageSquare
+              size={focused ? 23 : 22}
+              strokeWidth={focused ? 2.4 : 1.9}
+              color={color}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
+        listeners={{ tabPress: haptic }}
         options={{
           title: "Profile",
-          tabBarIcon: ({ color }) => <ShieldCheck size={22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <UserRound
+              size={focused ? 23 : 22}
+              strokeWidth={focused ? 2.4 : 1.9}
+              color={color}
+            />
+          ),
         }}
       />
     </Tabs>

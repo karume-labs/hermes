@@ -1,17 +1,26 @@
 import type { PatientBooking } from "@hermes/types";
 import { useFocusEffect, useRouter } from "expo-router";
-import { CalendarCheck, Clock, Video } from "lucide-react-native";
+import {
+  CalendarCheck,
+  CalendarClock,
+  Clock,
+  Stethoscope,
+  XCircle,
+} from "lucide-react-native";
 import * as React from "react";
 import {
   ActivityIndicator,
   Alert,
-  Pressable,
+  RefreshControl,
   ScrollView,
   View,
 } from "react-native";
+import { NextVisitCard } from "@/components/care/next-visit-card";
 import { TabScreen } from "@/components/layout/tab-screen";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { IconTile, ListRow, ListSection } from "@/components/ui/list";
+import { ScreenHeader } from "@/components/ui/screen-header";
 import { Text } from "@/components/ui/text";
 import { careApi } from "@/lib/care-api";
 import { formatDateTime } from "@/lib/case-format";
@@ -29,6 +38,7 @@ const Visits = () => {
   const router = useRouter();
   const [bookings, setBookings] = React.useState<PatientBooking[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
   const [error, setError] = React.useState("");
   const [cancelling, setCancelling] = React.useState<string | null>(null);
 
@@ -106,160 +116,181 @@ const Visits = () => {
       item.booking.status !== "confirmed" ||
       new Date(item.slot.startAt).getTime() < now,
   );
+  const next = upcoming[0];
+  const later = upcoming.slice(1);
+
+  const openCarePlan = (caseId: string): void => {
+    router.push({ pathname: "/care-action", params: { caseId } });
+  };
 
   return (
     <TabScreen>
       <ScrollView
         className="flex-1 bg-background"
-        contentContainerClassName="gap-4 p-4 pb-12"
+        contentContainerClassName="gap-5 pb-12"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              setRefreshing(true);
+              void load().finally(() => setRefreshing(false));
+            }}
+          />
+        }
       >
-        <View className="gap-1">
-          <Text className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-            Appointments
-          </Text>
-          <Text variant="h3">Your visits</Text>
-          <Text className="text-sm text-muted-foreground">
-            Confirmed appointments, preparation notes and past visits in one
-            place.
-          </Text>
-        </View>
+        <ScreenHeader
+          eyebrow="Appointments"
+          title="Your visits"
+          subtitle="Confirmed appointments, preparation notes and past visits in one place."
+        />
 
         {loading ? (
-          <View className="items-center gap-2 py-10">
+          <View className="items-center gap-2 py-16">
             <ActivityIndicator />
-            <Text className="text-muted-foreground">Loading your visits…</Text>
+            <Text className="text-[13px] text-muted-foreground">
+              Loading your visits…
+            </Text>
           </View>
         ) : null}
 
         {error === "" ? null : (
-          <Text className="text-sm text-destructive">{error}</Text>
+          <Text className="px-5 text-[13px] text-destructive">{error}</Text>
         )}
 
-        {loading || error !== "" ? null : upcoming.length === 0 ? (
-          <View className="items-center gap-2 rounded-xl border border-border p-6">
-            <Icon as={CalendarCheck} className="size-8 text-muted-foreground" />
-            <Text className="font-medium">No upcoming visit</Text>
-            <Text className="text-center text-sm text-muted-foreground">
+        {loading || error !== "" ? null : next === undefined ? (
+          <View className="mx-4 items-center gap-2 rounded-[18px] border border-dashed border-border px-6 py-10">
+            <IconTile tone="muted">
+              <Icon
+                as={CalendarCheck}
+                className="size-[18px] text-muted-foreground"
+              />
+            </IconTile>
+            <Text className="text-[16px] font-semibold">No upcoming visit</Text>
+            <Text className="text-center text-[13px] leading-[19px] text-muted-foreground">
               Open a result and book a confirmatory visit when your care team
               asks for one.
             </Text>
-            <Button variant="outline" onPress={() => router.push("/")}>
+            <Button
+              variant="outline"
+              className="mt-1"
+              onPress={() => router.push("/")}
+            >
               <Text>View your results</Text>
             </Button>
           </View>
         ) : (
-          upcoming.map((item) => (
-            <View
-              key={item.booking.id}
-              className="gap-3 rounded-xl border border-primary/30 bg-secondary p-4"
+          <View className="gap-5">
+            <NextVisitCard item={next} />
+
+            <ListSection
+              title="Before you go"
+              footer="A reminder arrives 24 hours before your visit."
             >
-              <View className="flex-row items-center justify-between gap-2">
-                <View className="flex-row items-center gap-2">
-                  <Icon
-                    as={item.slot.kind === "telehealth" ? Video : CalendarCheck}
-                    className="size-5 text-primary"
-                  />
-                  <Text className="font-semibold">
-                    {item.slot.kind === "telehealth"
-                      ? "Video visit"
-                      : "In-person visit"}
-                  </Text>
-                </View>
-                <Text className="text-xs font-semibold uppercase tracking-wide text-primary">
-                  Confirmed
+              <View className="bg-card px-4 py-3.5">
+                <Text className="text-[14px] leading-[21px]">
+                  {next.booking.prepInstructions}
                 </Text>
               </View>
-              <Text className="text-lg font-semibold">
-                {formatDateTime(item.slot.startAt)}
-              </Text>
-              <Text className="text-sm text-muted-foreground">
-                {item.clinicName}
-              </Text>
-              <View className="gap-1 rounded-lg border border-border bg-card p-3">
-                <Text className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Prepare
-                </Text>
-                <Text className="text-sm">{item.booking.prepInstructions}</Text>
-              </View>
-              <Button
-                variant="outline"
-                onPress={() =>
-                  router.push({
-                    pathname: "/care-action",
-                    params: { caseId: item.booking.caseId },
-                  })
+            </ListSection>
+
+            <ListSection title="Visit actions">
+              <ListRow
+                first
+                title="Open care plan"
+                subtitle="What this visit covers"
+                leading={
+                  <IconTile tone="info">
+                    <Icon
+                      as={Stethoscope}
+                      className="size-[18px] text-accent-foreground"
+                    />
+                  </IconTile>
                 }
-              >
-                <Text>Open care plan</Text>
-              </Button>
-              <Button
-                variant="secondary"
+                chevron
+                onPress={() => openCarePlan(next.booking.caseId)}
+              />
+              <ListRow
+                title="Reschedule"
+                subtitle="Choose another open slot"
+                leading={
+                  <IconTile tone="muted">
+                    <Icon
+                      as={CalendarClock}
+                      className="size-[18px] text-muted-foreground"
+                    />
+                  </IconTile>
+                }
+                chevron
                 onPress={() =>
                   router.push({
                     pathname: "/booking",
                     params: {
-                      caseId: item.booking.caseId,
-                      bookingId: item.booking.id,
-                      clinicId: item.slot.clinicId,
-                      kind: item.slot.kind,
+                      caseId: next.booking.caseId,
+                      bookingId: next.booking.id,
+                      clinicId: next.slot.clinicId,
+                      kind: next.slot.kind,
                     },
                   })
                 }
-              >
-                <Text>Reschedule visit</Text>
-              </Button>
-              <Button
-                variant="ghost"
-                disabled={cancelling !== null}
-                onPress={() => confirmCancel(item)}
-              >
-                <Text className="text-destructive">
-                  {cancelling === item.booking.id
+              />
+              <ListRow
+                title={
+                  cancelling === next.booking.id
                     ? "Cancelling…"
-                    : "Cancel visit"}
-                </Text>
-              </Button>
-            </View>
-          ))
+                    : "Cancel visit"
+                }
+                subtitle="Frees the slot for another patient"
+                tone="danger"
+                disabled={cancelling !== null}
+                leading={
+                  <IconTile tone="urgent">
+                    <Icon as={XCircle} className="size-[18px] text-urgent" />
+                  </IconTile>
+                }
+                onPress={() => confirmCancel(next)}
+              />
+            </ListSection>
+
+            {later.length === 0 ? null : (
+              <ListSection title="Also booked">
+                {later.map((item, index) => (
+                  <ListRow
+                    key={item.booking.id}
+                    first={index === 0}
+                    title={formatDateTime(item.slot.startAt)}
+                    subtitle={`${item.clinicName} · ${
+                      item.slot.kind === "telehealth" ? "Video" : "In person"
+                    }`}
+                    chevron
+                    onPress={() => openCarePlan(item.booking.caseId)}
+                  />
+                ))}
+              </ListSection>
+            )}
+          </View>
         )}
 
         {past.length === 0 ? null : (
-          <View className="gap-2">
-            <Text className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-              Visit history
-            </Text>
-            {past.map((item) => (
-              <Pressable
+          <ListSection title="Visit history">
+            {past.map((item, index) => (
+              <ListRow
                 key={item.booking.id}
-                className="gap-2 rounded-xl border border-border bg-card p-4 active:bg-accent"
-                onPress={() =>
-                  router.push({
-                    pathname: "/care-action",
-                    params: { caseId: item.booking.caseId },
-                  })
+                first={index === 0}
+                leading={
+                  <IconTile tone="muted">
+                    <Icon
+                      as={Clock}
+                      className="size-[18px] text-muted-foreground"
+                    />
+                  </IconTile>
                 }
-              >
-                <View className="flex-row items-center justify-between gap-2">
-                  <Text className="font-medium">
-                    {formatDateTime(item.slot.startAt)}
-                  </Text>
-                  <Text className="text-xs text-muted-foreground">
-                    {statusLabel(item)}
-                  </Text>
-                </View>
-                <View className="flex-row items-center gap-2">
-                  <Icon as={Clock} className="size-3.5 text-muted-foreground" />
-                  <Text className="text-xs text-muted-foreground">
-                    {item.clinicName} ·{" "}
-                    {item.slot.kind === "telehealth" ? "Video" : "In person"}
-                  </Text>
-                </View>
-                <Text className="text-sm text-muted-foreground">
-                  {item.summary}
-                </Text>
-              </Pressable>
+                title={formatDateTime(item.slot.startAt)}
+                subtitle={`${statusLabel(item)} · ${item.clinicName}`}
+                chevron
+                onPress={() => openCarePlan(item.booking.caseId)}
+              />
             ))}
-          </View>
+          </ListSection>
         )}
       </ScrollView>
     </TabScreen>
