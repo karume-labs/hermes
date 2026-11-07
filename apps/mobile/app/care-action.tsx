@@ -58,7 +58,9 @@ const CareAction = () => {
 
   React.useEffect(() => {
     void (async () => {
-      const pid = paramString(params.patientId) ?? (await getPatientId());
+      const paramPatientId = paramString(params.patientId);
+      const pid =
+        paramPatientId === undefined ? await getPatientId() : paramPatientId;
       setPatientId(pid);
       if (caseId === undefined) setError("No result selected.");
     })();
@@ -92,7 +94,10 @@ const CareAction = () => {
       title: "Confirmatory visit — Hermes Care",
       startAt: detail.slot.startAt,
       endAt: detail.slot.endAt,
-      notes: detail.appointment?.prepInstructions ?? "Bring prior labs.",
+      notes:
+        detail.appointment?.prepInstructions === undefined
+          ? "Bring prior labs."
+          : detail.appointment.prepInstructions,
       location: detail.slot.clinicId,
     });
     if (result.status === "saved") {

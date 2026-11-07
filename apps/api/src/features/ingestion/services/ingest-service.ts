@@ -14,10 +14,13 @@ import {
   findPatient,
 } from "@api/features/directory/services/directory-service";
 import { resolveClinic } from "@api/features/ingestion/services/routing-service";
+import type {
+  IngestResult,
+  NormalizedLab,
+} from "@api/features/ingestion/types/index";
 import { queueNotification } from "@api/features/notify/services/notification-service";
 import { UnprocessableError } from "@api/features/shared/errors/index";
 import type { CareCase } from "@hermes/types";
-import type { IngestResult, NormalizedLab } from "../types/index";
 
 const DEFAULT_CLINIC = "clinic-1";
 

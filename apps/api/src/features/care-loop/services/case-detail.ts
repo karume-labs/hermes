@@ -2,6 +2,12 @@ import {
   findBookingByCaseId,
   findSlot,
 } from "@api/features/booking/services/booking-repository";
+import { teamMember } from "@api/features/care-loop/services/assignment-service";
+import {
+  findCase,
+  listAudit,
+} from "@api/features/care-loop/services/case-repository";
+import { listTasks } from "@api/features/care-loop/services/task-service";
 import { listAttachments } from "@api/features/documents/services/attachment-repository";
 import { listNotifications } from "@api/features/notify/services/notification-service";
 import { listMessages } from "@api/features/patient/services/patient-repository";
@@ -14,9 +20,6 @@ import {
 import { db } from "@db/client";
 import type { CaseFeedback } from "@hermes/types";
 import { desc, eq } from "drizzle-orm";
-import { teamMember } from "./assignment-service";
-import { findCase, listAudit } from "./case-repository";
-import { listTasks } from "./task-service";
 
 const toFeedback = (row: typeof caseFeedback.$inferSelect): CaseFeedback => ({
   ...row,

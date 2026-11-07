@@ -12,11 +12,11 @@ export const JOURNEY_ORDER: JourneyStep[] = [
   "completed",
 ];
 
-export function nextStep(step: JourneyStep): JourneyStep | null {
+export const nextStep = (step: JourneyStep): JourneyStep | null => {
   const i = JOURNEY_ORDER.indexOf(step);
-  return i < 0 || i === JOURNEY_ORDER.length - 1 ? null : JOURNEY_ORDER[i + 1];
-}
+  const next = JOURNEY_ORDER[i + 1];
+  return i < 0 || next === undefined ? null : next;
+};
 
-export function stepIndex(step: JourneyStep): number {
-  return JOURNEY_ORDER.indexOf(step);
-}
+export const stepIndex = (step: JourneyStep): number =>
+  JOURNEY_ORDER.indexOf(step);

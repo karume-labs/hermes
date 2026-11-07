@@ -36,9 +36,8 @@ const Profile = () => {
 
   React.useEffect(() => {
     void (async () => {
-      const current =
-        (await loadPatientProfile().catch(() => null)) ??
-        (await getCachedPatient());
+      const fresh = await loadPatientProfile().catch(() => null);
+      const current = fresh === null ? await getCachedPatient() : fresh;
       setProfile(current);
       setThemeChoice(await getThemePreference());
     })();

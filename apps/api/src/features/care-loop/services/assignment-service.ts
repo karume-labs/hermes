@@ -1,3 +1,7 @@
+import {
+  findCase,
+  updateCase,
+} from "@api/features/care-loop/services/case-repository";
 import type { StaffContext } from "@api/features/shared/auth/index";
 import {
   ConflictError,
@@ -8,7 +12,6 @@ import { db } from "@db/client";
 import { clinics } from "@db/directory/schema/index";
 import type { CaseAssignee, StaffRole } from "@hermes/types";
 import { and, asc, eq, inArray } from "drizzle-orm";
-import { findCase, updateCase } from "./case-repository";
 
 type TeamRow = {
   id: string;

@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
+import type { NormalizedLab } from "@api/features/ingestion/types/index";
 import { UnprocessableError } from "@api/features/shared/errors/index";
 import type { FhirObservationInput } from "@hermes/validators";
-import type { NormalizedLab } from "../types/index";
 
 const stripReference = (
   value: string | undefined,

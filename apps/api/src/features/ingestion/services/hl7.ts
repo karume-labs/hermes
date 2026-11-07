@@ -1,5 +1,5 @@
+import type { NormalizedLab } from "@api/features/ingestion/types/index";
 import { UnprocessableError } from "@api/features/shared/errors/index";
-import type { NormalizedLab } from "../types/index";
 
 // Minimal HL7v2 ORU^R01 reader: MSH for provenance, PID for the patient and
 // one OBX per numeric result. Enough for lab feeds without a full HL7 toolkit.

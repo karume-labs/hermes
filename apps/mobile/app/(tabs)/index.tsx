@@ -50,9 +50,8 @@ const HomeScreen = () => {
     void (async () => {
       // A transient network failure must not sign the patient out; fall back
       // to the profile cached at sign-in when the refresh cannot reach the API.
-      const profile =
-        (await loadPatientProfile().catch(() => null)) ??
-        (await getCachedPatient());
+      const fresh = await loadPatientProfile().catch(() => null);
+      const profile = fresh === null ? await getCachedPatient() : fresh;
       if (profile === null) {
         router.replace("/sign-in");
         return;

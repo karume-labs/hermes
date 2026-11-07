@@ -1,3 +1,11 @@
+import {
+  generateCode,
+  generateSessionToken,
+  hashCode,
+  hashToken,
+  normalizePhone,
+  safeEqual,
+} from "@api/features/patient-auth/services/tokens";
 import { env } from "@api/features/shared/env/index";
 import {
   ServiceUnavailableError,
@@ -8,14 +16,6 @@ import { db } from "@db/client";
 import { clinics, patients } from "@db/directory/schema/index";
 import { patientLoginCodes, patientSessions } from "@db/patient/schema/index";
 import { and, desc, eq, gt, gte, isNull } from "drizzle-orm";
-import {
-  generateCode,
-  generateSessionToken,
-  hashCode,
-  hashToken,
-  normalizePhone,
-  safeEqual,
-} from "./tokens";
 
 export interface PatientProfile {
   id: string;

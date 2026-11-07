@@ -28,7 +28,7 @@ const writableCalendarId = async (): Promise<string | null> => {
       calendar.accessLevel === Calendar.CalendarAccessLevel.OWNER,
   );
   const fallback = calendars.find((calendar) => calendar.allowsModifications);
-  const chosen = writable ?? fallback;
+  const chosen = writable === undefined ? fallback : writable;
   return chosen === undefined ? null : chosen.id;
 };
 

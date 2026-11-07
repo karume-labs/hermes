@@ -1,3 +1,16 @@
+import {
+  assignCase,
+  defaultAssigneeId,
+} from "@api/features/care-loop/services/assignment-service";
+import {
+  findCase,
+  logAudit,
+  updateCase,
+} from "@api/features/care-loop/services/case-repository";
+import {
+  closeTasks,
+  ensureTask,
+} from "@api/features/care-loop/services/task-service";
 import type { StaffContext } from "@api/features/shared/auth/index";
 import {
   ConflictError,
@@ -8,9 +21,6 @@ import { db } from "@db/client";
 import { clinics } from "@db/directory/schema/index";
 import type { CaseReferral } from "@hermes/types";
 import { and, desc, eq, inArray, or } from "drizzle-orm";
-import { assignCase, defaultAssigneeId } from "./assignment-service";
-import { findCase, logAudit, updateCase } from "./case-repository";
-import { closeTasks, ensureTask } from "./task-service";
 
 type ReferralRow = typeof caseReferrals.$inferSelect;
 

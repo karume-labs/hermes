@@ -24,7 +24,8 @@ const BookingScreen = () => {
   const caseId = paramString(params.caseId);
   const bookingId = paramString(params.bookingId);
   const rescheduling = bookingId !== undefined;
-  const clinicId = paramString(params.clinicId) ?? "clinic-1";
+  const clinicParam = paramString(params.clinicId);
+  const clinicId = clinicParam === undefined ? "clinic-1" : clinicParam;
   const kind =
     paramString(params.kind) === "telehealth" ? "telehealth" : "in_person";
   const router = useRouter();
