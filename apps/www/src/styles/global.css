@@ -13,6 +13,7 @@
   --color-wing: #38bdf8;
   --color-spark: #ff4500;
   --color-spark-soft: #ffe0d6;
+  --color-spark-strong: #e63e00;
   --color-canvas: var(--hermes-canvas);
   --color-surface: var(--hermes-surface);
   --color-surface-tint: var(--hermes-surface-tint);
@@ -31,7 +32,9 @@
   /* Aliases the existing sections already use. */
   --color-canvas-raised: var(--hermes-surface);
   --color-canvas-line: var(--hermes-line);
-  --color-ink-inverse: var(--hermes-ink);
+  /* Text on the dark band. Fixed light: the band is dark in both themes. */
+  --color-ink-inverse: #f8fafc;
+  --color-ink-inverse-muted: #cbd5e1;
   --color-navy: var(--hermes-navy);
   --color-accent: #ff4500;
   --color-accent-strong: #475569;

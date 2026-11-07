@@ -2,119 +2,153 @@
 import { DASHBOARD_URL, SITE_TAGLINE } from "@/lib/constants";
 ---
 
-<section class="mx-auto max-w-6xl px-6 pt-16 pb-20 sm:pt-24">
-  <div class="grid items-center gap-14 lg:grid-cols-[1.1fr_0.9fr]">
+<section class="mx-auto max-w-6xl px-6 pt-14 pb-20 sm:pt-20">
+  <div class="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
     <div data-animate>
-      <div class="flex items-center gap-3">
-        <img src="/logo.svg" alt="" width="44" height="44" />
-        <span
-          class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-muted"
-        >
-          Care loop infrastructure
-        </span>
-      </div>
+      <p
+        class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-muted"
+      >
+        For clinics that follow up
+      </p>
 
       <h1
-        class="mt-8 max-w-xl font-display text-4xl leading-[1.1] font-extrabold text-ink sm:text-5xl"
+        class="mt-5 max-w-xl font-display text-4xl leading-[1.08] font-extrabold text-ink sm:text-[52px]"
       >
         {SITE_TAGLINE}
       </h1>
 
       <p class="mt-6 max-w-xl text-lg leading-relaxed text-ink-muted">
-        Hermes takes the lab result the moment it lands, grades it by clinical
-        severity, tells the patient in language they can act on, and keeps the
-        case on a coordinator's queue until a clinician signs it off.
+        A lab result lands. Hermes works out how urgent it is, tells the patient
+        in plain words, and keeps the case with a named person until a clinician
+        signs it off. Nobody has to ring round to find out what happened.
       </p>
 
-      <div class="mt-9 flex flex-wrap gap-3">
+      <div class="mt-9 flex flex-wrap items-center gap-3">
         <a
           href={DASHBOARD_URL}
-          class="rounded-md bg-spark px-6 py-3 text-sm font-bold text-ink transition-colors hover:bg-spark-soft"
+          class="group inline-flex items-center gap-2 rounded-md bg-spark px-6 py-3.5 text-sm font-bold text-ink shadow-[0_1px_0_0_rgba(15,23,42,0.12)] transition-colors hover:bg-spark-strong"
         >
           Open the dashboard
-        </a>
-        <a
-          href="#how-it-works"
-          class="rounded-md border border-ink bg-canvas-raised px-6 py-3 text-sm font-bold text-ink transition-colors hover:bg-surface-tint"
-        >
-          See how the loop closes
-        </a>
-      </div>
-
-      <ul class="mt-9 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-muted">
-        <li>FHIR Observations</li>
-        <li aria-hidden="true">·</li>
-        <li>HL7 ORU</li>
-        <li aria-hidden="true">·</li>
-        <li>4h / 48h / 168h SLAs</li>
-        <li aria-hidden="true">·</li>
-        <li>Push and SMS fallback</li>
-      </ul>
-    </div>
-
-    <!-- Static case card: the product's core object, shown before any sign-in. -->
-    <div
-      class="rounded-xl border border-canvas-line bg-canvas-raised p-6 shadow-[0_1px_0_0_#e2e8f0]"
-      data-animate
-    >
-      <div class="flex items-center justify-between">
-        <span
-          class="inline-flex items-center gap-1.5 rounded-full bg-urgent-fill px-2.5 py-1 text-[11px] font-bold tracking-[0.04em] text-urgent"
-        >
           <svg
-            viewBox="0 0 16 16"
-            width="13"
-            height="13"
+            class="size-4 transition-transform group-hover:translate-x-0.5"
+            viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="1.75"
+            stroke-width="2"
+            stroke-linecap="round"
             stroke-linejoin="round"
             aria-hidden="true"
           >
-            <path d="M8 3.2 14 13.2 H2 Z M8 6.8 V9.6 M8 11.3 v.2" />
+            <path d="M5 12h14M13 6l6 6-6 6" />
           </svg>
-          Urgent
-        </span>
-        <span
-          class="rounded-md bg-urgent-fill px-2 py-1 text-xs font-semibold text-urgent"
+        </a>
+        <a
+          href="#how-it-works"
+          class="rounded-md border border-line-strong bg-canvas-raised px-6 py-3.5 text-sm font-bold text-ink transition-colors hover:border-ink hover:bg-surface-tint"
         >
-          Due in 3h 12m
-        </span>
+          See how it works
+        </a>
       </div>
 
-      <p class="mt-5 text-lg leading-snug font-semibold text-ink">
-        Your potassium level needs a clinician review today.
-      </p>
-      <p class="mt-2 text-sm text-ink-muted">
-        Received 09:41 · clinic-1 · specimen 8842-K
+      <p class="mt-4 text-xs text-ink-muted">
+        Sign in with a seeded clinic. No card, no setup call.
       </p>
 
-      <dl class="mt-6 grid grid-cols-2 gap-4 border-t border-canvas-line pt-5">
-        <div>
-          <dt class="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
-            Mobile ack
-          </dt>
-          <dd class="mt-1 text-sm font-semibold text-ink">Pending</dd>
+      <ul class="mt-9 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-muted">
+        <li>Accepts FHIR and HL7 lab feeds</li>
+        <li aria-hidden="true">·</li>
+        <li>4h, 24h and 72h response windows</li>
+        <li aria-hidden="true">·</li>
+        <li>Push, with SMS as a fallback</li>
+      </ul>
+    </div>
+
+    <!-- Who this is for: a patient, a phone, and the one line that matters. -->
+    <div
+      class="relative overflow-hidden rounded-2xl border border-canvas-line bg-canvas-raised"
+      data-animate
+    >
+      <svg
+        viewBox="0 0 420 260"
+        role="img"
+        aria-label="A patient reading a lab result on their phone"
+        class="block h-auto w-full"
+      >
+        <rect width="420" height="260" fill="var(--hermes-surface-tint)" />
+        <circle cx="312" cy="74" r="86" fill="#e0f2fe" opacity="0.7"></circle>
+        <circle cx="86" cy="196" r="58" fill="#ffe0d6" opacity="0.55"></circle>
+
+        <!-- Person: shoulders, neck, head, arm to the phone -->
+        <path
+          d="M96 260c0-52 34-88 86-88s86 36 86 88z"
+          fill="#cbd5e1"></path>
+        <path d="M158 150h48v40c0 12-48 12-48 0z" fill="#94a3b8"></path>
+        <circle cx="182" cy="118" r="44" fill="#e2b48f"></circle>
+        <path
+          d="M138 112c0-28 20-48 44-48s44 20 44 48c0-16-14-22-44-22s-44 6-44 22z"
+          fill="#334155"></path>
+        <path
+          d="M244 196c18-6 30-16 34-30"
+          stroke="#94a3b8"
+          stroke-width="16"
+          stroke-linecap="round"
+          fill="none"></path>
+
+        <!-- Phone -->
+        <g transform="rotate(-6 300 168)">
+          <rect
+            x="252"
+            y="104"
+            width="104"
+            height="176"
+            rx="16"
+            fill="#0f172a"></rect>
+          <rect x="259" y="111" width="90" height="162" rx="12" fill="#ffffff"
+          ></rect>
+          <rect x="270" y="126" width="52" height="7" rx="3.5" fill="#cbd5e1"
+          ></rect>
+          <rect x="270" y="144" width="70" height="34" rx="6" fill="#fef3c7"
+          ></rect>
+          <rect x="278" y="154" width="46" height="6" rx="3" fill="#92400e"
+          ></rect>
+          <rect x="278" y="165" width="30" height="5" rx="2.5" fill="#92400e"
+          ></rect>
+          <rect x="270" y="190" width="70" height="6" rx="3" fill="#e2e8f0"
+          ></rect>
+          <rect x="270" y="202" width="58" height="6" rx="3" fill="#e2e8f0"
+          ></rect>
+          <rect x="270" y="216" width="48" height="6" rx="3" fill="#e2e8f0"
+          ></rect>
+          <rect
+            x="270"
+            y="238"
+            width="70"
+            height="20"
+            rx="10"
+            fill="#ff4500"></rect>
+          <rect x="288" y="246" width="34" height="5" rx="2.5" fill="#0f172a"
+          ></rect>
+        </g>
+      </svg>
+
+      <div class="border-t border-canvas-line bg-canvas-raised p-5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span
+            class="inline-flex items-center gap-1.5 rounded-full bg-actionable-fill px-2.5 py-1 text-[11px] font-bold tracking-[0.04em] text-actionable"
+          >
+            Needs a review today
+          </span>
+          <span class="text-xs font-semibold text-ink-muted">
+            Sent 09:41 · read 09:44
+          </span>
         </div>
-        <div>
-          <dt class="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
-            Routing
-          </dt>
-          <dd class="mt-1 text-sm font-semibold text-ink">clinic-1</dd>
-        </div>
-        <div>
-          <dt class="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
-            Next step
-          </dt>
-          <dd class="mt-1 text-sm font-semibold text-ink">Escalate to duty clinician</dd>
-        </div>
-        <div>
-          <dt class="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
-            Channel
-          </dt>
-          <dd class="mt-1 text-sm font-semibold text-ink">Push, then SMS</dd>
-        </div>
-      </dl>
+        <p class="mt-3 text-base leading-snug font-semibold text-ink">
+          “Your potassium is high. A clinician will call you before 2pm.”
+        </p>
+        <p class="mt-2 text-sm text-ink-muted">
+          Amina Wanjiru, 42 · Riverbend Family Health
+        </p>
+      </div>
     </div>
   </div>
 </section>

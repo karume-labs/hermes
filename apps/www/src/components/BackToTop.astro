@@ -1,0 +1,40 @@
+<!-- Back to top: appears after the first screen, keyboard reachable, no layout shift. -->
+<button
+  type="button"
+  data-back-to-top
+  aria-label="Back to top"
+  class="fixed right-5 bottom-5 z-40 hidden size-11 place-items-center rounded-full border border-line-strong bg-canvas-raised text-ink shadow-sm transition-colors hover:border-ink hover:bg-surface-tint focus-visible:outline-2 focus-visible:outline-spark"
+>
+  <svg
+    class="size-4"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M12 19V5M6 11l6-6 6 6" />
+  </svg>
+</button>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>("[data-back-to-top]");
+
+  if (button !== null) {
+    const paint = (): void => {
+      const visible = window.scrollY > 640;
+      button.classList.toggle("grid", visible);
+      button.classList.toggle("hidden", !visible);
+    };
+
+    button.addEventListener("click", () => {
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+    });
+
+    window.addEventListener("scroll", paint, { passive: true });
+    paint();
+  }
+</script>
