@@ -1,73 +1,15 @@
-import type { NotificationKind } from "@hermes/types";
 import { useFocusEffect, useRouter } from "expo-router";
-import {
-  Bell,
-  CalendarClock,
-  ChevronLeft,
-  MessageSquare,
-  ShieldAlert,
-} from "lucide-react-native";
+import { Bell, ChevronLeft } from "lucide-react-native";
 import * as React from "react";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { TabScreen } from "@/components/layout/tab-screen";
+import { NotificationGroupList } from "@/components/notifications/notification-group-list";
 import { Icon } from "@/components/ui/icon";
-import { IconTile, ListRow, ListSection } from "@/components/ui/list";
+import { IconTile } from "@/components/ui/list";
 import { Text } from "@/components/ui/text";
 import { careApi, type PatientNotification } from "@/lib/care-api";
+import { groupByDay } from "@/lib/notification-groups";
 import { getPatientId } from "@/lib/session";
-
-const KIND_LABEL: Record<NotificationKind, string> = {
-  case_alert: "Result alert",
-  sms_fallback: "SMS fallback",
-  escalation: "Care team follow-up",
-  secure_message: "Secure message",
-  visit_reminder: "Visit reminder",
-};
-
-const KIND_ICON: Record<NotificationKind, typeof Bell> = {
-  case_alert: ShieldAlert,
-  sms_fallback: MessageSquare,
-  escalation: ShieldAlert,
-  secure_message: MessageSquare,
-  visit_reminder: CalendarClock,
-};
-
-const timeLabel = (iso: string): string =>
-  new Date(iso).toLocaleTimeString(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-const dayLabel = (iso: string): string => {
-  const date = new Date(iso);
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  if (date.toDateString() === today.toDateString()) return "Today";
-  if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
-  return date.toLocaleDateString(undefined, {
-    weekday: "long",
-    day: "numeric",
-    month: "short",
-  });
-};
-
-interface NotificationGroup {
-  label: string;
-  items: PatientNotification[];
-}
-
-const groupByDay = (items: PatientNotification[]): NotificationGroup[] =>
-  items.reduce<NotificationGroup[]>((groups, item) => {
-    const label = dayLabel(item.createdAt);
-    const last = groups[groups.length - 1];
-    if (last === undefined || last.label !== label) {
-      groups.push({ label, items: [item] });
-      return groups;
-    }
-    last.items.push(item);
-    return groups;
-  }, []);
 
 const Notifications = () => {
   const router = useRouter();
@@ -187,44 +129,12 @@ const Notifications = () => {
           </View>
         ) : null}
 
-        {groups.map((group) => (
-          <ListSection key={group.label} title={group.label}>
-            {group.items.map((item, index) => {
-              const unread = item.readAt === null;
-              return (
-                <ListRow
-                  key={item.id}
-                  first={index === 0}
-                  leading={
-                    <IconTile tone={unread ? "spark" : "muted"}>
-                      <Icon
-                        as={KIND_ICON[item.kind]}
-                        className={
-                          unread
-                            ? "size-[18px] text-primary"
-                            : "size-[18px] text-muted-foreground"
-                        }
-                      />
-                    </IconTile>
-                  }
-                  title={KIND_LABEL[item.kind]}
-                  subtitle={`${timeLabel(item.createdAt)} · ${
-                    item.status === "failed" ? "Not delivered" : "Delivered"
-                  }`}
-                  trailing={
-                    unread ? (
-                      <View className="size-2 rounded-full bg-primary" />
-                    ) : undefined
-                  }
-                  chevron={item.caseId !== ""}
-                  onPress={() => {
-                    void open(item);
-                  }}
-                />
-              );
-            })}
-          </ListSection>
-        ))}
+        <NotificationGroupList
+          groups={groups}
+          onOpen={(item) => {
+            void open(item);
+          }}
+        />
       </ScrollView>
     </TabScreen>
   );

@@ -1,83 +1,35 @@
-import { useRouter } from "expo-router";
-import { Check, Phone, ShieldCheck } from "lucide-react-native";
-import * as React from "react";
+import { Check, Phone } from "lucide-react-native";
 import {
   ActivityIndicator,
-  Platform,
   Pressable,
   ScrollView,
   TextInput,
   View,
 } from "react-native";
+import { SignInError, SignInHeader } from "@/components/auth/sign-in-header";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
-import {
-  type PatientProfile,
-  requestPatientCode,
-  updateConsent,
-  verifyPatientCode,
-} from "@/lib/auth";
-import { careApi } from "@/lib/care-api";
-import { registerPushToken } from "@/lib/notifications";
-
-type Step = "phone" | "code";
+import { usePatientSignIn } from "@/lib/use-patient-sign-in";
 
 const SignInScreen = () => {
-  const router = useRouter();
-  const [step, setStep] = React.useState<Step>("phone");
-  const [phone, setPhone] = React.useState("");
-  const [code, setCode] = React.useState("");
-  const [consent, setConsent] = React.useState(false);
-  const [devCode, setDevCode] = React.useState<string | null>(null);
-  const [error, setError] = React.useState("");
-  const [busy, setBusy] = React.useState(false);
-
-  const sendCode = async (): Promise<void> => {
-    setBusy(true);
-    setError("");
-    try {
-      const result = await requestPatientCode(phone.trim());
-      setDevCode(result.devCode === undefined ? null : result.devCode);
-      setStep("code");
-    } catch (caught) {
-      setError(
-        caught instanceof Error ? caught.message : "Could not send a code.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const finish = async (patient: PatientProfile): Promise<void> => {
-    const token = await registerPushToken().catch(() => null);
-    if (token !== null) {
-      await careApi
-        .registerDevice(patient.id, token, Platform.OS)
-        .catch(() => undefined);
-    }
-    router.replace("/");
-  };
-
-  const verify = async (): Promise<void> => {
-    setBusy(true);
-    setError("");
-    try {
-      const patient = await verifyPatientCode(phone.trim(), code.trim());
-      // The checkbox is required before a code is sent, so this records the
-      // patient's explicit choice rather than relying on seeded defaults.
-      await updateConsent(true, true);
-      await finish(patient);
-    } catch (caught) {
-      setError(
-        caught instanceof Error ? caught.message : "That code did not work.",
-      );
-      setBusy(false);
-    }
-  };
-
-  const canSend = phone.trim().length >= 8 && consent && !busy;
-  const canVerify = code.trim().length === 6 && !busy;
+  const {
+    step,
+    phone,
+    setPhone,
+    code,
+    setCode,
+    consent,
+    toggleConsent,
+    devCode,
+    error,
+    busy,
+    sendCode,
+    verify,
+    chooseAnotherNumber,
+    canSend,
+    canVerify,
+  } = usePatientSignIn();
 
   return (
     <ScrollView
@@ -85,24 +37,8 @@ const SignInScreen = () => {
       contentContainerClassName="gap-5 p-6 pt-16"
       keyboardShouldPersistTaps="handled"
     >
-      <View className="items-center gap-3">
-        <View className="size-16 items-center justify-center rounded-full bg-primary/10">
-          <Icon as={ShieldCheck} className="size-8 text-primary" />
-        </View>
-        <Text variant="h2" className="text-center text-[28px]">
-          Sign in to your results
-        </Text>
-        <Text className="text-center text-muted-foreground">
-          We send a one-time code to the phone number your clinic has on file.
-          No password to remember.
-        </Text>
-      </View>
-
-      {error === "" ? null : (
-        <View className="gap-1 rounded-xl border border-destructive/40 bg-destructive/5 p-3">
-          <Text className="text-sm text-destructive">{error}</Text>
-        </View>
-      )}
+      <SignInHeader />
+      <SignInError error={error} />
 
       {step === "phone" ? (
         <View className="gap-4">
@@ -124,7 +60,7 @@ const SignInScreen = () => {
 
           <Pressable
             className="flex-row items-start gap-3"
-            onPress={() => setConsent((value) => !value)}
+            onPress={toggleConsent}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: consent }}
           >
@@ -170,14 +106,7 @@ const SignInScreen = () => {
           <Button size="lg" onPress={verify} disabled={!canVerify}>
             <Text>{busy ? "Checking…" : "Sign in"}</Text>
           </Button>
-          <Button
-            variant="ghost"
-            onPress={() => {
-              setStep("phone");
-              setCode("");
-              setError("");
-            }}
-          >
+          <Button variant="ghost" onPress={chooseAnotherNumber}>
             <Text>Use a different number</Text>
           </Button>
         </View>
