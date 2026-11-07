@@ -16,20 +16,20 @@ export const ScreenHeader = ({
   subtitle,
   trailing,
 }: ScreenHeaderProps) => (
-  <View className="gap-1 px-5 pb-4 pt-3">
+  <View className="gap-1.5 px-5 pb-2 pt-4">
     {eyebrow === undefined ? null : (
-      <Text className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+      <Text className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {eyebrow}
       </Text>
     )}
     <View className="flex-row items-center justify-between gap-3">
-      <Text className="flex-1 text-[32px] font-extrabold leading-[38px] tracking-[-0.02em]">
+      <Text className="flex-1 text-[28px] font-extrabold leading-[34px] tracking-[-0.02em]">
         {title}
       </Text>
       {trailing}
     </View>
     {subtitle === undefined ? null : (
-      <Text className="text-[15px] leading-[21px] text-muted-foreground">
+      <Text className="max-w-[46ch] text-[15px] leading-[22px] text-muted-foreground">
         {subtitle}
       </Text>
     )}

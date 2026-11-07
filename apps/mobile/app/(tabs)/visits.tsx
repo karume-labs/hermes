@@ -1,16 +1,12 @@
 import { useRouter } from "expo-router";
 import { CalendarCheck } from "lucide-react-native";
-import {
-  ActivityIndicator,
-  RefreshControl,
-  ScrollView,
-  View,
-} from "react-native";
+import { RefreshControl, ScrollView, View } from "react-native";
 import { TabScreen } from "@/components/layout/tab-screen";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { IconTile } from "@/components/ui/list";
 import { ScreenHeader } from "@/components/ui/screen-header";
+import { ScreenSkeleton } from "@/components/ui/screen-skeleton";
 import { Text } from "@/components/ui/text";
 import { NextVisitPanel } from "@/components/visits/next-visit-panel";
 import { VisitHistorySection } from "@/components/visits/visit-history-section";
@@ -45,14 +41,7 @@ const Visits = () => {
           subtitle="Confirmed appointments, preparation notes and past visits in one place."
         />
 
-        {loading ? (
-          <View className="items-center gap-2 py-16">
-            <ActivityIndicator />
-            <Text className="text-[13px] text-muted-foreground">
-              Loading your visits…
-            </Text>
-          </View>
-        ) : null}
+        {loading ? <ScreenSkeleton rows={3} withHeader={false} /> : null}
 
         {error === "" ? null : (
           <Text className="px-5 text-[13px] text-destructive">{error}</Text>

@@ -1,9 +1,10 @@
 import { useLocalSearchParams } from "expo-router";
 import * as React from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { JourneyTimeline } from "@/components/journey/journey-timeline";
 import { TabScreen } from "@/components/layout/tab-screen";
 import { ScreenHeader } from "@/components/ui/screen-header";
+import { ScreenSkeleton } from "@/components/ui/screen-skeleton";
 import { Text } from "@/components/ui/text";
 import { careApi, type PatientCaseDetail } from "@/lib/care-api";
 import { stepIndex } from "@/lib/care-store";
@@ -54,10 +55,7 @@ const Journey = () => {
   if (detail === null) {
     return (
       <TabScreen>
-        <View className="flex-1 items-center justify-center gap-2">
-          <ActivityIndicator />
-          <Text className="text-muted-foreground">Loading your journey…</Text>
-        </View>
+        <ScreenSkeleton rows={5} />
       </TabScreen>
     );
   }

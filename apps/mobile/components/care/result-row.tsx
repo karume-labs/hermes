@@ -29,9 +29,8 @@ export const ResultRow = ({ item, first, onPress }: ResultRowProps) => (
         {item.careCase.status === "closed" ? (
           <Chip
             label="Reviewed"
-            className="bg-success-fill"
-            textClassName="text-success"
-            icon={<CheckCircle2 size={12} color="#166534" />}
+            tone="quiet"
+            icon={<CheckCircle2 size={12} color="currentColor" />}
           />
         ) : (
           <SeverityPill severity={item.careCase.severity} />

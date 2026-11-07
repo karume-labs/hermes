@@ -1,9 +1,4 @@
-import {
-  ActivityIndicator,
-  RefreshControl,
-  ScrollView,
-  View,
-} from "react-native";
+import { RefreshControl, ScrollView } from "react-native";
 import { BiometricGate } from "@/components/care/biometric-gate";
 import {
   HomeEmptyState,
@@ -13,7 +8,7 @@ import {
 import { ResultSections } from "@/components/care/result-sections";
 import { TabScreen } from "@/components/layout/tab-screen";
 import { ScreenHeader } from "@/components/ui/screen-header";
-import { Text } from "@/components/ui/text";
+import { ScreenSkeleton } from "@/components/ui/screen-skeleton";
 import { useHomeCases } from "@/lib/use-home-cases";
 
 const HomeScreen = () => {
@@ -51,14 +46,7 @@ const HomeScreen = () => {
             <SignedInBanner patientId={patientId} patientLabel={patientLabel} />
           )}
 
-          {loading ? (
-            <View className="items-center gap-2 py-16">
-              <ActivityIndicator />
-              <Text className="text-[13px] text-muted-foreground">
-                Loading your results…
-              </Text>
-            </View>
-          ) : null}
+          {loading ? <ScreenSkeleton rows={3} withHeader={false} /> : null}
 
           {error === "" ? null : (
             <HomeErrorCard error={error} onRetry={retry} />

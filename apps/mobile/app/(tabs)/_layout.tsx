@@ -7,10 +7,31 @@ import {
   MessageSquare,
   UserRound,
 } from "lucide-react-native";
+import type { ReactNode } from "react";
 import { useCallback } from "react";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUniwind } from "uniwind";
 import { NAV_THEME, THEME } from "@/lib/theme";
+
+/** Icon inside a soft pill when its tab is active: shape first, tint second. */
+const TabIcon = ({
+  icon,
+  focused,
+}: {
+  icon: ReactNode;
+  focused: boolean;
+}): ReactNode => (
+  <View
+    className={
+      focused
+        ? "h-8 w-14 items-center justify-center rounded-full bg-primary/12"
+        : "h-8 w-14 items-center justify-center rounded-full bg-transparent"
+    }
+  >
+    {icon}
+  </View>
+);
 
 const TabsLayout = () => {
   const { theme } = useUniwind();
@@ -22,99 +43,79 @@ const TabsLayout = () => {
     void Haptics.selectionAsync().catch(() => undefined);
   }, []);
 
+  // The bar's own tint is ignored in favour of the shared tokens, so the icon
+  // and its label never disagree about the active state.
+  const icon = (Glyph: typeof HeartPulse) =>
+    function TabBarIcon({ focused }: { focused: boolean }): ReactNode {
+      return (
+        <TabIcon
+          focused={focused}
+          icon={
+            <Glyph
+              size={focused ? 22 : 21}
+              strokeWidth={focused ? 2.3 : 1.9}
+              color={
+                focused
+                  ? THEME[scheme].foreground
+                  : THEME[scheme].mutedForeground
+              }
+            />
+          }
+        />
+      );
+    };
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         sceneStyle: { backgroundColor: navTheme.colors.background },
-        tabBarActiveTintColor: navTheme.colors.primary,
+        tabBarActiveTintColor: THEME[scheme].foreground,
         tabBarInactiveTintColor: THEME[scheme].mutedForeground,
         tabBarStyle: {
           backgroundColor: navTheme.colors.card,
           borderTopColor: navTheme.colors.border,
-          borderTopWidth: 0.5,
-          height: 56 + insets.bottom,
-          paddingTop: 6,
-          paddingBottom: insets.bottom + 4,
+          borderTopWidth: 1,
+          height: 64 + insets.bottom,
+          paddingTop: 8,
+          paddingBottom: insets.bottom + 6,
           elevation: 0,
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontFamily: "PlusJakartaSans_500Medium",
+          letterSpacing: 0.1,
+          fontFamily: "PlusJakartaSans_700Bold",
+          marginTop: 2,
         },
-        tabBarItemStyle: { paddingTop: 2 },
+        tabBarItemStyle: { paddingVertical: 2 },
+        tabBarIconStyle: { marginBottom: 0 },
         tabBarHideOnKeyboard: true,
       }}
     >
       <Tabs.Screen
         name="index"
         listeners={{ tabPress: haptic }}
-        options={{
-          title: "Home",
-          tabBarIcon: ({ color, focused }) => (
-            <HeartPulse
-              size={focused ? 23 : 22}
-              strokeWidth={focused ? 2.4 : 1.9}
-              color={color}
-            />
-          ),
-        }}
+        options={{ title: "Results", tabBarIcon: icon(HeartPulse) }}
       />
       <Tabs.Screen
         name="journey"
         listeners={{ tabPress: haptic }}
-        options={{
-          title: "Care",
-          tabBarIcon: ({ color, focused }) => (
-            <HeartHandshake
-              size={focused ? 23 : 22}
-              strokeWidth={focused ? 2.4 : 1.9}
-              color={color}
-            />
-          ),
-        }}
+        options={{ title: "Care", tabBarIcon: icon(HeartHandshake) }}
       />
       <Tabs.Screen
         name="visits"
         listeners={{ tabPress: haptic }}
-        options={{
-          title: "Visits",
-          tabBarIcon: ({ color, focused }) => (
-            <CalendarDays
-              size={focused ? 23 : 22}
-              strokeWidth={focused ? 2.4 : 1.9}
-              color={color}
-            />
-          ),
-        }}
+        options={{ title: "Visits", tabBarIcon: icon(CalendarDays) }}
       />
       <Tabs.Screen
         name="messages"
         listeners={{ tabPress: haptic }}
-        options={{
-          title: "Messages",
-          tabBarIcon: ({ color, focused }) => (
-            <MessageSquare
-              size={focused ? 23 : 22}
-              strokeWidth={focused ? 2.4 : 1.9}
-              color={color}
-            />
-          ),
-        }}
+        options={{ title: "Messages", tabBarIcon: icon(MessageSquare) }}
       />
       <Tabs.Screen
         name="profile"
         listeners={{ tabPress: haptic }}
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ color, focused }) => (
-            <UserRound
-              size={focused ? 23 : 22}
-              strokeWidth={focused ? 2.4 : 1.9}
-              color={color}
-            />
-          ),
-        }}
+        options={{ title: "Profile", tabBarIcon: icon(UserRound) }}
       />
     </Tabs>
   );

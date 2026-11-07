@@ -1,11 +1,12 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { Bell, ChevronLeft } from "lucide-react-native";
 import * as React from "react";
-import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { TabScreen } from "@/components/layout/tab-screen";
 import { NotificationGroupList } from "@/components/notifications/notification-group-list";
 import { Icon } from "@/components/ui/icon";
 import { IconTile } from "@/components/ui/list";
+import { ScreenSkeleton } from "@/components/ui/screen-skeleton";
 import { Text } from "@/components/ui/text";
 import { careApi, type PatientNotification } from "@/lib/care-api";
 import { groupByDay } from "@/lib/notification-groups";
@@ -102,14 +103,7 @@ const Notifications = () => {
           team.
         </Text>
 
-        {loading ? (
-          <View className="items-center gap-2 py-16">
-            <ActivityIndicator />
-            <Text className="text-[13px] text-muted-foreground">
-              Loading alerts…
-            </Text>
-          </View>
-        ) : null}
+        {loading ? <ScreenSkeleton rows={4} withHeader={false} /> : null}
 
         {error === "" ? null : (
           <Text className="px-5 text-[13px] text-destructive">{error}</Text>

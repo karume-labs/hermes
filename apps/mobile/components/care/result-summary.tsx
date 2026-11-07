@@ -23,20 +23,13 @@ export const ResultSummary = ({ careCase }: ResultSummaryProps) => {
         {closed ? (
           <Chip
             label="Reviewed"
-            className="bg-success-fill"
-            textClassName="text-success"
-            icon={<CheckCircle2 size={12} color="#166534" />}
+            tone="quiet"
+            icon={<CheckCircle2 size={12} color="currentColor" />}
           />
         ) : (
           <SeverityPill severity={careCase.severity} />
         )}
-        {closed ? null : (
-          <Chip
-            label={statusLabel(careCase)}
-            className="bg-secondary"
-            textClassName="text-secondary-foreground"
-          />
-        )}
+        {closed ? null : <Chip label={statusLabel(careCase)} tone="soft" />}
       </View>
 
       <Text className="text-[24px] font-bold leading-[31px] tracking-[-0.01em]">
