@@ -4,6 +4,7 @@ import type { AdminClinicSummary } from "@hermes/types";
 import {
   Alert,
   Badge,
+  Button,
   Group,
   SimpleGrid,
   Stack,
@@ -12,6 +13,8 @@ import {
 } from "@mantine/core";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ReactNode } from "react";
+import { useMemo, useState } from "react";
+import { ClinicFormModal } from "@/features/admin/components/clinic-form-modal";
 import { useSetClinicActive } from "@/features/admin/services/mutations";
 import { useAdminClinics } from "@/features/admin/services/queries";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
@@ -45,7 +48,9 @@ const ClinicStatus = ({
   );
 };
 
-const columns: ColumnDef<AdminClinicSummary>[] = [
+const buildColumns = (
+  onEdit: (clinic: AdminClinicSummary) => void,
+): ColumnDef<AdminClinicSummary>[] => [
   {
     id: "clinic",
     header: "Clinic",
@@ -98,11 +103,35 @@ const columns: ColumnDef<AdminClinicSummary>[] = [
       </Badge>
     ),
   },
+  {
+    id: "actions",
+    header: "",
+    enableSorting: false,
+    cell: ({ row }) => (
+      <Button
+        size="compact-xs"
+        variant="subtle"
+        onClick={() => onEdit(row.original)}
+      >
+        Edit
+      </Button>
+    ),
+  },
 ];
 
 export const ClinicsView = (): ReactNode => {
   const clinics = useAdminClinics();
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<AdminClinicSummary | null>(null);
   const rows = clinics.data === undefined ? [] : clinics.data;
+  const columns = useMemo(
+    () =>
+      buildColumns((clinic) => {
+        setEditing(clinic);
+        setFormOpen(true);
+      }),
+    [],
+  );
 
   return (
     <Stack gap="xl">
@@ -110,6 +139,16 @@ export const ClinicsView = (): ReactNode => {
         eyebrow="Administration"
         title="Clinics & tenancy"
         subtitle="Every clinic in the network with its staffing, patient population and open care load."
+        actions={
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setFormOpen(true);
+            }}
+          >
+            Add clinic
+          </Button>
+        }
       />
 
       {clinics.isError ? (
@@ -148,7 +187,13 @@ export const ClinicsView = (): ReactNode => {
         columns={columns}
         loading={clinics.isLoading}
         emptyMessage="No clinics configured"
-        minWidth={860}
+        minWidth={920}
+      />
+
+      <ClinicFormModal
+        opened={formOpen}
+        clinic={editing}
+        onClose={() => setFormOpen(false)}
       />
     </Stack>
   );

@@ -1,11 +1,12 @@
 import {
+  createClinic,
   listAdminAudit,
   listAdminClinics,
-  setClinicActive,
+  updateClinic,
 } from "@api/features/admin/services/admin-service";
 import { requireAdmin } from "@api/features/shared/auth/index";
 import { NotFoundError } from "@api/features/shared/errors/index";
-import { ClinicUpdateSchema } from "@hermes/validators";
+import { ClinicCreateSchema, ClinicUpdateSchema } from "@hermes/validators";
 import { Type } from "@sinclair/typebox";
 import { Elysia } from "elysia";
 
@@ -23,11 +24,22 @@ export const adminRouter = new Elysia({ prefix: "/admin" })
     },
     { headers: authHeader },
   )
+  .post(
+    "/clinics",
+    async ({ body, headers }) => {
+      await requireAdmin(headers);
+      const clinic = await createClinic(body);
+      if (clinic === null)
+        throw new NotFoundError("Clinic could not be created");
+      return clinic;
+    },
+    { body: ClinicCreateSchema, headers: authHeader },
+  )
   .patch(
     "/clinics/:id",
     async ({ params, body, headers }) => {
       await requireAdmin(headers);
-      const clinic = await setClinicActive(params.id, body.isActive);
+      const clinic = await updateClinic(params.id, body);
       if (clinic === null) throw new NotFoundError("Clinic not found");
       return clinic;
     },

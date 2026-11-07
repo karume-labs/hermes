@@ -1,3 +1,4 @@
+import { ConflictError } from "@api/features/shared/errors/index";
 import { user } from "@db/auth/schema/index";
 import { auditTrail, careCases } from "@db/care-loop/schema/index";
 import { db } from "@db/client";
@@ -41,18 +42,52 @@ export const listAdminClinics = async (): Promise<AdminClinicSummary[]> => {
   }));
 };
 
-export const setClinicActive = async (id: string, isActive: boolean) => {
+const serializeClinic = (row: typeof clinics.$inferSelect) => ({
+  ...row,
+  createdAt: row.createdAt.toISOString(),
+  updatedAt: row.updatedAt.toISOString(),
+});
+
+export const createClinic = async (input: {
+  id: string;
+  name: string;
+  timezone?: string;
+  isActive?: boolean;
+}) => {
+  try {
+    const [row] = await db
+      .insert(clinics)
+      .values({
+        id: input.id,
+        name: input.name,
+        timezone: input.timezone ?? "Africa/Nairobi",
+        isActive: input.isActive ?? true,
+      })
+      .returning();
+    return row === undefined ? null : serializeClinic(row);
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "23505"
+    ) {
+      throw new ConflictError("A clinic with this id already exists");
+    }
+    throw error;
+  }
+};
+
+export const updateClinic = async (
+  id: string,
+  patch: { name?: string; timezone?: string; isActive?: boolean },
+) => {
   const [row] = await db
     .update(clinics)
-    .set({ isActive })
+    .set(patch)
     .where(eq(clinics.id, id))
     .returning();
-  if (row === undefined) return null;
-  return {
-    ...row,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-  };
+  return row === undefined ? null : serializeClinic(row);
 };
 
 export const listAdminAudit = async (): Promise<AdminAuditEntry[]> => {
