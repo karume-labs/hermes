@@ -1,10 +1,11 @@
 "use client";
 
 import type { AdminAuditEntry } from "@hermes/types";
-import { Anchor, Badge, Stack, Text } from "@mantine/core";
+import { Anchor, Stack, Text } from "@mantine/core";
 import type { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import Link from "next/link";
+import { Pill } from "@/features/shared/components/ui/pill";
 
 export const auditColumns: ColumnDef<AdminAuditEntry>[] = [
   {
@@ -22,9 +23,7 @@ export const auditColumns: ColumnDef<AdminAuditEntry>[] = [
     header: "Action",
     accessorFn: (row) => row.action,
     cell: ({ row }) => (
-      <Badge variant="light" color="brandSlate">
-        {row.original.action.replaceAll("_", " ")}
-      </Badge>
+      <Pill tone="info">{row.original.action.replaceAll("_", " ")}</Pill>
     ),
   },
   {

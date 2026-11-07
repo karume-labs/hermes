@@ -8,7 +8,7 @@ import { MetricsView } from "@/features/admin/components/metrics-view";
 
 export const metadata: Metadata = {
   title: "Governance",
-  description: "Acknowledgment, conversion, retention and SLA performance.",
+  description: "How fast patients respond, how many results close on time.",
 };
 
 const AdminPage = (): ReactNode => <MetricsView />;

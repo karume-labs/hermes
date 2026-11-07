@@ -1,19 +1,12 @@
 "use client";
 
 import type { RoutingRule } from "@hermes/types";
-import {
-  Alert,
-  Badge,
-  Button,
-  Card,
-  Group,
-  Stack,
-  Switch,
-  Text,
-} from "@mantine/core";
+import { Alert, Card, Stack, Text } from "@mantine/core";
 import type { ColumnDef } from "@tanstack/react-table";
+import { parseAsString, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
+import { routingColumns } from "@/features/admin/components/routing-columns";
 import { RoutingRuleComposer } from "@/features/admin/components/routing-rule-form";
 import {
   useDeleteRoutingRule,
@@ -22,73 +15,49 @@ import {
 import { useRoutingRules } from "@/features/admin/services/queries";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
 import { DataTable } from "@/features/shared/components/table/data-table";
-import { DataTableSkeleton } from "@/features/shared/components/table/data-toolbar";
+import { DataTableSkeleton } from "@/features/shared/components/table/data-table-skeleton";
+import { DataToolbar } from "@/features/shared/components/table/data-toolbar";
+import { DataToolbarSearch } from "@/features/shared/components/table/data-toolbar-fields";
 import { errorMessage } from "@/features/shared/utils/form-errors";
 
 export const RoutingView = (): ReactNode => {
   const rules = useRoutingRules();
   const upsert = useUpsertRoutingRule();
   const remove = useDeleteRoutingRule();
+  const [search, setSearch] = useQueryState(
+    "rule-q",
+    parseAsString.withDefault(""),
+  );
   const items = rules.data === undefined ? [] : rules.data;
+  const term = search.trim().toLowerCase();
+  const filtered = items.filter(
+    (rule) =>
+      term === "" ||
+      rule.markerPrefix.toLowerCase().includes(term) ||
+      rule.clinicId.toLowerCase().includes(term),
+  );
 
   const columns = useMemo<ColumnDef<RoutingRule, unknown>[]>(
-    () => [
-      {
-        id: "prefix",
-        header: "Marker prefix",
-        accessorFn: (row) => row.markerPrefix,
-        cell: ({ row }): ReactNode => (
-          <Text ff="monospace" size="sm">
-            {row.original.markerPrefix}
-          </Text>
-        ),
-      },
-      {
-        id: "clinic",
-        header: "Clinic",
-        accessorFn: (row) => row.clinicId,
-        cell: ({ row }): ReactNode => (
-          <Badge variant="light">{row.original.clinicId}</Badge>
-        ),
-      },
-      {
-        id: "active",
-        header: "Active",
-        accessorFn: (row) => (row.active ? 1 : 0),
-        cell: ({ row }): ReactNode => (
-          <Switch
-            checked={row.original.active}
-            onChange={(event) =>
-              upsert.mutate({
-                markerPrefix: row.original.markerPrefix,
-                clinicId: row.original.clinicId,
-                active: event.currentTarget.checked,
-              })
-            }
-          />
-        ),
-      },
-      {
-        id: "actions",
-        header: "",
-        enableSorting: false,
-        cell: ({ row }): ReactNode => (
-          <Group justify="flex-end">
-            <Button
-              size="xs"
-              variant="subtle"
-              color="red"
-              loading={remove.isPending}
-              onClick={() => remove.mutate(row.original.id)}
-            >
-              Remove
-            </Button>
-          </Group>
-        ),
-      },
-    ],
+    () =>
+      routingColumns({
+        upserting: upsert.isPending,
+        removing: remove.isPending,
+        onSetActive: (rule, active) =>
+          upsert.mutate({
+            markerPrefix: rule.markerPrefix,
+            clinicId: rule.clinicId,
+            active,
+          }),
+        onRemove: (id) => remove.mutate(id),
+      }),
     [remove, upsert],
   );
+
+  const error = rules.isError
+    ? rules.error
+    : upsert.isError
+      ? upsert.error
+      : remove.error;
 
   return (
     <Stack gap="xl">
@@ -100,13 +69,7 @@ export const RoutingView = (): ReactNode => {
 
       {rules.isError || upsert.isError || remove.isError ? (
         <Alert color="red" title="Routing configuration failed">
-          {errorMessage(
-            rules.isError
-              ? rules.error
-              : upsert.isError
-                ? upsert.error
-                : remove.error,
-          )}
+          {errorMessage(error)}
         </Alert>
       ) : null}
 
@@ -128,16 +91,38 @@ export const RoutingView = (): ReactNode => {
         bg="brandChalk.0"
         bd="1px solid var(--mantine-color-brandChalk-3)"
       >
-        {rules.isLoading ? (
-          <DataTableSkeleton columnCount={4} rowCount={4} />
-        ) : (
-          <DataTable
-            data={items}
-            columns={columns}
-            minWidth={560}
-            emptyMessage="No routing rules configured; every result routes to clinic-1."
-          />
-        )}
+        <Stack gap="md">
+          <DataToolbar
+            title="Find a rule"
+            description="Marker prefix or clinic"
+            filtersActive={search !== ""}
+            activeFilterCount={search === "" ? 0 : 1}
+            onClear={() => void setSearch("")}
+            search={
+              <DataToolbarSearch
+                value={search}
+                onChange={(next) => void setSearch(next)}
+                placeholder="Search a marker prefix or clinic"
+              />
+            }
+          >
+            <Text size="sm" c="dimmed">
+              Rules apply to new results only; cases already in the queue keep
+              the clinic they were routed to.
+            </Text>
+          </DataToolbar>
+
+          {rules.isLoading ? (
+            <DataTableSkeleton columnCount={4} rowCount={4} />
+          ) : (
+            <DataTable
+              data={filtered}
+              columns={columns}
+              minWidth={560}
+              emptyMessage="No routing rules match this search"
+            />
+          )}
+        </Stack>
       </Card>
     </Stack>
   );

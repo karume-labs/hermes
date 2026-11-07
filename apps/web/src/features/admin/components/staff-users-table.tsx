@@ -8,7 +8,7 @@ import { useMemo } from "react";
 import { useUpdateStaffUser } from "@/features/admin/services/mutations";
 import { useClinics, useStaffUsers } from "@/features/admin/services/queries";
 import { DataTable } from "@/features/shared/components/table/data-table";
-import { DataTableSkeleton } from "@/features/shared/components/table/data-toolbar";
+import { DataTableSkeleton } from "@/features/shared/components/table/data-table-skeleton";
 
 const ROLE_OPTIONS = [
   { value: "coordinator", label: "Coordinator" },

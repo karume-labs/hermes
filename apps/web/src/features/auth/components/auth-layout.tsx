@@ -7,8 +7,8 @@ import {
 
 const POINTS = [
   "Every screening result triaged by clinical severity.",
-  "Patients acknowledge from the mobile app, not a phone tree.",
-  "SLA clocks, referrals and closures audited end to end.",
+  "Patients confirm results in the mobile app, not over the phone.",
+  "Every deadline, referral and closure is recorded.",
 ];
 
 interface AuthLayoutProps {
@@ -49,7 +49,7 @@ export const AuthLayout = ({ children }: AuthLayoutProps): ReactNode => (
             Screening to sign-off, without the phone calls.
           </Title>
           <Text c="var(--hermes-ink-soft)" size="sm" lh={1.7}>
-            Hermes closes the loop between the lab, the clinic and the patient.
+            Hermes keeps the lab, the clinic and the patient on the same page.
           </Text>
           <Stack gap="sm">
             {POINTS.map((point) => (
@@ -70,7 +70,7 @@ export const AuthLayout = ({ children }: AuthLayoutProps): ReactNode => (
         </Stack>
 
         <Text size="xs" c="var(--hermes-ink-muted)" lts="0.12em" tt="uppercase">
-          Hermes care loop · 2026
+          Hermes care · 2026
         </Text>
       </Box>
 

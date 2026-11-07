@@ -6,7 +6,7 @@ import {
   IconClock,
 } from "@tabler/icons-react";
 import type { ReactNode } from "react";
-import { Pill, type Tone } from "@/features/cases/components/case-badge-frame";
+import { Pill, type Tone } from "@/features/shared/components/ui/pill";
 
 export const severityTone = (severity: string): Tone => {
   if (severity === "Urgent") return "urgent";
@@ -22,12 +22,22 @@ const severityIcon = (severity: string): ReactNode => {
   return <IconCircleCheck size={13} stroke={1.75} />;
 };
 
+const SEVERITY_DESCRIPTION: Record<string, string> = {
+  Urgent: "Needs a clinician within 4 hours of the result arriving.",
+  Actionable: "Needs a decision within 24 hours.",
+  Routine: "Can wait up to 72 hours for the next step.",
+};
+
 export const SeverityBadge = ({
   severity,
 }: {
   severity: string;
 }): ReactNode => (
-  <Pill tone={severityTone(severity)} icon={severityIcon(severity)}>
+  <Pill
+    tone={severityTone(severity)}
+    icon={severityIcon(severity)}
+    description={SEVERITY_DESCRIPTION[severity]}
+  >
     {severity}
   </Pill>
 );

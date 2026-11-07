@@ -19,25 +19,25 @@ export const QueueMetrics = ({
     <MetricCard
       label="In view"
       value={total}
-      hint="Cases matching the current filters"
+      hint="Results matching the filters above"
     />
     <MetricCard
-      label="Pending ack"
+      label="Waiting on the patient"
       value={pending}
-      hint="Notified or escalated without a patient tap"
-      tone={pending > 0 ? "orange.7" : "brandSlate.9"}
+      hint="Messaged, no confirmation yet"
+      emphasis={pending > 0 ? "attention" : "none"}
     />
     <MetricCard
-      label="SLA breached"
+      label="Past the deadline"
       value={breached}
-      hint="Past due with no acknowledgment"
-      tone={breached > 0 ? "red.7" : "brandSlate.9"}
+      hint="No confirmation and the window closed"
+      emphasis={breached > 0 ? "alert" : "none"}
     />
     <MetricCard
-      label="Unassigned"
+      label="No owner"
       value={unassigned}
-      hint="No named owner yet"
-      tone={unassigned > 0 ? "orange.7" : "brandSlate.9"}
+      hint="Nobody has picked these up"
+      emphasis={unassigned > 0 ? "attention" : "none"}
     />
   </SimpleGrid>
 );

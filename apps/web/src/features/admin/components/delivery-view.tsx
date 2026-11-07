@@ -1,18 +1,10 @@
 "use client";
 
-import {
-  Alert,
-  Button,
-  Card,
-  Group,
-  SegmentedControl,
-  SimpleGrid,
-  Stack,
-  Text,
-} from "@mantine/core";
+import { Alert, Button, Card, SimpleGrid, Stack, Text } from "@mantine/core";
 import { IconSend } from "@tabler/icons-react";
+import { parseAsString, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { deliveryColumns } from "@/features/admin/components/delivery-columns";
 import type { NotificationRow } from "@/features/admin/components/delivery-view-types";
 import { WebhookLogTable } from "@/features/admin/components/webhook-log-table";
@@ -23,29 +15,41 @@ import {
 } from "@/features/admin/services/queries";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
 import { DataTable } from "@/features/shared/components/table/data-table";
+import { DataToolbar } from "@/features/shared/components/table/data-toolbar";
+import {
+  DataToolbarSearch,
+  DataToolbarSelect,
+} from "@/features/shared/components/table/data-toolbar-fields";
 import { MetricCard } from "@/features/shared/components/ui/metric-card";
 
-const _statusColor = (status: string): string => {
-  if (status === "sent") return "teal";
-  if (status === "read") return "blue";
-  if (status === "failed") return "red";
-  return "yellow";
-};
-
-const channels = ["all", "push", "sms", "in_app", "email"];
+const CHANNELS = [
+  { value: "push", label: "Push" },
+  { value: "sms", label: "SMS" },
+  { value: "in_app", label: "In-app" },
+  { value: "email", label: "Email" },
+];
 
 export const DeliveryView = (): ReactNode => {
-  const [channel, setChannel] = useState("all");
+  const [channel, setChannel] = useQueryState(
+    "channel",
+    parseAsString.withDefault(""),
+  );
+  const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
   const notifications = useRecentNotifications();
   const stats = useNotificationStats();
   const dispatch = useDispatchNotifications();
 
   const items: NotificationRow[] =
     notifications.data === undefined ? [] : notifications.data;
-  const filtered =
-    channel === "all"
-      ? items
-      : items.filter((item) => item.channel === channel);
+  const term = search.trim().toLowerCase();
+  const filtered = items.filter((item) => {
+    if (channel !== "" && item.channel !== channel) return false;
+    if (term === "") return true;
+    return (
+      item.caseId.toLowerCase().includes(term) ||
+      item.kind.toLowerCase().includes(term)
+    );
+  });
   const failures = items.filter((item) => item.status === "failed");
 
   const columns = useMemo(() => deliveryColumns, []);
@@ -84,7 +88,7 @@ export const DeliveryView = (): ReactNode => {
         <MetricCard
           label="Failed"
           value={statValue("failed")}
-          tone={statValue("failed") > 0 ? "red.7" : "brandSlate.9"}
+          emphasis={statValue("failed") > 0 ? "alert" : "none"}
         />
         <MetricCard label="SMS fallback" value={statValue("smsQueued")} />
       </SimpleGrid>
@@ -104,26 +108,47 @@ export const DeliveryView = (): ReactNode => {
       ) : null}
 
       <Card
-        radius="sm"
+        radius="lg"
         p="lg"
-        bg="brandChalk.0"
-        bd="1px solid var(--mantine-color-brandChalk-3)"
+        bg="var(--hermes-surface)"
+        bd="1px solid var(--hermes-line)"
       >
         <Stack gap="lg">
-          <Group justify="space-between">
-            <Stack gap={2}>
-              <Text fw={500}>Notification outbox</Text>
-              <Text size="sm" c="dimmed">
-                Every push, SMS and in-app notice the loop has queued.
-              </Text>
-            </Stack>
-            <SegmentedControl
-              size="xs"
-              value={channel}
-              onChange={setChannel}
-              data={channels.map((value) => ({ value, label: value }))}
+          <Stack gap={2}>
+            <Text fw={700}>Notification outbox</Text>
+            <Text size="sm" c="dimmed">
+              Every push, SMS and in-app notice queued so far.
+            </Text>
+          </Stack>
+
+          <DataToolbar
+            title="Find a message"
+            description="Channel and case"
+            filtersActive={channel !== "" || search !== ""}
+            activeFilterCount={
+              [channel, search].filter((entry) => entry !== "").length
+            }
+            onClear={() => {
+              void setChannel("");
+              void setSearch("");
+            }}
+            search={
+              <DataToolbarSearch
+                value={search}
+                onChange={(next) => void setSearch(next)}
+                placeholder="Search a case reference or message kind"
+              />
+            }
+          >
+            <DataToolbarSelect
+              label="Channel"
+              placeholder="Every channel"
+              data={CHANNELS}
+              value={channel === "" ? null : channel}
+              onChange={(next) => void setChannel(next === null ? "" : next)}
+              description="Where the notice is delivered."
             />
-          </Group>
+          </DataToolbar>
 
           <DataTable
             data={filtered}

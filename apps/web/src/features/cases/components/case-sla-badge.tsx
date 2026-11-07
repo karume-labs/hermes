@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, Text } from "@mantine/core";
+import { Text } from "@mantine/core";
 import {
   IconAlertTriangle,
   IconCircleCheck,
@@ -8,7 +8,7 @@ import {
 } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { Pill } from "@/features/cases/components/case-badge-frame";
+import { Pill } from "@/features/shared/components/ui/pill";
 
 const formatDelta = (milliseconds: number): string => {
   const totalMinutes = Math.round(Math.abs(milliseconds) / 60_000);
@@ -25,9 +25,14 @@ const WINDOW_HOURS: Record<string, number> = {
   Routine: 72,
 };
 
-// SLA countdown shared by the queue and the case file. Colour follows the time
-// remaining: neutral over 50%, actionable at 25–50%, urgent under 25%, and a
-// solid urgent chip once breached. Ticks every minute.
+const WINDOW_COPY: Record<string, string> = {
+  Urgent: "4-hour window for urgent results",
+  Actionable: "24-hour window for actionable results",
+  Routine: "72-hour window for routine results",
+};
+
+// Time remaining drives the badge weight, not a new colour: filled once the
+// window is gone, light in the last quarter, outline above that. Ticks a minute.
 export const SlaBadge = ({
   slaDueAt,
   status,
@@ -42,14 +47,21 @@ export const SlaBadge = ({
     const timer = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(timer);
   }, []);
-  // A closed case has no clock left to run; showing one reads as a breach risk.
+  // A closed case has no clock left to run; showing one reads as a risk.
   if (status === "closed") return <Text c="dimmed">—</Text>;
+
   const due = new Date(slaDueAt).getTime();
   const remaining = due - now;
+  const windowCopy = WINDOW_COPY[severity ?? ""] ?? "the response window";
+
   if (remaining <= 0)
     return (
-      <Pill tone="urgent" solid icon={<IconAlertTriangle size={13} />}>
-        {`Breached ${formatDelta(remaining)} ago`}
+      <Pill
+        tone="urgent"
+        icon={<IconAlertTriangle size={13} />}
+        description={`The ${windowCopy} has passed without the patient confirming the result.`}
+      >
+        {`Overdue by ${formatDelta(remaining)}`}
       </Pill>
     );
 
@@ -57,30 +69,23 @@ export const SlaBadge = ({
   const ratio = remaining / (windowHours * 3_600_000);
   if (ratio < 0.25)
     return (
-      <Pill tone="urgent" icon={<IconClock size={13} stroke={1.75} />}>
-        {`Due in ${formatDelta(remaining)}`}
+      <Pill
+        tone="actionable"
+        icon={<IconClock size={13} stroke={1.75} />}
+        description={`Less than a quarter of ${windowCopy} is left.`}
+      >
+        {`${formatDelta(remaining)} left`}
       </Pill>
     );
-  if (ratio < 0.5)
-    return (
-      <Pill tone="actionable" icon={<IconClock size={13} stroke={1.75} />}>
-        {`Due in ${formatDelta(remaining)}`}
-      </Pill>
-    );
+
   return (
-    <Badge
-      variant="light"
-      styles={{
-        root: {
-          backgroundColor: "#F1F5F9",
-          color: "#334155",
-          border: "none",
-          textTransform: "none",
-        },
-      }}
+    <Pill
+      tone="routine"
+      icon={<IconCircleCheck size={13} stroke={1.75} />}
+      description={`Countdown inside ${windowCopy}.`}
     >
-      {`Due in ${formatDelta(remaining)}`}
-    </Badge>
+      {`${formatDelta(remaining)} left`}
+    </Pill>
   );
 };
 
@@ -91,13 +96,21 @@ export const AckState = ({
 }): ReactNode => {
   if (acknowledgedAt === null)
     return (
-      <Pill tone="actionable" icon={<IconClock size={13} stroke={1.75} />}>
-        Awaiting mobile ack
+      <Pill
+        tone="actionable"
+        icon={<IconClock size={13} stroke={1.75} />}
+        description="The patient has not opened this result in the app yet."
+      >
+        Waiting on patient
       </Pill>
     );
   return (
-    <Pill tone="routine" icon={<IconCircleCheck size={13} stroke={1.75} />}>
-      {`Ack ${new Date(acknowledgedAt).toLocaleString()}`}
+    <Pill
+      tone="routine"
+      icon={<IconCircleCheck size={13} stroke={1.75} />}
+      description="The patient opened and confirmed this result."
+    >
+      {`Seen ${new Date(acknowledgedAt).toLocaleDateString()}`}
     </Pill>
   );
 };

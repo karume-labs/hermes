@@ -1,27 +1,30 @@
 "use client";
 
 import type { CaseTask, CaseTaskKind } from "@hermes/types";
-import { Badge, Button, Group, Text } from "@mantine/core";
+import { Group, Text } from "@mantine/core";
+import { IconCheck } from "@tabler/icons-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { TableRowActions } from "@/features/shared/components/table/table-row-actions";
+import { Pill, type Tone } from "@/features/shared/components/ui/pill";
 
 const KIND_LABELS: Record<CaseTaskKind, string> = {
   escalation: "Escalation",
-  overdue: "Overdue",
+  overdue: "Overdue follow-up",
   referral: "Referral",
-  assignment: "Assignment",
+  assignment: "Ownership",
   surveillance_review: "Surveillance review",
-  patient_followup: "Patient follow-up",
+  patient_followup: "Patient asked for help",
 };
 
-const KIND_COLORS: Record<CaseTaskKind, string> = {
-  escalation: "red",
-  overdue: "orange",
-  referral: "blue",
-  assignment: "gray",
-  surveillance_review: "teal",
-  patient_followup: "orange",
+const KIND_TONES: Record<CaseTaskKind, Tone> = {
+  escalation: "urgent",
+  overdue: "actionable",
+  referral: "info",
+  assignment: "routine",
+  surveillance_review: "routine",
+  patient_followup: "actionable",
 };
 
 const isOverdue = (task: CaseTask): boolean =>
@@ -43,9 +46,9 @@ export const createTaskColumns = ({
     header: "Kind",
     accessorFn: (row) => row.kind,
     cell: ({ row }): ReactNode => (
-      <Badge color={KIND_COLORS[row.original.kind]} variant="light">
+      <Pill tone={KIND_TONES[row.original.kind]}>
         {KIND_LABELS[row.original.kind]}
-      </Badge>
+      </Pill>
     ),
   },
   {
@@ -89,24 +92,16 @@ export const createTaskColumns = ({
         </Text>
       ) : (
         <Group gap={6} wrap="nowrap">
-          <Text size="xs">{new Date(row.original.dueAt).toLocaleString()}</Text>
+          <Text size="xs">
+            {new Date(row.original.dueAt).toLocaleDateString()}
+          </Text>
           {isOverdue(row.original) ? (
-            <Badge color="red" variant="filled" size="xs">
-              Overdue
-            </Badge>
+            <Pill tone="urgent" description="The due date has passed.">
+              Late
+            </Pill>
           ) : null}
         </Group>
       ),
-  },
-  {
-    id: "createdBy",
-    header: "Raised by",
-    accessorFn: (row) => row.createdBy,
-    cell: ({ row }): ReactNode => (
-      <Text size="xs" c="dimmed">
-        {row.original.createdBy}
-      </Text>
-    ),
   },
   {
     id: "actions",
@@ -118,14 +113,30 @@ export const createTaskColumns = ({
           Done
         </Text>
       ) : (
-        <Button
-          size="xs"
-          variant="light"
-          loading={completingId === row.original.id}
-          onClick={() => onComplete(row.original.id)}
-        >
-          Complete
-        </Button>
+        <TableRowActions
+          inline={[
+            {
+              label: "Mark as done",
+              icon: <IconCheck size={15} />,
+              onClick: () => onComplete(row.original.id),
+              loading: completingId === row.original.id,
+            },
+          ]}
+          menu={[
+            {
+              label: "Mark as done",
+              icon: <IconCheck size={15} />,
+              onClick: () => onComplete(row.original.id),
+            },
+            {
+              label: "Open the case file",
+              icon: <IconCheck size={15} />,
+              onClick: () => {
+                window.location.assign(`/cases/${row.original.caseId}`);
+              },
+            },
+          ]}
+        />
       ),
   },
 ];

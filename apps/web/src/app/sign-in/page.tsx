@@ -5,7 +5,7 @@ import { SignInForm } from "@/features/auth/components/sign-in-form";
 
 export const metadata: Metadata = {
   title: "Sign in",
-  description: "Staff sign-in for the Hermes Care loop-closure dashboard.",
+  description: "Staff sign-in for the Hermes care dashboard.",
 };
 
 const SignInPage = (): ReactNode => (

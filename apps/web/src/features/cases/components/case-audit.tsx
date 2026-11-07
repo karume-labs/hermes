@@ -3,6 +3,7 @@
 import type { CaseDetail } from "@hermes/types";
 import { Badge, Card, Group, Stack, Table, Text } from "@mantine/core";
 import type { ReactNode } from "react";
+import { Pill } from "@/features/shared/components/ui/pill";
 
 interface CaseAuditProps {
   detail: CaseDetail;
@@ -12,13 +13,6 @@ const detailText = (detail: unknown): string => {
   if (detail === null || detail === undefined) return "";
   if (typeof detail === "string") return detail;
   return JSON.stringify(detail);
-};
-
-const channelColor = (channel: string): string => {
-  if (channel === "push") return "blue";
-  if (channel === "sms") return "orange";
-  if (channel === "email") return "grape";
-  return "gray";
 };
 
 export const CaseAudit = ({ detail }: CaseAuditProps): ReactNode => (
@@ -92,12 +86,7 @@ export const CaseAudit = ({ detail }: CaseAuditProps): ReactNode => (
             {detail.notifications.map((notification) => (
               <Table.Tr key={notification.id}>
                 <Table.Td>
-                  <Badge
-                    color={channelColor(notification.channel)}
-                    variant="light"
-                  >
-                    {notification.channel}
-                  </Badge>
+                  <Pill tone="info">{notification.channel}</Pill>
                 </Table.Td>
                 <Table.Td>
                   <Text size="xs">{notification.kind}</Text>

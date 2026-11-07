@@ -28,27 +28,27 @@ export const MetricsView = (): ReactNode => {
       <PageHeader
         eyebrow="Administration"
         title="Governance & performance"
-        subtitle="Acknowledgment speed, loop closure, engagement and SLA compliance across the ecosystem."
+        subtitle="How fast patients respond, how many results close on time, and where the delays sit."
       />
 
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
         <MetricCard
           label="Time to mobile ack"
           value={`${m.avgAckHours}h`}
-          hint={`${m.mobileAckPct}% of cases acknowledged`}
+          hint={`${m.mobileAckPct}% confirmed by the patient`}
           help="Average hours between notification and the patient opening the result."
         />
         <MetricCard
           label="Pending mobile ack"
           value={m.pendingAcknowledgement}
           hint="Notified or escalated without a patient tap"
-          tone={m.pendingAcknowledgement > 0 ? "orange.7" : "brandSlate.9"}
+          emphasis={m.pendingAcknowledgement > 0 ? "attention" : "none"}
         />
         <MetricCard
-          label="SLA breach rate"
+          label="Missed deadlines"
           value={pctLabel(m.slaBreachPct)}
           hint={`${m.slaBreaches} of ${m.total} cases breached`}
-          tone={m.slaBreachPct > 10 ? "red.7" : "brandSlate.9"}
+          emphasis={m.slaBreachPct > 10 ? "alert" : "none"}
         />
         <MetricCard
           label="Time to closure"
@@ -59,19 +59,19 @@ export const MetricsView = (): ReactNode => {
           label="Unassigned open cases"
           value={m.unassignedOpen}
           hint="Open cases without a named owner"
-          tone={m.unassignedOpen > 0 ? "orange.7" : "brandSlate.9"}
+          emphasis={m.unassignedOpen > 0 ? "attention" : "none"}
         />
         <MetricCard
           label="Referrals pending"
           value={m.referralsPending}
           hint="Sent and awaiting the receiving clinic"
-          tone={m.referralsPending > 0 ? "orange.7" : "brandSlate.9"}
+          emphasis={m.referralsPending > 0 ? "attention" : "none"}
         />
         <MetricCard
           label="Referrals declined"
           value={m.referralsDeclined}
           hint="Declined and returned with a re-route task"
-          tone={m.referralsDeclined > 0 ? "red.7" : "brandSlate.9"}
+          emphasis={m.referralsDeclined > 0 ? "alert" : "none"}
         />
         <MetricCard
           label="Referral acceptance"
@@ -121,8 +121,8 @@ export const MetricsView = (): ReactNode => {
         <MetricCard
           label="Unresolved actionable"
           value={m.unresolvedActionable}
-          hint={`${m.overdue} past SLA · ${m.pendingAcknowledgement} awaiting ack`}
-          tone={m.unresolvedActionable > 0 ? "orange.7" : "brandSlate.9"}
+          hint={`${m.overdue} overdue · ${m.pendingAcknowledgement} waiting on the patient`}
+          emphasis={m.unresolvedActionable > 0 ? "attention" : "none"}
         />
         <MetricCard
           label="Documented closure"
@@ -133,7 +133,7 @@ export const MetricsView = (): ReactNode => {
           label="Patient understanding"
           value={pctLabel(m.patientUnderstandingPct)}
           hint={`${m.feedbackCount} responses · confidence ${m.avgConfidence}/5`}
-          tone={m.patientUnderstandingPct < 80 ? "orange.7" : "brandSlate.9"}
+          emphasis={m.patientUnderstandingPct < 80 ? "attention" : "none"}
         />
       </SimpleGrid>
 

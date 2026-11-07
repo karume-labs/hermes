@@ -1,9 +1,12 @@
 "use client";
 import type { AdminClinicSummary } from "@hermes/types";
-import { Badge, Button, Group, Stack, Switch, Text } from "@mantine/core";
+import { Group, Stack, Switch, Text } from "@mantine/core";
+import { IconPencil } from "@tabler/icons-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ReactNode } from "react";
 import { useSetClinicActive } from "@/features/admin/services/mutations";
+import { TableRowActions } from "@/features/shared/components/table/table-row-actions";
+import { Pill } from "@/features/shared/components/ui/pill";
 
 export const ClinicStatus = ({
   clinic,
@@ -13,9 +16,16 @@ export const ClinicStatus = ({
   const setActive = useSetClinicActive();
   return (
     <Group gap="xs" wrap="nowrap">
-      <Badge variant="light" color={clinic.isActive ? "teal" : "gray"}>
-        {clinic.isActive ? "Active" : "Inactive"}
-      </Badge>
+      <Pill
+        tone={clinic.isActive ? "routine" : "info"}
+        description={
+          clinic.isActive
+            ? "Open for results and appointments."
+            : "Paused: results route elsewhere."
+        }
+      >
+        {clinic.isActive ? "Active" : "Paused"}
+      </Pill>
       <Switch
         size="xs"
         checked={clinic.isActive}
@@ -79,12 +89,9 @@ export const buildClinicColumns = (
     header: "Open cases",
     accessorFn: (row) => row.openCaseCount,
     cell: ({ row }) => (
-      <Badge
-        variant="light"
-        color={row.original.openCaseCount > 0 ? "orange" : "teal"}
-      >
+      <Pill tone={row.original.openCaseCount > 0 ? "actionable" : "routine"}>
         {row.original.openCaseCount}
-      </Badge>
+      </Pill>
     ),
   },
   {
@@ -92,13 +99,22 @@ export const buildClinicColumns = (
     header: "",
     enableSorting: false,
     cell: ({ row }) => (
-      <Button
-        size="compact-xs"
-        variant="subtle"
-        onClick={() => onEdit(row.original)}
-      >
-        Edit
-      </Button>
+      <TableRowActions
+        inline={[
+          {
+            label: "Edit clinic",
+            icon: <IconPencil size={15} />,
+            onClick: () => onEdit(row.original),
+          },
+        ]}
+        menu={[
+          {
+            label: "Edit clinic",
+            icon: <IconPencil size={15} />,
+            onClick: () => onEdit(row.original),
+          },
+        ]}
+      />
     ),
   },
 ];

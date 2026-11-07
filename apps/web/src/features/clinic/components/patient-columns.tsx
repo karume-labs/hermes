@@ -1,10 +1,12 @@
 "use client";
 
 import type { ClinicPatient } from "@hermes/types";
-import { Anchor, Badge, Group, Stack, Text } from "@mantine/core";
+import { Group, Stack, Text } from "@mantine/core";
+import { IconExternalLink, IconFolderOpen } from "@tabler/icons-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
-import Link from "next/link";
+import { TableRowActions } from "@/features/shared/components/table/table-row-actions";
+import { Pill } from "@/features/shared/components/ui/pill";
 
 export const patientColumns: ColumnDef<ClinicPatient>[] = [
   {
@@ -16,7 +18,7 @@ export const patientColumns: ColumnDef<ClinicPatient>[] = [
         <Text size="sm" fw={600}>
           {row.original.name}
         </Text>
-        <Text size="xs" c="dimmed">
+        <Text size="xs" c="dimmed" ff="monospace">
           {row.original.id}
         </Text>
       </Stack>
@@ -30,7 +32,9 @@ export const patientColumns: ColumnDef<ClinicPatient>[] = [
       <Stack gap={0}>
         <Text size="sm">{row.original.phone}</Text>
         <Text size="xs" c="dimmed">
-          {row.original.email === null ? "No email" : row.original.email}
+          {row.original.email === null
+            ? "No email on file"
+            : row.original.email}
         </Text>
       </Stack>
     ),
@@ -40,15 +44,15 @@ export const patientColumns: ColumnDef<ClinicPatient>[] = [
     header: "Care load",
     accessorFn: (row) => row.activeCaseCount,
     cell: ({ row }) => (
-      <Group gap={6}>
-        <Badge
-          variant="light"
-          color={row.original.activeCaseCount > 0 ? "orange" : "teal"}
+      <Group gap={8}>
+        <Pill
+          tone={row.original.activeCaseCount > 0 ? "actionable" : "routine"}
+          description="Results on this patient that have not been closed yet."
         >
-          {row.original.activeCaseCount} active
-        </Badge>
+          {`${row.original.activeCaseCount} open`}
+        </Pill>
         <Text size="xs" c="dimmed">
-          {row.original.caseCount} total
+          {`${row.original.caseCount} all time`}
         </Text>
       </Group>
     ),
@@ -69,20 +73,43 @@ export const patientColumns: ColumnDef<ClinicPatient>[] = [
     id: "actions",
     header: "",
     enableSorting: false,
-    cell: ({ row }) =>
-      row.original.lastCaseId === null ? (
-        <Text size="xs" c="dimmed">
-          No case
-        </Text>
-      ) : (
-        <Anchor
-          component={Link}
-          href={`/cases/${row.original.lastCaseId}`}
-          size="sm"
-          fw={600}
-        >
-          Open latest
-        </Anchor>
-      ),
+    cell: ({ row }) => {
+      const lastCaseId = row.original.lastCaseId;
+      if (lastCaseId === null)
+        return (
+          <Text size="xs" c="dimmed">
+            No case yet
+          </Text>
+        );
+      return (
+        <TableRowActions
+          inline={[
+            {
+              label: "Open latest result",
+              icon: <IconFolderOpen size={15} />,
+              onClick: () => {
+                window.location.assign(`/cases/${lastCaseId}`);
+              },
+            },
+          ]}
+          menu={[
+            {
+              label: "Open latest result",
+              icon: <IconFolderOpen size={15} />,
+              onClick: () => {
+                window.location.assign(`/cases/${lastCaseId}`);
+              },
+            },
+            {
+              label: "Open patient in a new tab",
+              icon: <IconExternalLink size={15} />,
+              onClick: () => {
+                window.open(`/cases/${lastCaseId}`, "_blank", "noopener");
+              },
+            },
+          ]}
+        />
+      );
+    },
   },
 ];

@@ -1,17 +1,47 @@
 "use client";
 
 import type { ClinicReferral } from "@hermes/types";
-import { Anchor, Badge, Stack, Text } from "@mantine/core";
+import { Anchor, Stack, Text } from "@mantine/core";
 import type { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import Link from "next/link";
+import { Pill, type Tone } from "@/features/shared/components/ui/pill";
 
-const STATUS_COLOR = {
-  sent: "orange",
-  accepted: "teal",
-  declined: "red",
-  completed: "green",
-} as const;
+interface ReferralStatus {
+  label: string;
+  tone: Tone;
+  hint: string;
+}
+
+const STATUS: Record<string, ReferralStatus> = {
+  sent: {
+    label: "Waiting on the other clinic",
+    tone: "actionable",
+    hint: "The hand-off has been sent and not answered yet.",
+  },
+  accepted: {
+    label: "Accepted",
+    tone: "routine",
+    hint: "The receiving clinic owns the next step.",
+  },
+  declined: {
+    label: "Declined",
+    tone: "urgent",
+    hint: "The receiving clinic could not take this on.",
+  },
+  completed: {
+    label: "Completed",
+    tone: "info",
+    hint: "The hand-off is finished.",
+  },
+};
+
+const copyFor = (status: string): ReferralStatus => {
+  const entry = STATUS[status];
+  if (entry === undefined)
+    return { label: status, tone: "info", hint: "Referral status" };
+  return entry;
+};
 
 export const referralColumns: ColumnDef<ClinicReferral>[] = [
   {
@@ -43,22 +73,21 @@ export const referralColumns: ColumnDef<ClinicReferral>[] = [
     id: "status",
     header: "Status",
     accessorFn: (row) => row.status,
-    cell: ({ row }) => (
-      <Badge
-        variant="light"
-        color={STATUS_COLOR[row.original.status]}
-        tt="capitalize"
-      >
-        {row.original.status}
-      </Badge>
-    ),
+    cell: ({ row }) => {
+      const entry = copyFor(row.original.status);
+      return (
+        <Pill tone={entry.tone} description={entry.hint}>
+          {entry.label}
+        </Pill>
+      );
+    },
   },
   {
     id: "note",
     header: "Hand-off note",
     accessorFn: (row) => row.note,
     cell: ({ row }) => (
-      <Text size="sm" lineClamp={2} maw={340}>
+      <Text size="sm" lineClamp={2} maw={320}>
         {row.original.note}
       </Text>
     ),

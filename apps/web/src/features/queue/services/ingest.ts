@@ -4,25 +4,21 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/features/shared/api/index";
 import { queryKeys } from "@/features/shared/keys/index";
 
-const labPayload = {
-  patientId: "patient-3-clinic-1",
-  clinicId: "clinic-1",
-  facilityId: "riverbend-lab",
-  markerCode: "ldl",
-  markerValue: 195,
-  unit: "mg/dL",
-  takenAt: new Date().toISOString(),
-};
-
+/**
+ * The queue's test button: the API picks a patient in the caller's clinic,
+ * creates a result and runs the same triage a real lab feed would, so the team
+ * can watch routing, ownership and notifications happen end to end.
+ */
 export const useIngestLabResult = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const res = await api.webhooks.lab.post(labPayload);
-      if (res.error) throw res.error;
-      return res.data;
+      const response = await api.cases["demo-result"].post();
+      if (response.error) throw response.error;
+      return response.data;
     },
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: queryKeys.cases.all }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.cases.all });
+    },
   });
 };

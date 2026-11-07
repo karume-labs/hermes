@@ -1,20 +1,12 @@
 "use client";
 
 import type { CaseDetail } from "@hermes/types";
-import {
-  Alert,
-  Badge,
-  Button,
-  Card,
-  Group,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Alert, Button, Card, Group, Stack, Text, Title } from "@mantine/core";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { useAssignCase } from "@/features/cases/services/mutations-case";
 import { useCareTeam } from "@/features/cases/services/queries";
+import { Pill } from "@/features/shared/components/ui/pill";
 import { errorMessage } from "@/features/shared/utils/form-errors";
 
 export const CaseAssignment = ({
@@ -32,13 +24,16 @@ export const CaseAssignment = ({
       <Group justify="space-between" mb="sm">
         <Title order={3}>Accountable owner</Title>
         {detail.assignee === null ? (
-          <Badge color="orange" variant="light">
+          <Pill
+            tone="actionable"
+            description="Nobody is responsible for the next step."
+          >
             Unassigned
-          </Badge>
+          </Pill>
         ) : (
-          <Badge variant="light">
+          <Pill tone="routine">
             {detail.assignee.name} · {detail.assignee.role}
-          </Badge>
+          </Pill>
         )}
       </Group>
       <Text size="sm" c="dimmed" mb="sm">

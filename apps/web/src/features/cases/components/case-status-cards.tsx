@@ -1,8 +1,9 @@
 "use client";
 
 import type { CaseDetail } from "@hermes/types";
-import { Alert, Badge, Card, Group, Stack, Text } from "@mantine/core";
+import { Alert, Card, Group, Stack, Text } from "@mantine/core";
 import type { ReactNode } from "react";
+import { Pill } from "@/features/shared/components/ui/pill";
 
 const CARD_STYLE = "1px solid var(--mantine-color-brandChalk-3)";
 
@@ -69,18 +70,21 @@ export const CareContinuityCard = ({
         </Text>
       </Stack>
       {careCase.feedback === null ? (
-        <Badge color="orange" variant="light">
+        <Pill
+          tone="actionable"
+          description="Teach-back has not been answered yet."
+        >
           No patient feedback
-        </Badge>
+        </Pill>
       ) : (
-        <Badge
-          color={careCase.feedback.understood ? "teal" : "orange"}
-          variant="light"
+        <Pill
+          tone={careCase.feedback.understood ? "routine" : "actionable"}
+          description="The patient's teach-back answer."
         >
           Patient{" "}
           {careCase.feedback.understood ? "understood" : "did not understand"} ·
           confidence {careCase.feedback.confidence}/5
-        </Badge>
+        </Pill>
       )}
     </Group>
   </Card>
@@ -94,7 +98,7 @@ export const CaseStateNotices = ({
   <>
     {careCase.escalatedAt !== null && careCase.status !== "closed" ? (
       <Alert color="orange" title="Escalated">
-        No mobile acknowledgment by the SLA window. Escalated{" "}
+        No patient confirmation before the deadline. Escalated{" "}
         {new Date(careCase.escalatedAt).toLocaleString()} — outreach is
         recommended.
       </Alert>

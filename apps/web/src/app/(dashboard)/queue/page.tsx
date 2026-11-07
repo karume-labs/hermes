@@ -8,8 +8,7 @@ import { QueueView } from "@/features/queue/components/queue-view";
 
 export const metadata: Metadata = {
   title: "Queue",
-  description:
-    "Active screening queue filtered by SLA urgency and risk severity.",
+  description: "Results that still need a person, soonest deadline first.",
 };
 
 const QueuePage = (): ReactNode => <QueueView />;

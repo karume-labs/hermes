@@ -3,25 +3,16 @@
 import { Card, Group, Progress, SimpleGrid, Stack, Text } from "@mantine/core";
 import type { ReactNode } from "react";
 
-const SEVERITY_TONE = {
-  Routine: "brandSlate.4",
-  Actionable: "orange.5",
-  Urgent: "red.6",
-} as const;
+/* One accent for every bar: the label and value carry the comparison. */
+const BAR_COLOR = "brandSlate.6";
 
 interface SeverityBarProps {
   label: string;
   hours: number;
-  tone: string;
   target: string;
 }
 
-const SeverityBar = ({
-  label,
-  hours,
-  tone,
-  target,
-}: SeverityBarProps): ReactNode => (
+const SeverityBar = ({ label, hours, target }: SeverityBarProps): ReactNode => (
   <Stack gap={6}>
     <Group justify="space-between">
       <Text size="sm" fw={600}>
@@ -33,7 +24,7 @@ const SeverityBar = ({
     </Group>
     <Progress
       value={Math.min((hours / 72) * 100, 100)}
-      color={tone}
+      color={BAR_COLOR}
       size="sm"
     />
   </Stack>
@@ -58,25 +49,22 @@ export const SeveritySection = ({
       bd="1px solid var(--mantine-color-brandChalk-3)"
     >
       <Text size="md" fw={700} mb="lg">
-        Acknowledgment speed by severity
+        How fast patients respond, by severity
       </Text>
       <Stack gap="lg">
         <SeverityBar
           label="Routine"
           hours={ackBySeverity.Routine}
-          tone={SEVERITY_TONE.Routine}
           target="< 72h"
         />
         <SeverityBar
           label="Actionable"
           hours={ackBySeverity.Actionable}
-          tone={SEVERITY_TONE.Actionable}
           target="< 24h"
         />
         <SeverityBar
           label="Urgent"
           hours={ackBySeverity.Urgent}
-          tone={SEVERITY_TONE.Urgent}
           target="< 4h"
         />
       </Stack>
@@ -110,7 +98,7 @@ export const SeveritySection = ({
             </Group>
             <Progress
               value={total === 0 ? 0 : (value / total) * 100}
-              color={SEVERITY_TONE[label]}
+              color={BAR_COLOR}
               size="sm"
             />
           </Stack>

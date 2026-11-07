@@ -1,15 +1,22 @@
 "use client";
 
-import { Badge, Text } from "@mantine/core";
+import { Text } from "@mantine/core";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ReactNode } from "react";
 import type { NotificationRow } from "@/features/admin/components/delivery-view-types";
 
-const statusColor = (status: string): string => {
-  if (status === "failed") return "red";
-  if (status === "read") return "teal";
-  if (status === "queued") return "orange";
-  return "blue";
+import { Pill, type Tone } from "@/features/shared/components/ui/pill";
+
+const STATUS_TONE: Record<string, Tone> = {
+  failed: "urgent",
+  queued: "actionable",
+  sent: "routine",
+  read: "info",
+};
+
+const statusTone = (status: string): Tone => {
+  const tone = STATUS_TONE[status];
+  return tone === undefined ? "info" : tone;
 };
 
 export const deliveryColumns: ColumnDef<NotificationRow, unknown>[] = [
@@ -28,9 +35,7 @@ export const deliveryColumns: ColumnDef<NotificationRow, unknown>[] = [
     header: "Channel",
     accessorFn: (row) => row.channel,
     cell: ({ row }): ReactNode => (
-      <Badge variant="outline" tt="capitalize">
-        {row.original.channel}
-      </Badge>
+      <Pill tone="info">{row.original.channel}</Pill>
     ),
   },
   {
@@ -44,9 +49,7 @@ export const deliveryColumns: ColumnDef<NotificationRow, unknown>[] = [
     header: "Status",
     accessorFn: (row) => row.status,
     cell: ({ row }): ReactNode => (
-      <Badge color={statusColor(row.original.status)} variant="light">
-        {row.original.status}
-      </Badge>
+      <Pill tone={statusTone(row.original.status)}>{row.original.status}</Pill>
     ),
   },
   {
