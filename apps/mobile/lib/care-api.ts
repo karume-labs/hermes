@@ -21,6 +21,7 @@ export interface PatientNotification {
   kind: NotificationKind;
   status: NotificationStatus;
   attempts: number;
+  payload?: unknown;
   createdAt: string;
   sentAt: string | null;
   readAt: string | null;
@@ -67,6 +68,8 @@ export const careApi = {
     requestJson(`/patients/${patientId}/cases`),
   patientBookings: (patientId: string): Promise<PatientBooking[]> =>
     requestJson(`/patients/${patientId}/bookings`),
+  notifications: (patientId: string): Promise<PatientNotification[]> =>
+    requestJson(`/patients/${patientId}/notifications`),
   patientCase: (
     patientId: string,
     caseId: string,

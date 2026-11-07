@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { Lock, ShieldCheck } from "lucide-react-native";
+import { Bell, Lock, ShieldCheck } from "lucide-react-native";
 import * as React from "react";
 import { ScrollView, Switch, View } from "react-native";
 import { TabScreen } from "@/components/layout/tab-screen";
@@ -146,6 +146,13 @@ const Profile = () => {
               }}
             />
           </View>
+          <Button
+            variant="outline"
+            onPress={() => router.push("/notifications")}
+          >
+            <Icon as={Bell} className="size-4" />
+            <Text>Open notifications</Text>
+          </Button>
         </View>
 
         <View className="gap-2 rounded-xl border border-border p-4">

@@ -82,6 +82,10 @@ const RootLayout = () => {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="care-action" options={{ title: "Your result" }} />
           <Stack.Screen name="booking" options={{ title: "Book a visit" }} />
+          <Stack.Screen
+            name="notifications"
+            options={{ headerShown: false, title: "Notifications" }}
+          />
         </Stack>
       </AuthGate>
       <PortalHost />
