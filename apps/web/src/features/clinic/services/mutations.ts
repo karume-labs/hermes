@@ -29,6 +29,24 @@ export const useCancelClinicBooking = () => {
   });
 };
 
+export const useRescheduleClinicBooking = () => {
+  const refresh = useRefreshSchedule();
+  return useMutation({
+    mutationFn: async (input: {
+      bookingId: string;
+      slotId: string;
+      kind: "in_person" | "telehealth";
+    }) => {
+      const response = await api
+        .bookings({ id: input.bookingId })
+        .reschedule.post({ slotId: input.slotId, kind: input.kind });
+      if (response.error) throw response.error;
+      return response.data;
+    },
+    onSuccess: refresh,
+  });
+};
+
 export const useRecordBookingOutcome = () => {
   const refresh = useRefreshSchedule();
   return useMutation({

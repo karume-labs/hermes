@@ -17,6 +17,7 @@ import dayjs from "dayjs";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
+import { RescheduleAppointmentModal } from "@/features/clinic/components/reschedule-appointment-modal";
 import {
   useCancelClinicBooking,
   useRecordBookingOutcome,
@@ -36,8 +37,10 @@ const STATUS_COLOR = {
 
 const AppointmentActions = ({
   appointment,
+  onReschedule,
 }: {
   appointment: ClinicAppointment;
+  onReschedule: (appointment: ClinicAppointment) => void;
 }): ReactNode => {
   const cancel = useCancelClinicBooking();
   const outcome = useRecordBookingOutcome();
@@ -55,15 +58,24 @@ const AppointmentActions = ({
         Open case
       </Anchor>
       {confirmed && !started ? (
-        <Button
-          size="compact-xs"
-          variant="subtle"
-          color="red"
-          loading={cancel.isPending}
-          onClick={() => cancel.mutate(appointment.booking.id)}
-        >
-          Cancel
-        </Button>
+        <>
+          <Button
+            size="compact-xs"
+            variant="subtle"
+            onClick={() => onReschedule(appointment)}
+          >
+            Reschedule
+          </Button>
+          <Button
+            size="compact-xs"
+            variant="subtle"
+            color="red"
+            loading={cancel.isPending}
+            onClick={() => cancel.mutate(appointment.booking.id)}
+          >
+            Cancel
+          </Button>
+        </>
       ) : null}
       {confirmed && started ? (
         <>
@@ -101,7 +113,9 @@ const AppointmentActions = ({
   );
 };
 
-const columns: ColumnDef<ClinicAppointment>[] = [
+const buildColumns = (
+  onReschedule: (appointment: ClinicAppointment) => void,
+): ColumnDef<ClinicAppointment>[] => [
   {
     id: "when",
     header: "When",
@@ -166,12 +180,21 @@ const columns: ColumnDef<ClinicAppointment>[] = [
     id: "actions",
     header: "",
     enableSorting: false,
-    cell: ({ row }) => <AppointmentActions appointment={row.original} />,
+    cell: ({ row }) => (
+      <AppointmentActions
+        appointment={row.original}
+        onReschedule={onReschedule}
+      />
+    ),
   },
 ];
 
 export const AppointmentsView = (): ReactNode => {
   const [view, setView] = useState("upcoming");
+  const [rescheduling, setRescheduling] = useState<ClinicAppointment | null>(
+    null,
+  );
+  const columns = useMemo(() => buildColumns(setRescheduling), []);
   const appointments = useClinicAppointments();
   const rows = appointments.data === undefined ? [] : appointments.data;
   const now = Date.now();
@@ -263,10 +286,15 @@ export const AppointmentsView = (): ReactNode => {
         columns={columns}
         loading={appointments.isLoading}
         emptyMessage="No visits in this view"
-        minWidth={980}
+        minWidth={1080}
         rowClassName={(row) =>
           row.booking.status === "cancelled" ? "hermes-row-muted" : undefined
         }
+      />
+
+      <RescheduleAppointmentModal
+        appointment={rescheduling}
+        onClose={() => setRescheduling(null)}
       />
     </Stack>
   );
