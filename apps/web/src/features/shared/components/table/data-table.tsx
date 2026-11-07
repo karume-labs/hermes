@@ -3,7 +3,6 @@
 import { Card, Table as MantineTable, ScrollArea, Stack } from "@mantine/core";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import {
-  flexRender,
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
@@ -15,12 +14,13 @@ import {
   DataTableEmptyRow,
   DataTablePagination,
 } from "@/features/shared/components/table/data-table-parts";
+import { DataTableRow } from "@/features/shared/components/table/data-table-row";
 import { DataTableSkeleton } from "@/features/shared/components/table/data-toolbar";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 40, 50];
 
-const TableTr = MantineTable.Tr;
-const TableTd = MantineTable.Td;
+const _TableTr = MantineTable.Tr;
+const _TableTd = MantineTable.Td;
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData, unknown>[];
@@ -90,35 +90,12 @@ export const DataTable = <TData,>({
             <MantineTable.Tbody>
               {pageRows.length > 0 ? (
                 pageRows.map((row) => (
-                  <TableTr
+                  <DataTableRow
                     key={row.id}
-                    className={[
-                      rowClassName?.(row.original),
-                      onRowClick === undefined
-                        ? undefined
-                        : "hermes-clickable-row",
-                    ]
-                      .filter((value) => value !== undefined)
-                      .join(" ")}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableTd
-                        key={cell.id}
-                        c="brandSlate.8"
-                        onClick={
-                          onRowClick === undefined ||
-                          cell.column.id === "actions"
-                            ? undefined
-                            : () => onRowClick(row.original)
-                        }
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableTd>
-                    ))}
-                  </TableTr>
+                    row={row}
+                    onRowClick={onRowClick}
+                    rowClassName={rowClassName}
+                  />
                 ))
               ) : (
                 <DataTableEmptyRow
