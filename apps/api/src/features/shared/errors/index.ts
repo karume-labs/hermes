@@ -33,11 +33,26 @@ export class UnprocessableError extends Error {
   }
 }
 
+const waitCopy = (seconds: number): string => {
+  if (seconds >= 90) {
+    const minutes = Math.ceil(seconds / 60);
+    return `${minutes} minutes`;
+  }
+  return `${seconds} seconds`;
+};
+
+// A cooldown is not a failure: the message says how long to wait and invites
+// the person to ask their clinic when they cannot wait.
 export class TooManyRequestsError extends Error {
   readonly status = 429;
   readonly code = "TOO_MANY_REQUESTS";
-  constructor(message = "Too many attempts. Try again shortly.") {
-    super(message);
+  readonly retryAfterSeconds: number;
+  constructor(retryAfterSeconds = 60, message?: string) {
+    super(
+      message ??
+        `That was a few tries in a row. Please wait ${waitCopy(retryAfterSeconds)} and try again — or call your clinic if you need help right away.`,
+    );
+    this.retryAfterSeconds = retryAfterSeconds;
   }
 }
 
@@ -79,6 +94,15 @@ export const errorHandlerPlugin = new Elysia()
       error instanceof ForbiddenError
     ) {
       set.status = error.status;
+      if (error instanceof TooManyRequestsError) {
+        set.headers["retry-after"] = `${error.retryAfterSeconds}`;
+        return {
+          success: false,
+          code: error.code,
+          message: error.message,
+          retryAfterSeconds: error.retryAfterSeconds,
+        };
+      }
       return { success: false, code: error.code, message: error.message };
     }
     // Validation envelopes are safe to return; anything else must not leak

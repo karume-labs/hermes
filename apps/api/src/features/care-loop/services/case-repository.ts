@@ -8,7 +8,8 @@ import {
 } from "@api/features/care-loop/services/case-dto";
 import { careCases, caseReferrals } from "@db/care-loop/schema/index";
 import { db } from "@db/client";
-import type { CareCase } from "@hermes/types";
+import { patients } from "@db/directory/schema/index";
+import type { CareCase, CaseListItem } from "@hermes/types";
 import { and, desc, eq, inArray, isNull, lt, ne, or } from "drizzle-orm";
 
 const inClinicScope = (clinicId: string) =>
@@ -33,7 +34,7 @@ const inClinicScope = (clinicId: string) =>
 export const listCases = async (
   filters: CaseFilters,
   clinicId: string | null = null,
-): Promise<CareCase[]> => {
+): Promise<CaseListItem[]> => {
   const predicates = [];
   if (clinicId !== null) predicates.push(inClinicScope(clinicId));
   if (filters.severity !== undefined && isSeverity(filters.severity))
@@ -54,11 +55,20 @@ export const listCases = async (
     );
   }
   const rows = await db
-    .select()
+    .select({
+      careCase: careCases,
+      patientName: patients.name,
+      patientPhone: patients.phone,
+    })
     .from(careCases)
+    .innerJoin(patients, eq(patients.id, careCases.patientId))
     .where(predicates.length > 0 ? and(...predicates) : undefined)
     .orderBy(desc(careCases.createdAt));
-  return rows.map(toCareCase);
+  return rows.map((row) => ({
+    ...toCareCase(row.careCase),
+    patientName: row.patientName,
+    patientPhone: row.patientPhone,
+  }));
 };
 
 export const findCase = async (

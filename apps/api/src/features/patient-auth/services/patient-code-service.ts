@@ -65,7 +65,11 @@ export const requestPatientCode = async (
       ),
     )
     .limit(3);
-  if (recent.length >= 3) throw new TooManyRequestsError();
+  if (recent.length >= 3)
+    throw new TooManyRequestsError(
+      600,
+      "That is three codes in ten minutes. Please use the newest code, or wait ten minutes before asking for another.",
+    );
 
   // Only one live code per patient: requesting again invalidates the old one.
   await db

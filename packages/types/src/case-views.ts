@@ -37,6 +37,12 @@ export type CaseDetail = CareCase & {
   assignee: CaseAssignee | null;
 };
 
+/** Queue row: the case plus the identity the care team recognises. */
+export type CaseListItem = CareCase & {
+  patientName: string;
+  patientPhone: string;
+};
+
 /** One patient-facing case, flattened for the mobile app. */
 export type PatientCase = {
   careCase: CareCase;

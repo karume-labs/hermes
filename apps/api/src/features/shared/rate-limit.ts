@@ -31,7 +31,9 @@ export const enforceRateLimit = (
   }
   bucket.count += 1;
   if (bucket.count > limit) {
-    throw new TooManyRequestsError();
+    // Round up so the caller never reads "try again in 0 seconds".
+    const secondsLeft = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
+    throw new TooManyRequestsError(secondsLeft);
   }
 };
 

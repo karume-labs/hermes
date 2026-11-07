@@ -47,7 +47,11 @@ export const verifyPatientCode = async (
     .orderBy(desc(patientLoginCodes.createdAt))
     .limit(1);
   if (row === undefined) throw new UnauthorizedError("That code is not valid.");
-  if (row.attempts >= 5) throw new TooManyRequestsError();
+  if (row.attempts >= 5)
+    throw new TooManyRequestsError(
+      0,
+      "This code has been entered too many times. Ask for a new code to continue.",
+    );
 
   if (!safeEqual(row.codeHash, hashCode(patient.id, code))) {
     await db

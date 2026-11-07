@@ -1,3 +1,4 @@
+import { demoResultRoutes } from "@api/features/ingestion/routers/demo-result-routes";
 import { routingRoutes } from "@api/features/ingestion/routers/routing-routes";
 import {
   logFailure,
@@ -108,4 +109,5 @@ export const ingestionRouter = new Elysia()
     },
     { body: Hl7MessageSchema },
   )
-  .use(routingRoutes);
+  .use(routingRoutes)
+  .use(demoResultRoutes);
