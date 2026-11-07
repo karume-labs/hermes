@@ -115,6 +115,8 @@ const Journey = () => {
   }
 
   const current = stepIndex(detail.journeyStage);
+  const rows = stepRows(detail);
+  const currentRow = rows[current];
   return (
     <TabScreen>
       <ScrollView
@@ -127,7 +129,15 @@ const Journey = () => {
           subtitle={journeyHint(detail)}
         />
         <View className="gap-5 px-5">
-          {stepRows(detail).map((row, index) => {
+          <View className="gap-1 rounded-[18px] bg-card p-4">
+            <Text className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Current step
+            </Text>
+            <Text className="text-[17px] font-bold">
+              {currentRow === undefined ? "" : journeyLabel(currentRow.step)}
+            </Text>
+          </View>
+          {rows.map((row, index) => {
             const done = index <= current;
             return (
               <View key={row.step} className="flex-row gap-3">
@@ -148,7 +158,7 @@ const Journey = () => {
                       }
                     />
                   </View>
-                  {index < 3 ? (
+                  {index < rows.length - 1 ? (
                     <View className="w-px flex-1 bg-border" />
                   ) : null}
                 </View>

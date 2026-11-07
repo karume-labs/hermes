@@ -14,8 +14,13 @@ import { type ReactNode, useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { useUniwind } from "uniwind";
 import { getPatientToken } from "@/lib/auth";
+import { isOnboardingDone } from "@/lib/onboarding";
 import "@/lib/notifications";
 import { NAV_THEME } from "@/lib/theme";
+import {
+  applyThemePreference,
+  getThemePreference,
+} from "@/lib/theme-preference";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -33,9 +38,13 @@ const AuthGate = ({ children }: { children: ReactNode }) => {
     void (async () => {
       const token = await getPatientToken();
       const onSignIn = segments[0] === "sign-in";
+      const onIntro = segments[0] === "onboarding";
+      const introDone = token === null ? true : await isOnboardingDone();
       setChecked(true);
       if (token === null && !onSignIn) router.replace("/sign-in");
       if (token !== null && onSignIn) router.replace("/");
+      if (token !== null && !introDone && !onIntro)
+        router.replace("/onboarding");
     })();
   }, [router, segments]);
 
@@ -58,6 +67,10 @@ const RootLayout = () => {
     PlusJakartaSans_800ExtraBold,
   });
 
+  useEffect(() => {
+    void getThemePreference().then(applyThemePreference);
+  }, []);
+
   if (!fontsLoaded) return null;
 
   const navTheme = NAV_THEME[scheme];
@@ -78,6 +91,10 @@ const RootLayout = () => {
           <Stack.Screen
             name="sign-in"
             options={{ headerShown: false, title: "Sign in" }}
+          />
+          <Stack.Screen
+            name="onboarding"
+            options={{ headerShown: false, gestureEnabled: false }}
           />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="care-action" options={{ title: "Your result" }} />

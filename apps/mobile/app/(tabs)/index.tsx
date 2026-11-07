@@ -128,13 +128,16 @@ const HomeScreen = () => {
           />
 
           {patientId === null ? null : (
-            <View className="-mt-2 px-5">
-              <View className="flex-row items-center gap-2 self-start rounded-full border border-border/80 bg-card px-3 py-1.5">
-                <View className="size-1.5 rounded-full bg-success" />
-                <Text className="text-[12px] text-muted-foreground">
+            <View className="mx-4 flex-row items-center justify-between rounded-[18px] bg-card p-4">
+              <View className="flex-1 gap-1">
+                <Text className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Signed in
+                </Text>
+                <Text className="text-[15px] font-semibold">
                   {patientLabel === "" ? patientId : patientLabel}
                 </Text>
               </View>
+              <View className="size-2.5 rounded-full bg-success" />
             </View>
           )}
 

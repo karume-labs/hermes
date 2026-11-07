@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { Bell, Lock, LogOut, ShieldCheck } from "lucide-react-native";
 import * as React from "react";
-import { ScrollView, Switch, View } from "react-native";
+import { Pressable, ScrollView, Switch, View } from "react-native";
 import { TabScreen } from "@/components/layout/tab-screen";
 import { Icon } from "@/components/ui/icon";
 import { IconTile, ListRow, ListSection } from "@/components/ui/list";
@@ -12,6 +12,17 @@ import {
   signOutPatient,
   updateConsent,
 } from "@/lib/auth";
+import {
+  getThemePreference,
+  setThemePreference,
+  type ThemePreference,
+} from "@/lib/theme-preference";
+
+const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
+  { value: "system", label: "System" },
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
+];
 
 const Profile = () => {
   const router = useRouter();
@@ -20,6 +31,8 @@ const Profile = () => {
   > | null>(null);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState("");
+  const [themePreference, setThemeChoice] =
+    React.useState<ThemePreference>("system");
 
   React.useEffect(() => {
     void (async () => {
@@ -27,8 +40,14 @@ const Profile = () => {
         (await loadPatientProfile().catch(() => null)) ??
         (await getCachedPatient());
       setProfile(current);
+      setThemeChoice(await getThemePreference());
     })();
   }, []);
+
+  const chooseTheme = (preference: ThemePreference): void => {
+    setThemeChoice(preference);
+    void setThemePreference(preference);
+  };
 
   const setConsent = async (
     pushConsent: boolean,
@@ -107,6 +126,40 @@ const Profile = () => {
             title="Clinic"
             value={profile === null ? "—" : profile.clinicName}
           />
+        </ListSection>
+
+        <ListSection
+          title="Appearance"
+          footer="System follows your phone's light or dark setting."
+        >
+          <View className="flex-row gap-2 px-4 py-3">
+            {THEME_OPTIONS.map((option) => {
+              const selected = themePreference === option.value;
+              return (
+                <Pressable
+                  key={option.value}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}
+                  onPress={() => {
+                    chooseTheme(option.value);
+                  }}
+                  className={`flex-1 items-center rounded-control border py-2.5 ${
+                    selected
+                      ? "border-primary bg-primary/15"
+                      : "border-border bg-card"
+                  }`}
+                >
+                  <Text
+                    className={`text-[14px] font-bold ${
+                      selected ? "text-foreground" : "text-muted-foreground"
+                    }`}
+                  >
+                    {option.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </ListSection>
 
         <ListSection

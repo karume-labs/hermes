@@ -38,7 +38,7 @@ const SignInScreen = () => {
     setError("");
     try {
       const result = await requestPatientCode(phone.trim());
-      setDevCode(result.devCode ?? null);
+      setDevCode(result.devCode === undefined ? null : result.devCode);
       setStep("code");
     } catch (caught) {
       setError(
