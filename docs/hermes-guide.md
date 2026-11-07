@@ -4,7 +4,7 @@ This is the working manual for Hermes: what each app is for, which control does
 what, and the exact path a piece of data takes from a lab feed to a signed-off
 case. It documents the code in this repository, not an aspiration — where
 behaviour is still a gap it is called out in
-[Known gaps](#12-known-gaps).
+[Remaining external dependencies](#12-remaining-external-dependencies).
 
 Hermes closes one loop: **screening result → patient alert → acknowledgment →
 visit → documented sign-off**, with the coordinator queue holding the case until
@@ -17,8 +17,8 @@ a clinician closes it.
 | App | Path | Stack | Port (default) | Audience | Owns |
 | --- | --- | --- | --- | --- | --- |
 | API | `apps/api` | Bun + Elysia + Drizzle | `8001` (`PORT`) | web, mobile, lab feeds | every read and write, auth, cron jobs |
-| Dashboard | `apps/web` | Next.js App Router + Mantine + TanStack Query | `3000` | coordinators, admins | queue, case file, admin |
-| Patient app | `apps/mobile` | Expo + expo-router | Expo (8081) | patients | result, ack, booking, journey, messages |
+| Dashboard | `apps/web` | Next.js App Router + Mantine + TanStack Query | `3000` | coordinators, admins | queue, case file, schedule, roster, referrals, admin |
+| Patient app | `apps/mobile` | Expo + expo-router | Expo (8081) | patients | results, acknowledgment, teach-back, booking, visits, journey, messages, profile |
 | Marketing site | `apps/www` | Astro | `4322` | public | landing page only |
 
 Only the API talks to Postgres. The web app calls it through an Eden treaty
@@ -135,8 +135,13 @@ redirects signed-out visitors to `/sign-in`; `/admin/*` additionally requires
 | --- | --- | --- |
 | **Hermes** wordmark | `/queue` (closes the mobile drawer) | everyone |
 | **Queue** | `/queue` | everyone |
+| **Appointments** | `/appointments` | everyone |
+| **Patients** | `/patients` | everyone |
+| **Referrals** | `/referrals` | everyone |
 | **Tasks** | `/tasks` | everyone |
 | **Overview** | `/admin` | admin |
+| **Clinics** | `/admin/clinics` | admin |
+| **Audit trail** | `/admin/audit` | admin |
 | **Delivery** | `/admin/delivery` | admin |
 | **Integrations** | `/admin/webhooks` | admin |
 | **Routing rules** | `/admin/routing` | admin |
@@ -146,7 +151,46 @@ redirects signed-out visitors to `/sign-in`; `/admin/*` additionally requires
 The mark beside the wordmark changes with the surface: the clinic plus on queue
 and case pages, the admin shield inside `/admin`.
 
-### 3.3 Tasks — `/tasks`
+### 3.3 Clinic schedule — `/appointments`
+
+Every visit at your clinic, with the patient and the result behind it, refetched
+every 30 seconds.
+
+| Control | What it does |
+| --- | --- |
+| **Upcoming / Past / All** | filters the table by booking status and slot time |
+| **Open case** (row) | `/cases/{id}` |
+| **Reschedule** (row) | opens the reschedule modal; `POST /bookings/:id/reschedule` moves the visit to another open slot |
+| **Cancel** (row) | `POST /bookings/:id/cancel`; only for confirmed visits that have not started |
+| **Attended** / **No-show** (row) | `PATCH /bookings/:id/outcome` once the slot has started |
+
+Metric cards: **Upcoming**, **Today**, **Attended**, **Cancelled or missed**.
+Cancelled rows are muted.
+
+### 3.4 Patient roster — `/patients`
+
+Everyone registered at the clinic with their open care load and latest result.
+
+| Control | What it does |
+| --- | --- |
+| Search | filters by name, phone or patient id |
+| **Open case** (row) | `/cases/{lastCaseId}` |
+
+Metric cards: **Patients**, **Open cases**, **With a result on file**.
+
+### 3.5 Referral inbox — `/referrals`
+
+Every hand-off into or out of the clinic, read from `GET /clinic/referrals`.
+Accept, decline and complete decisions still happen on the case file.
+
+| Control | What it does |
+| --- | --- |
+| **All / Sent / Accepted / Declined / Completed** | filters by referral status |
+| **Open case** (row) | `/cases/{caseId}` |
+
+Metric cards: **Awaiting decision**, **Accepted**, **Declined**, **Completed**.
+
+### 3.6 Tasks — `/tasks`
 
 The staff worklist for everything that still needs a person: SLA escalations,
 overdue outreach, incoming referrals, surveillance reviews and patient
@@ -162,7 +206,7 @@ clinic-scoped like the queue.
 Metric cards show **In view**, **Overdue**, **Surveillance** and **Patient
 follow-up**. Overdue rows use the same breach treatment as the queue.
 
-### 3.4 Queue — `/queue`
+### 3.7 Queue — `/queue`
 
 The worklist, sorted by SLA due time and refetched every 30 seconds. Filters live
 in the URL (`?severity=Urgent&status=notified`) so a view can be shared.
@@ -183,11 +227,13 @@ Filters cover severity, workflow status, ownership (my cases/unassigned) and
 overdue-only. Rows turn red when breached and carry an orange treatment when
 escalated.
 
-### 3.5 Case file — `/cases/[id]`
+### 3.8 Case file — `/cases/[id]`
 
 Breadcrumb **Queue** returns to the worklist. The header shows the severity,
-status, SLA countdown and mobile acknowledgment state; below it is the exact
-plain-language summary the patient received.
+status, SLA countdown and mobile acknowledgment state. Below it sit three cards:
+the exact plain-language summary the patient received, a care-continuity card
+(owner, confirmation, consultation, treatment, surveillance and the patient's
+teach-back answer) and state notices for escalated or closed cases.
 
 **Tab 1 — Consult & closure**
 
@@ -230,7 +276,7 @@ share it; it is never returned to the patient app.
 `consult_note_added`, `attachment_uploaded`, `outreach_triggered`, `escalated`,
 `auto_escalated`, `case_closed`.
 
-### 3.6 Administration
+### 3.9 Administration
 
 **Overview — `/admin`**
 
@@ -245,6 +291,18 @@ share it; it is never returned to the patient app.
 | Closed cases, Time to booking | closure count and hours from result to booking |
 | Routine / Actionable / Urgent counts | severity mix, with average ack time per grade |
 
+**Clinics — `/admin/clinics`**
+
+| Control | What it does |
+| --- | --- |
+| **Add clinic** | `POST /admin/clinics` with id, name and timezone |
+| **Edit** (row) | renames the clinic or changes its timezone via `PATCH /admin/clinics/:id` |
+| Active switch (row) | pauses or reactivates a clinic without deleting it |
+| Metric cards | Active clinics, Patients, Staff, Open cases |
+
+A paused clinic keeps its people and history but stops appearing in the pickers
+that create new work.
+
 **Delivery — `/admin/delivery`**
 
 | Control | What it does |
@@ -255,6 +313,10 @@ share it; it is never returned to the patient app.
 | Webhook log table | inbound feed audit with source, ok/failed, status and JSON detail |
 
 **Integrations — `/admin/webhooks`** — the inbound webhook log on its own page.
+
+**Audit trail — `/admin/audit`** — `GET /admin/audit`, the latest clinical and
+access events across every clinic, newest first, with a search over action,
+actor and patient plus **Events**, **Actors** and **Affected results** cards.
 
 **Routing rules — `/admin/routing`**
 
@@ -271,8 +333,11 @@ matching marker prefix wins and anything unmatched falls back to `clinic-1`.
 
 ## 4. Using the patient app (`apps/mobile`)
 
-The app opens behind a biometric gate and uses a seeded patient identity from
-`expo-secure-store` (there is no patient sign-in yet).
+The app launches into a first-run intro, then sign-in; a stored patient token
+skips the intro on later launches. Tabs are **Home**, **Care**, **Visits**,
+**Messages** and **Profile**. The biometric gate sits in front of the two
+screens that render a result — Home and the care-action screen — not the whole
+app.
 
 ### 4.1 Sign-in — `/sign-in`
 
@@ -283,7 +348,24 @@ the bearer token in `expo-secure-store` and records consent through
 `PATCH /patient-auth/consent`. The token is attached to every patient request;
 `/patient-auth/session` restores the cached profile on launch.
 
-### 4.2 Biometric gate (every screen)
+| Control | What it does |
+| --- | --- |
+| **Phone number** | the number on file; `POST /patient-auth/request-code` is rate limited |
+| Consent checkbox | required before a code is requested |
+| **Send my code** | requests the one-time code |
+| **6-digit code** + **Sign in** | `POST /patient-auth/verify`; the token is stored and the tabs open |
+| **Use a different number** | returns to the phone step |
+
+That device is now the session: `_layout.tsx` sends signed-out visitors to
+`/sign-in` and signed-in visitors away from it.
+
+### 4.2 First-run intro — `/onboarding`
+
+Four swipeable slides (welcome, booking, privacy, ready) with **Next**,
+**Skip** and **Get started**. Finishing writes the flag in
+`expo-secure-store`, so the intro appears once per install.
+
+### 4.3 Biometric gate — Home and care action
 
 | State | Control | Result |
 | --- | --- | --- |
@@ -295,35 +377,38 @@ the bearer token in `expo-secure-store` and records consent through
 A cancelled prompt keeps the results hidden and shows
 "Unlock cancelled. Your results stay hidden until you confirm."
 
-### 4.3 Home — `/`
+### 4.4 Home — `/`
 
 | Control | What it does |
 | --- | --- |
-| Case card | opens `/care-action?caseId=…`; shows severity, journey stage, unread messages |
+| Result row under **Needs attention** | opens `/care-action?caseId=…`; shows severity, journey stage and unread messages |
+| Result row under **Past results** | same screen, for closed cases |
 | Pull to refresh | reloads `GET /patients/:id/cases` |
-| **Care journey** | opens `/journey?caseId=…` for the most recent case |
-| **Sign out** | revokes the patient token server-side and returns to `/sign-in` |
 | **Try again** | shown when the API is unreachable |
 | Push notification tap | deep-links to `/care-action?caseId=…` and logs `push_opened` |
 
 On load the app records `app_open`, registers an Expo push token with
 `POST /patients/:id/devices` (skipped without an EAS `projectId`), and switches
-to in-app alerts only when push is unavailable.
+to in-app alerts only when push is unavailable. Sign-out lives on the Profile
+tab.
 
-### 4.4 Care action — `/care-action?caseId=…`
+### 4.5 Care action — `/care-action?caseId=…`
 
 Opening the screen logs `case_viewed`, marks coordinator messages read and marks
-the case's push alerts read.
+the case's push alerts read. Cards render in this order: result summary, closure
+(after sign-off), booked visit, acknowledgment, teach-back, next steps.
 
 | Control | What it does |
 | --- | --- |
 | **I have seen this result** | `POST /cases/acknowledge` (`caseId` + `patientId`); idempotent, records `mobile_acknowledged` |
-| **Book an in-person visit** / **Request a video review** | `/booking?caseId=…&clinicId=…&kind=in_person|telehealth` |
-| **Message your care team** | `/messages?caseId=…` |
-| **Add to device calendar** | writes the booked visit to the device calendar |
+| **Yes, I understand** / **No, I need help** + confidence 1–5 + **Send my answer** | teach-back via `POST /patients/:id/cases/:caseId/feedback`; a negative answer opens a staff follow-up task |
+| **Add to device calendar** (visit card) | writes the booked visit to the device calendar |
 | **Next steps** | explains what happens after acknowledgment |
 
-### 4.5 Booking — `/booking`
+The booking and messaging entries in the old layout are now the **Visits** and
+**Messages** tabs; the case still links across to both.
+
+### 4.6 Booking — `/booking`
 
 | Control | What it does |
 | --- | --- |
@@ -332,12 +417,48 @@ the case's push alerts read.
 | **Track your care journey** | `/journey?caseId=…` |
 | **Back to result** | returns to the care action screen |
 
-### 4.6 Journey and messages
+With a `bookingId` param the same screen reschedules an existing visit through
+`POST /bookings/:id/reschedule` and titles itself "Choose a new time".
 
-- `/journey` renders Received → Booked → Consultation → Completed from the case,
-  booking, referral and closure fields.
-- `/messages` is the secure thread; the composer sends
-  `POST /patients/:id/cases/:caseId/messages` and logs `message_sent`.
+### 4.7 Visits — `/visits`
+
+| Control | What it does |
+| --- | --- |
+| Next-visit panel | date, clinic, kind and the preparation note for the soonest confirmed visit |
+| **Open care plan** | `/care-action?caseId=…` for that booking |
+| **Reschedule** | opens `/booking` with the booking and slot, which moves it to another open slot |
+| **Cancel visit** | `POST /bookings/:id/cancel` after confirming, then refreshes the tab |
+| **Also booked** | later confirmed visits, each opening its care plan |
+| **Visit history** | attended, missed and cancelled visits with their status |
+| **View your results** | shown instead of the panel when nothing is booked |
+
+### 4.8 Care journey — `/journey`
+
+Received → Booked → Consultation → Completed, derived from the case, booking,
+referral and closure fields. With no `caseId` the tab shows the most recent case.
+
+### 4.9 Messages — `/messages`
+
+A conversation list across the patient's cases; selecting one opens the secure
+thread. The composer sends
+`POST /patients/:id/cases/:caseId/messages`, marks the coordinator side read and
+logs `message_sent`.
+
+### 4.10 Profile — `/profile`
+
+| Control | What it does |
+| --- | --- |
+| Identity header + **Account** rows | name, clinic, phone and patient id from the cached profile |
+| **Appearance** | System / Light / Dark, stored through `lib/theme-preference.ts` |
+| **Push notifications**, **SMS fallback** switches | `PATCH /patient-auth/consent` |
+| **Notification history** | opens `/notifications` |
+| **Sign out** | revokes the token server-side and returns to `/sign-in` |
+
+### 4.11 Notification centre — `/notifications`
+
+Every alert the clinic sent, grouped by day. Opening an unread row marks it read
+(`POST /patients/:id/notifications/:id/read`) and, when the alert belongs to a
+case, opens `/care-action?caseId=…`.
 
 ---
 
@@ -387,6 +508,9 @@ id matches the path. Webhooks require a valid, unexpired, single-use signature.
 | POST | `/webhooks/fhir` | HMAC | FHIR R4 `Observation` |
 | POST | `/webhooks/hl7` | HMAC | HL7v2 `ORU^R01` message |
 | GET | `/clinics` | staff | clinics for filters and invites |
+| GET | `/clinic/appointments` | staff | clinic schedule: booking, patient and case per visit |
+| GET | `/clinic/patients` | staff | patient roster with care load and latest result |
+| GET | `/clinic/referrals` | staff | referral inbox and history for the clinic |
 | GET | `/staff/users` | admin | staff accounts |
 | PATCH | `/staff/users/:id` | admin | role, clinic and access |
 | GET/POST | `/staff/invites` | admin | list/create invites |
@@ -428,6 +552,7 @@ id matches the path. Webhooks require a valid, unexpired, single-use signature.
 | POST | `/cases/close` | clinician/admin | clinical sign-off (requires an assigned owner) |
 | GET | `/metrics` | staff | governance metrics |
 | GET | `/admin/clinics` | admin | clinic directory with activity counts |
+| POST | `/admin/clinics` | admin | create a clinic (id, name, timezone) |
 | PATCH | `/admin/clinics/:id` | admin | activate or pause a clinic |
 | GET | `/admin/audit` | admin | global audit trail |
 | GET | `/audit/:caseId` | staff/patient | audit trail |
@@ -436,6 +561,7 @@ id matches the path. Webhooks require a valid, unexpired, single-use signature.
 | POST | `/notifications/dispatch` | staff | drain the outbox now |
 | GET | `/webhooks/logs` | staff | inbound feed log |
 | GET | `/patients/:patientId/cases` | patient scope | patient case list |
+| GET | `/patients/:patientId/bookings` | patient scope | that patient's visits with slot and clinic |
 | GET | `/patients/:patientId/cases/:caseId` | patient scope | case + messages + notifications |
 | POST | `/patients/:patientId/cases/:caseId/read` | patient scope | mark messages read |
 | GET/POST | `/patients/:patientId/cases/:caseId/messages` | patient scope | thread |
@@ -519,6 +645,10 @@ erDiagram
 
 | Table | Key columns | Notes |
 | --- | --- | --- |
+| `clinics` | text `id`, `name`, `timezone`, `isActive` | tenancy boundary; pausing a clinic keeps its history |
+| `patients` | text `id` (clinic identifier), `clinicId`, `name`, `phone` unique, `email`, `dateOfBirth`, `pushConsent`, `smsConsent` | directory and mobile login identity |
+| `patient_sessions` | `patientId`, `tokenHash` unique, `expiresAt`, `revokedAt`, `lastUsedAt` | bearer sessions for the patient app |
+| `patient_login_codes` | `patientId`, `codeHash`, `expiresAt`, `attempts`, `consumedAt` | one-time SMS codes |
 | `care_cases` | `id` uuid, `patientId`, `clinicId`, `labPayloadId`, `severity`, `status`, `slaDueAt`, `summaryPlainLanguage`, `acknowledgedAt`, `assignedToId`, `appointmentId`, `referralClinicId`, `confirmationStatus`, `confirmedAt`, `consultedAt`, `consultationOutcome`, `treatmentStartedAt`, `surveillancePlan`, `nextReviewAt`, `dropOffReason`, `escalatedAt`, `closedAt`, `closurePlan`, `closureEvidence`, `closedBy` | the unit of work; ownership and clinical milestones are explicit columns |
 | `case_referrals` | `caseId`, `fromClinicId`, `toClinicId`, `note`, `status`, decision actors/timestamps, `declineReason` | referral lifecycle and receiving-clinic access |
 | `case_tasks` | `caseId`, `clinicId`, `assignedToId`, `kind`, `title`, `status`, `dueAt` | escalation, overdue and referral work items |
@@ -530,6 +660,7 @@ erDiagram
 | `bookings` | uuid `id`, `caseId`, `slotId`, `status`, `prepInstructions` | one appointment per case |
 | `notifications` | `caseId`, `patientId`, `channel`, `kind`, `status`, `payload`, `attempts`, `error`, `sentAt`, `readAt`, `nextAttemptAt` | the outbox |
 | `webhook_logs` | `source`, `ok`, `status`, `detail` | inbound lab feeds and notification deliveries |
+| `webhook_receipts` | `signature`, `receivedAt` | replay protection; pruned after 24 h |
 | `case_messages` | `caseId`, `sender` (`patient`/`coordinator`/`clinician`), `senderId`, `body`, `readAt` | secure patient thread |
 | `device_tokens` | `patientId`, `token` unique, `platform` | Expo push targets |
 | `mobile_events` | `patientId`, `caseId`, `type` | app_open, push_opened, case_viewed, booking_confirmed, message_sent |
@@ -704,14 +835,22 @@ signed out on their next request.
 | --- | --- | --- |
 | Queue | `GET /cases` | `POST /webhooks/lab`, `POST /cases/:id/escalate` |
 | Case file | `GET /cases/:id`, `GET /clinics/:id/slots` | bookings, referral, closure, messages, outreach, attachments |
+| Clinic schedule | `GET /clinic/appointments` | cancel, reschedule, record attendance |
+| Patient roster | `GET /clinic/patients` | — |
+| Referral inbox | `GET /clinic/referrals` | — |
 | Admin overview | `GET /metrics` | — |
+| Admin clinics | `GET /admin/clinics` | `POST /admin/clinics`, `PATCH /admin/clinics/:id` |
+| Admin audit | `GET /admin/audit` | — |
 | Admin delivery | `GET /notifications`, `/notifications/stats`, `/webhooks/logs` | `POST /notifications/dispatch` |
 | Admin routing | `GET /routing-rules` | `PUT /routing-rules`, `DELETE /routing-rules/:id` |
 | Mobile home | `GET /patients/:id/cases` | devices, events |
 | Mobile care action | `GET /patients/:id/cases/:caseId` | acknowledge, read, notification read, events |
 | Mobile booking | `GET /clinics/:id/slots` | `POST /bookings`, events |
-| Mobile journey | `GET /patients/:id/cases/:caseId` | — |
+| Mobile care journey | `GET /patients/:id/cases/:caseId` | — |
+| Mobile visits | `GET /patients/:id/bookings` | `POST /bookings/:id/cancel`, `POST /bookings/:id/reschedule` |
 | Mobile messages | thread endpoint | send message, events |
+| Mobile profile | `GET /patient-auth/session` | `PATCH /patient-auth/consent`, `POST /patient-auth/sign-out` |
+| Mobile notifications | `GET /patients/:id/notifications` | `POST /patients/:id/notifications/:id/read` |
 
 ---
 
@@ -726,6 +865,25 @@ signed out on their next request.
 - The mobile client is hand-written but typed against the same DTOs.
 - `packages/db` is the only workspace allowed to contain SQL; feature
   repositories in the API are the only callers.
+
+### Where the code lives
+
+| Area | Layout |
+| --- | --- |
+| API | `apps/api/src/features/<domain>/{routers,services,schema,types}`; each router is a small Elysia plugin composed in `src/index.ts`, which also owns the 5-minute cron |
+| Dashboard | `apps/web/src/app` routes over `src/features/<domain>/{components,services,keys}`; `proxy.ts` gates sessions |
+| Patient app | screens in `apps/mobile/app` hold only JSX; loading and mutations live in `lib/use-*.ts` hooks, presentation in `components/<area>/` |
+| `packages/db` | one schema folder per feature under `src/<feature>/schema/`, seeders under `src/<feature>/seed/`, migrations in `src/migrations` |
+| `packages/types` | domain slices (`case-records`, `case-views`, `literals`, `metrics`, `people`, `serialized`) re-exported from the single `index.ts` entry |
+| `packages/validators` | TypeBox contracts per feature, re-exported from `index.ts` |
+
+The repo conventions the layout encodes: files stay near 150 lines, so a wide
+screen is a set of focused components plus a hook; arrow functions with named
+exports; kebab-case files, PascalCase components; `@/` (web, mobile) and
+`@api/`, `@db/` (api, packages) absolute aliases instead of relative climbs;
+Biome for formatting and lint. `bun run format`, `bun run lint`,
+`bun run typecheck` and `bun run --cwd apps/api test` are the gates before a
+commit.
 
 ---
 
