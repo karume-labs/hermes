@@ -13,7 +13,7 @@ import {
 } from "@mantine/core";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { useAssignCase } from "@/features/cases/services/mutations";
+import { useAssignCase } from "@/features/cases/services/mutations-case";
 import { useCareTeam } from "@/features/cases/services/queries";
 import { errorMessage } from "@/features/shared/utils/form-errors";
 

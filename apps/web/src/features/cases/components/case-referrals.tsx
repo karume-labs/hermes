@@ -3,7 +3,6 @@
 import type { CaseDetail } from "@hermes/types";
 import {
   Alert,
-  Badge,
   Button,
   Card,
   Group,
@@ -15,7 +14,8 @@ import {
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { authClient } from "@/features/auth/services/client";
-import { useReferralDecision } from "@/features/cases/services/mutations";
+import { ReferralHistoryItem } from "@/features/cases/components/referral-history-item";
+import { useReferralDecision } from "@/features/cases/services/mutations-referral";
 import { errorMessage } from "@/features/shared/utils/form-errors";
 
 export const CaseReferrals = ({
@@ -56,37 +56,7 @@ export const CaseReferrals = ({
             (staff?.role === "admin" ||
               staff?.clinicId === referral.toClinicId);
           return (
-            <Card key={referral.id} withBorder radius="sm" p="sm">
-              <Group justify="space-between" mb={4}>
-                <Text size="sm" fw={600}>
-                  {referral.fromClinicId} → {referral.toClinicId}
-                </Text>
-                <Badge
-                  color={
-                    referral.status === "declined"
-                      ? "red"
-                      : referral.status === "completed"
-                        ? "teal"
-                        : referral.status === "accepted"
-                          ? "blue"
-                          : "orange"
-                  }
-                  variant="light"
-                >
-                  {referral.status}
-                </Badge>
-              </Group>
-              <Text size="sm">{referral.note}</Text>
-              <Text size="xs" c="dimmed" mt={4}>
-                Sent by {referral.sentBy} ·{" "}
-                {new Date(referral.createdAt).toLocaleString()}
-                {referral.acceptedBy === null
-                  ? ""
-                  : ` · accepted by ${referral.acceptedBy}`}
-                {referral.declineReason === null
-                  ? ""
-                  : ` · declined: ${referral.declineReason}`}
-              </Text>
+            <ReferralHistoryItem key={referral.id} referral={referral}>
               {canDecide ? (
                 <Stack gap="xs" mt="sm">
                   <TextInput
@@ -147,7 +117,7 @@ export const CaseReferrals = ({
                   Mark referral completed
                 </Button>
               ) : null}
-            </Card>
+            </ReferralHistoryItem>
           );
         })}
       </Stack>

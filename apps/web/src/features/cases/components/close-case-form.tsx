@@ -5,7 +5,7 @@ import { Alert, Button, Group, Stack, Text, Textarea } from "@mantine/core";
 import type { ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { authClient } from "@/features/auth/services/client";
-import { useCloseCase } from "@/features/cases/services/mutations";
+import { useCloseCase } from "@/features/cases/services/mutations-case";
 import {
   errorMessage,
   friendlyTypeboxResolver,

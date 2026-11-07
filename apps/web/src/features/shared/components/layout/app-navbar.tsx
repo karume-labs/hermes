@@ -2,28 +2,12 @@
 
 import {
   AppShellNavbar,
-  NavLink,
   Paper,
   ScrollArea,
-  Stack,
   Text,
-  Tooltip,
   UnstyledButton,
 } from "@mantine/core";
-import {
-  IconActivityHeartbeat,
-  IconArrowsExchange,
-  IconBuildingHospital,
-  IconCalendarEvent,
-  IconChecklist,
-  IconHistory,
-  IconLayoutDashboard,
-  IconRoute,
-  IconSend,
-  IconStethoscope,
-  IconUsers,
-  IconWebhook,
-} from "@tabler/icons-react";
+import { IconActivityHeartbeat } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -31,71 +15,8 @@ import {
   HermesMark,
   HermesWordmark,
 } from "@/features/shared/components/brand/hermes-mark";
-
-interface NavItem {
-  label: string;
-  href: string;
-  icon: ReactNode;
-  adminOnly?: boolean;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { label: "Queue", href: "/queue", icon: <IconStethoscope size={20} /> },
-  {
-    label: "Appointments",
-    href: "/appointments",
-    icon: <IconCalendarEvent size={20} />,
-  },
-  { label: "Patients", href: "/patients", icon: <IconUsers size={20} /> },
-  {
-    label: "Referrals",
-    href: "/referrals",
-    icon: <IconArrowsExchange size={20} />,
-  },
-  { label: "Tasks", href: "/tasks", icon: <IconChecklist size={20} /> },
-  {
-    label: "Overview",
-    href: "/admin",
-    icon: <IconLayoutDashboard size={20} />,
-    adminOnly: true,
-  },
-  {
-    label: "Clinics",
-    href: "/admin/clinics",
-    icon: <IconBuildingHospital size={20} />,
-    adminOnly: true,
-  },
-  {
-    label: "Audit trail",
-    href: "/admin/audit",
-    icon: <IconHistory size={20} />,
-    adminOnly: true,
-  },
-  {
-    label: "Delivery",
-    href: "/admin/delivery",
-    icon: <IconSend size={20} />,
-    adminOnly: true,
-  },
-  {
-    label: "Integrations",
-    href: "/admin/webhooks",
-    icon: <IconWebhook size={20} />,
-    adminOnly: true,
-  },
-  {
-    label: "Routing rules",
-    href: "/admin/routing",
-    icon: <IconRoute size={20} />,
-    adminOnly: true,
-  },
-  {
-    label: "Staff access",
-    href: "/admin/staff",
-    icon: <IconUsers size={20} />,
-    adminOnly: true,
-  },
-];
+import { NAV_ITEMS } from "@/features/shared/components/layout/nav-items";
+import { NavLinkList } from "@/features/shared/components/layout/nav-link-list";
 
 interface AppNavbarProps {
   isExpanded: boolean;
@@ -182,59 +103,11 @@ export const AppNavbar = ({
           scrollbarSize={isExpanded ? undefined : 0}
           px="xs"
         >
-          <Stack gap={4} py="xs" align={isExpanded ? "stretch" : "center"}>
-            {items.map((item) => {
-              const active =
-                pathname === item.href ||
-                (item.href !== "/queue" && pathname.startsWith(item.href));
-
-              const link = (
-                <NavLink
-                  key={item.href}
-                  component={Link}
-                  href={item.href}
-                  label={isExpanded ? item.label : null}
-                  aria-label={item.label}
-                  leftSection={item.icon}
-                  active={active}
-                  onClick={closeOnMobile}
-                  fw={active ? 700 : 600}
-                  variant="subtle"
-                  className="hermes-nav-link"
-                  styles={{
-                    root: {
-                      borderRadius: 6,
-                      height: 44,
-                      width: isExpanded ? "auto" : 44,
-                      margin: isExpanded ? 0 : "0 auto",
-                      justifyContent: isExpanded ? "flex-start" : "center",
-                      padding: isExpanded ? "0 12px" : 0,
-                      backgroundColor: active
-                        ? "var(--hermes-surface-tint)"
-                        : undefined,
-                      color: active ? "var(--hermes-ink)" : undefined,
-                    },
-                    section: { margin: isExpanded ? "0 12px 0 0" : 0 },
-                    body: { display: isExpanded ? "block" : "none" },
-                  }}
-                />
-              );
-
-              return isExpanded ? (
-                link
-              ) : (
-                <Tooltip
-                  key={item.href}
-                  label={item.label}
-                  position="right"
-                  withArrow
-                  offset={15}
-                >
-                  {link}
-                </Tooltip>
-              );
-            })}
-          </Stack>
+          <NavLinkList
+            items={items}
+            expanded={isExpanded}
+            onNavigate={closeOnMobile}
+          />
         </ScrollArea>
 
         {isExpanded ? (

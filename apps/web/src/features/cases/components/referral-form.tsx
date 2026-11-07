@@ -12,7 +12,7 @@ import {
 } from "@mantine/core";
 import type { ReactNode } from "react";
 import { useForm } from "react-hook-form";
-import { useLinkReferral } from "@/features/cases/services/mutations";
+import { useLinkReferral } from "@/features/cases/services/mutations-referral";
 import { useReferralClinics } from "@/features/cases/services/queries";
 import {
   errorMessage,

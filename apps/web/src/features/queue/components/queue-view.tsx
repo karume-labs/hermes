@@ -1,39 +1,18 @@
 "use client";
 
-import {
-  Alert,
-  Badge,
-  Button,
-  Group,
-  Select,
-  SimpleGrid,
-  Stack,
-  Switch,
-} from "@mantine/core";
+import { Alert, Button, Group, Stack } from "@mantine/core";
 import { IconPlus, IconRefresh } from "@tabler/icons-react";
 import { parseAsString, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
-import { useEscalateCase } from "@/features/cases/services/mutations";
+import { useEscalateCase } from "@/features/cases/services/mutations-case";
 import { createQueueColumns } from "@/features/queue/components/queue-columns";
+import { QueueFilters } from "@/features/queue/components/queue-filters";
+import { QueueMetrics } from "@/features/queue/components/queue-metrics";
 import { useIngestLabResult } from "@/features/queue/services/ingest";
 import { useQueueCases } from "@/features/queue/services/queries";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
 import { DataTable } from "@/features/shared/components/table/data-table";
-import { DataToolbar } from "@/features/shared/components/table/data-toolbar";
-import { MetricCard } from "@/features/shared/components/ui/metric-card";
-
-const severityOptions = ["Routine", "Actionable", "Urgent"];
-const statusOptions = [
-  "received",
-  "triaged",
-  "notified",
-  "acknowledged",
-  "appointment_booked",
-  "referred",
-  "escalated",
-  "closed",
-];
 
 export const QueueView = (): ReactNode => {
   const [severity, setSeverity] = useQueryState(
@@ -123,85 +102,24 @@ export const QueueView = (): ReactNode => {
         </Alert>
       ) : null}
 
-      <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
-        <MetricCard
-          label="In view"
-          value={cases.length}
-          hint="Cases matching the current filters"
-        />
-        <MetricCard
-          label="Pending ack"
-          value={pending}
-          hint="Notified or escalated without a patient tap"
-          tone={pending > 0 ? "orange.7" : "brandSlate.9"}
-        />
-        <MetricCard
-          label="SLA breached"
-          value={breached}
-          hint="Past due with no acknowledgment"
-          tone={breached > 0 ? "red.7" : "brandSlate.9"}
-        />
-        <MetricCard
-          label="Unassigned"
-          value={unassigned}
-          hint="No named owner yet"
-          tone={unassigned > 0 ? "orange.7" : "brandSlate.9"}
-        />
-      </SimpleGrid>
+      <QueueMetrics
+        total={cases.length}
+        pending={pending}
+        breached={breached}
+        unassigned={unassigned}
+      />
 
-      <DataToolbar
-        title="Active cases"
-        description="Filter by clinical severity or workflow status"
-        meta={<Badge variant="light">{cases.length}</Badge>}
+      <QueueFilters
+        value={{ severity, status, ownership, overdue }}
+        count={cases.length}
         filtersActive={filtersActive}
-        activeFilterCount={
-          (severity === "" ? 0 : 1) +
-          (status === "" ? 0 : 1) +
-          (ownership === "" ? 0 : 1) +
-          (overdue === "" ? 0 : 1)
-        }
-        onClear={() => {
-          void setSeverity("");
-          void setStatus("");
-          void setOwnership("");
-          void setOverdue("");
+        onChange={(patch) => {
+          if (patch.severity !== undefined) void setSeverity(patch.severity);
+          if (patch.status !== undefined) void setStatus(patch.status);
+          if (patch.ownership !== undefined) void setOwnership(patch.ownership);
+          if (patch.overdue !== undefined) void setOverdue(patch.overdue);
         }}
-      >
-        <Select
-          label="Severity"
-          placeholder="All severities"
-          value={severity === "" ? null : severity}
-          onChange={(value) => void setSeverity(value ?? "")}
-          data={severityOptions}
-          clearable
-        />
-        <Select
-          label="Ownership"
-          placeholder="Everyone"
-          value={ownership === "" ? null : ownership}
-          onChange={(value) => void setOwnership(value ?? "")}
-          data={[
-            { value: "mine", label: "My cases" },
-            { value: "unassigned", label: "Unassigned" },
-          ]}
-          clearable
-        />
-        <Switch
-          label="Overdue only"
-          checked={overdue === "true"}
-          onChange={(event) =>
-            void setOverdue(event.currentTarget.checked ? "true" : "")
-          }
-        />
-        <Select
-          label="Workflow status"
-          placeholder="All statuses"
-          value={status === "" ? null : status}
-          onChange={(value) => void setStatus(value ?? "")}
-          data={statusOptions}
-          clearable
-        />
-      </DataToolbar>
+      />
 
       <DataTable
         data={cases}

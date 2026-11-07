@@ -17,7 +17,7 @@ import {
 import { IconFileText, IconUpload } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { useUploadAttachment } from "@/features/cases/services/mutations";
+import { useUploadAttachment } from "@/features/cases/services/mutations-attachment";
 import { env } from "@/features/shared/env/index";
 
 const CARD_STYLE = "1px solid var(--mantine-color-brandChalk-3)";

@@ -11,7 +11,7 @@ import {
 import { parseAsString, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
-import { useCompleteTask } from "@/features/cases/services/mutations";
+import { useCompleteTask } from "@/features/cases/services/mutations-outcome";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
 import { DataTable } from "@/features/shared/components/table/data-table";
 import { MetricCard } from "@/features/shared/components/ui/metric-card";

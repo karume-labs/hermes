@@ -1,37 +1,26 @@
 "use client";
 
+import { Card, Table as MantineTable, ScrollArea, Stack } from "@mantine/core";
+import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import {
-  Button,
-  Card,
-  Group,
-  Pagination,
-  ScrollArea,
-  Select,
-  Stack,
-  Table,
-  TableTbody,
-  TableTd,
-  TableTh,
-  TableThead,
-  TableTr,
-  Text,
-  ThemeIcon,
-  Tooltip,
-} from "@mantine/core";
-import { IconArrowDown, IconArrowUp, IconTableOff } from "@tabler/icons-react";
-import {
-  type ColumnDef,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
-  type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { DataTableHead } from "@/features/shared/components/table/data-table-head";
+import {
+  DataTableEmptyRow,
+  DataTablePagination,
+} from "@/features/shared/components/table/data-table-parts";
 import { DataTableSkeleton } from "@/features/shared/components/table/data-toolbar";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 40, 50];
+
+const TableTr = MantineTable.Tr;
+const TableTd = MantineTable.Td;
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData, unknown>[];
@@ -89,7 +78,7 @@ export const DataTable = <TData,>({
         bd="1px solid var(--mantine-color-brandChalk-3)"
       >
         <ScrollArea type="scroll" offsetScrollbars>
-          <Table
+          <MantineTable
             className="hermes-table"
             highlightOnHover
             stickyHeader
@@ -97,64 +86,8 @@ export const DataTable = <TData,>({
             withColumnBorders
             miw={minWidth}
           >
-            <TableThead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableTr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    const canSort = header.column.getCanSort();
-                    const sortDirection = header.column.getIsSorted();
-                    const sortTooltip =
-                      sortDirection === "asc"
-                        ? "Sorted ascending — click to sort descending"
-                        : sortDirection === "desc"
-                          ? "Sorted descending — click to clear sort"
-                          : "Click to sort ascending";
-
-                    return (
-                      <TableTh
-                        key={header.id}
-                        c="brandSlate.6"
-                        fz={11}
-                        lts="0.08em"
-                        tt="uppercase"
-                        onClick={
-                          canSort
-                            ? header.column.getToggleSortingHandler()
-                            : undefined
-                        }
-                        style={{ cursor: canSort ? "pointer" : undefined }}
-                      >
-                        <Group gap={4} wrap="nowrap">
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
-                          {canSort ? (
-                            <Tooltip label={sortTooltip} withArrow>
-                              <Group gap={0} wrap="nowrap" opacity={0.5}>
-                                {sortDirection === "asc" ? (
-                                  <IconArrowUp size={12} stroke={2} />
-                                ) : sortDirection === "desc" ? (
-                                  <IconArrowDown size={12} stroke={2} />
-                                ) : (
-                                  <>
-                                    <IconArrowUp size={10} stroke={1.5} />
-                                    <IconArrowDown size={10} stroke={1.5} />
-                                  </>
-                                )}
-                              </Group>
-                            </Tooltip>
-                          ) : null}
-                        </Group>
-                      </TableTh>
-                    );
-                  })}
-                </TableTr>
-              ))}
-            </TableThead>
-            <TableTbody>
+            <DataTableHead headerGroups={table.getHeaderGroups()} />
+            <MantineTable.Tbody>
               {pageRows.length > 0 ? (
                 pageRows.map((row) => (
                   <TableTr
@@ -188,65 +121,31 @@ export const DataTable = <TData,>({
                   </TableTr>
                 ))
               ) : (
-                <TableTr>
-                  <TableTd colSpan={columns.length}>
-                    <Stack align="center" justify="center" py="xl" gap="md">
-                      <ThemeIcon size={60} radius="md" variant="light">
-                        <IconTableOff size={32} stroke={1.5} />
-                      </ThemeIcon>
-                      <Text size="lg" fw={500}>
-                        {emptyMessage}
-                      </Text>
-                      <Text size="sm" c="dimmed">
-                        Try adjusting the filters
-                      </Text>
-                      {onClearFilters === undefined ? null : (
-                        <Button variant="outline" onClick={onClearFilters}>
-                          Clear filters
-                        </Button>
-                      )}
-                    </Stack>
-                  </TableTd>
-                </TableTr>
+                <DataTableEmptyRow
+                  colSpan={columns.length}
+                  emptyMessage={emptyMessage}
+                  onClearFilters={onClearFilters}
+                />
               )}
-            </TableTbody>
-          </Table>
+            </MantineTable.Tbody>
+          </MantineTable>
         </ScrollArea>
       </Card>
 
-      {totalRecords === 0 ? null : (
-        <Group justify="space-between" align="center">
-          <Text size="sm" c="dimmed">
-            Showing {start} to {end} of {totalRecords} records
-          </Text>
-          <Group gap="xl">
-            <Group gap="xs">
-              <Text size="sm" fw={500}>
-                Rows per page
-              </Text>
-              <Select
-                value={`${pageSize}`}
-                onChange={(value) => {
-                  if (value !== null) {
-                    setPageSize(Number(value));
-                    setPage(1);
-                  }
-                }}
-                data={PAGE_SIZE_OPTIONS.map(String)}
-                w={80}
-                size="sm"
-                allowDeselect={false}
-              />
-            </Group>
-            <Pagination
-              value={page}
-              onChange={setPage}
-              total={totalPages}
-              withEdges
-            />
-          </Group>
-        </Group>
-      )}
+      <DataTablePagination
+        start={start}
+        end={end}
+        totalRecords={totalRecords}
+        pageSize={pageSize}
+        totalPages={totalPages}
+        page={page}
+        pageSizeOptions={PAGE_SIZE_OPTIONS}
+        onPageChange={setPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setPage(1);
+        }}
+      />
     </Stack>
   );
 };

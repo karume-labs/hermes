@@ -5,12 +5,9 @@ import { Badge, Button, Group, Text } from "@mantine/core";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import {
-  AckState,
-  SeverityBadge,
-  SlaBadge,
-  StatusBadge,
-} from "@/features/cases/components/case-badges";
+import { SeverityBadge } from "@/features/cases/components/case-severity-badge";
+import { AckState, SlaBadge } from "@/features/cases/components/case-sla-badge";
+import { StatusBadge } from "@/features/cases/components/case-status-badge";
 
 const isBreached = (careCase: CareCase): boolean =>
   new Date(careCase.slaDueAt).getTime() < Date.now() &&

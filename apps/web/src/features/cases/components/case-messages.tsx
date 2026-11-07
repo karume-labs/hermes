@@ -18,7 +18,7 @@ import { useForm } from "react-hook-form";
 import {
   useOutreach,
   useSendMessage,
-} from "@/features/cases/services/mutations";
+} from "@/features/cases/services/mutations-case";
 import {
   errorMessage,
   friendlyTypeboxResolver,

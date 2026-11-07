@@ -3,191 +3,21 @@
 import type { ClinicAppointment } from "@hermes/types";
 import {
   Alert,
-  Anchor,
   Badge,
-  Button,
   Group,
   SegmentedControl,
   SimpleGrid,
   Stack,
-  Text,
 } from "@mantine/core";
-import type { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
+import { buildColumns } from "@/features/clinic/components/appointment-columns";
 import { RescheduleAppointmentModal } from "@/features/clinic/components/reschedule-appointment-modal";
-import {
-  useCancelClinicBooking,
-  useRecordBookingOutcome,
-} from "@/features/clinic/services/mutations";
 import { useClinicAppointments } from "@/features/clinic/services/queries";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
 import { DataTable } from "@/features/shared/components/table/data-table";
 import { MetricCard } from "@/features/shared/components/ui/metric-card";
-
-const STATUS_COLOR = {
-  confirmed: "teal",
-  held: "orange",
-  attended: "green",
-  cancelled: "gray",
-  no_show: "red",
-} as const;
-
-const AppointmentActions = ({
-  appointment,
-  onReschedule,
-}: {
-  appointment: ClinicAppointment;
-  onReschedule: (appointment: ClinicAppointment) => void;
-}): ReactNode => {
-  const cancel = useCancelClinicBooking();
-  const outcome = useRecordBookingOutcome();
-  const started = new Date(appointment.slot.startAt).getTime() <= Date.now();
-  const confirmed = appointment.booking.status === "confirmed";
-
-  return (
-    <Group gap={4} wrap="nowrap">
-      <Anchor
-        component={Link}
-        href={`/cases/${appointment.booking.caseId}`}
-        size="sm"
-        fw={600}
-      >
-        Open case
-      </Anchor>
-      {confirmed && !started ? (
-        <>
-          <Button
-            size="compact-xs"
-            variant="subtle"
-            onClick={() => onReschedule(appointment)}
-          >
-            Reschedule
-          </Button>
-          <Button
-            size="compact-xs"
-            variant="subtle"
-            color="red"
-            loading={cancel.isPending}
-            onClick={() => cancel.mutate(appointment.booking.id)}
-          >
-            Cancel
-          </Button>
-        </>
-      ) : null}
-      {confirmed && started ? (
-        <>
-          <Button
-            size="compact-xs"
-            variant="light"
-            color="teal"
-            loading={outcome.isPending}
-            onClick={() =>
-              outcome.mutate({
-                bookingId: appointment.booking.id,
-                status: "attended",
-              })
-            }
-          >
-            Attended
-          </Button>
-          <Button
-            size="compact-xs"
-            variant="light"
-            color="red"
-            loading={outcome.isPending}
-            onClick={() =>
-              outcome.mutate({
-                bookingId: appointment.booking.id,
-                status: "no_show",
-              })
-            }
-          >
-            No-show
-          </Button>
-        </>
-      ) : null}
-    </Group>
-  );
-};
-
-const buildColumns = (
-  onReschedule: (appointment: ClinicAppointment) => void,
-): ColumnDef<ClinicAppointment>[] => [
-  {
-    id: "when",
-    header: "When",
-    accessorFn: (row) => row.slot.startAt,
-    cell: ({ row }) => (
-      <Stack gap={0}>
-        <Text size="sm" fw={600}>
-          {dayjs(row.original.slot.startAt).format("ddd D MMM · HH:mm")}
-        </Text>
-        <Text size="xs" c="dimmed">
-          {row.original.slot.kind === "telehealth" ? "Video" : "In person"}
-        </Text>
-      </Stack>
-    ),
-  },
-  {
-    id: "patient",
-    header: "Patient",
-    accessorFn: (row) => row.patientName,
-    cell: ({ row }) => (
-      <Stack gap={0}>
-        <Text size="sm" fw={600}>
-          {row.original.patientName}
-        </Text>
-        <Text size="xs" c="dimmed">
-          {row.original.patientPhone}
-        </Text>
-      </Stack>
-    ),
-  },
-  {
-    id: "reason",
-    header: "Reason",
-    accessorFn: (row) => row.caseSummary,
-    cell: ({ row }) => (
-      <Text size="sm" lineClamp={2} maw={320}>
-        {row.original.caseSummary}
-      </Text>
-    ),
-  },
-  {
-    id: "status",
-    header: "Status",
-    accessorFn: (row) => row.booking.status,
-    cell: ({ row }) => (
-      <Badge
-        variant="light"
-        color={STATUS_COLOR[row.original.booking.status]}
-        tt="capitalize"
-      >
-        {row.original.booking.status.replace("_", " ")}
-      </Badge>
-    ),
-  },
-  {
-    id: "clinic",
-    header: "Clinic",
-    accessorFn: (row) => row.clinicName,
-    cell: ({ row }) => <Text size="sm">{row.original.clinicName}</Text>,
-  },
-  {
-    id: "actions",
-    header: "",
-    enableSorting: false,
-    cell: ({ row }) => (
-      <AppointmentActions
-        appointment={row.original}
-        onReschedule={onReschedule}
-      />
-    ),
-  },
-];
 
 export const AppointmentsView = (): ReactNode => {
   const [view, setView] = useState("upcoming");

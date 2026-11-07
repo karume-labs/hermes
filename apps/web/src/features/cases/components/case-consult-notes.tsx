@@ -13,7 +13,7 @@ import {
 } from "@mantine/core";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { useAddConsultNote } from "@/features/cases/services/mutations";
+import { useAddConsultNote } from "@/features/cases/services/mutations-outcome";
 import { errorMessage } from "@/features/shared/utils/form-errors";
 
 // Clinician-to-clinician discussion. This thread is never shown in the patient
