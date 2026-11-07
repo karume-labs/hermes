@@ -3,10 +3,8 @@ import { auth } from "@api/features/auth/services/config";
 import { bookingsRouter } from "@api/features/booking/routers/bookings-router";
 import { queueVisitReminders } from "@api/features/booking/services/reminder-service";
 import { casesRouter } from "@api/features/care-loop/routers/cases-router";
-import {
-  outcomesRouter,
-  tasksRouter,
-} from "@api/features/care-loop/routers/outcomes-router";
+import { outcomesRouter } from "@api/features/care-loop/routers/outcomes-router";
+import { tasksRouter } from "@api/features/care-loop/routers/tasks-router";
 import { clinicRouter } from "@api/features/clinic/routers/clinic-router";
 import { directoryRouter } from "@api/features/directory/routers/directory-router";
 import {

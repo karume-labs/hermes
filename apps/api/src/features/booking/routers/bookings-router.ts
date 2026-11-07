@@ -1,21 +1,20 @@
 import {
+  actorOf,
+  assertClinicVisible,
+  bookingForPrincipal,
+  caseForPrincipal,
+} from "@api/features/booking/routers/booking-principal";
+import {
   cancelBooking,
   rescheduleBooking,
 } from "@api/features/booking/services/booking-cancel";
 import { recordBookingOutcome } from "@api/features/booking/services/booking-outcome";
-import {
-  bookSlot,
-  findBooking,
-  patientHasCaseAtClinic,
-} from "@api/features/booking/services/booking-repository";
+import { bookSlot } from "@api/features/booking/services/booking-repository";
 import { ensureSlots } from "@api/features/booking/services/slot-service";
 import { logAudit } from "@api/features/care-loop/services/case-audit";
-import { findCase } from "@api/features/care-loop/services/case-repository";
 import {
-  type CarePrincipal,
   requireCarePrincipal,
   requireStaff,
-  staffCanAccessClinic,
 } from "@api/features/shared/auth/index";
 import { NotFoundError } from "@api/features/shared/errors/index";
 import {
@@ -32,51 +31,12 @@ const authHeader = Type.Object({
   cookie: Type.Optional(Type.String()),
 });
 
-const actorOf = (principal: CarePrincipal): string =>
-  principal.kind === "staff"
-    ? `staff:${principal.staff.email}`
-    : `patient:${principal.patient.patientId}`;
-
-const caseForPrincipal = async (principal: CarePrincipal, caseId: string) => {
-  if (principal.kind === "staff") {
-    return findCase(caseId, principal.staff.clinicId);
-  }
-  const found = await findCase(caseId);
-  if (found === null || found.patientId !== principal.patient.patientId) {
-    return null;
-  }
-  return found;
-};
-
-const bookingForPrincipal = async (
-  principal: CarePrincipal,
-  bookingId: string,
-) => {
-  const booking = await findBooking(bookingId);
-  if (booking === null) return null;
-  const careCase = await caseForPrincipal(principal, booking.caseId);
-  if (careCase === null) return null;
-  return { booking, careCase };
-};
-
 export const bookingsRouter = new Elysia()
   .get(
     "/clinics/:clinicId/slots",
     async ({ params, headers }) => {
       const principal = await requireCarePrincipal(headers);
-      if (principal.kind === "staff") {
-        if (!staffCanAccessClinic(principal.staff, params.clinicId)) {
-          throw new NotFoundError("Clinic not found");
-        }
-      } else if (
-        principal.patient.patient.clinicId !== params.clinicId &&
-        !(await patientHasCaseAtClinic(
-          principal.patient.patientId,
-          params.clinicId,
-        ))
-      ) {
-        throw new NotFoundError("Clinic not found");
-      }
+      await assertClinicVisible(principal, params.clinicId);
       return ensureSlots(params.clinicId);
     },
     { headers: authHeader },
