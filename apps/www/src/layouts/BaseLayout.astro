@@ -25,6 +25,17 @@ const {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <SeoHead title={title} description={description} faq={faq} />
+    <script is:inline>
+      // Apply the saved theme before first paint so the page never flashes.
+      (() => {
+        const saved = localStorage.getItem("hermes-theme");
+        const dark =
+          saved === "dark" ||
+          (saved === null &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+      })();
+    </script>
     <noscript>
       <style>
         [data-animate],
@@ -44,6 +55,21 @@ const {
     <script>
       // Scroll-in reveals; CSS owns the transition, this only flips the class
       // the first time a block enters the viewport.
+      const root = document.documentElement;
+      const toggle = document.querySelector("[data-theme-toggle]");
+      const paintToggle = () => {
+        const dark = root.dataset.theme === "dark";
+        toggle?.querySelector("[data-icon-moon]")?.classList.toggle("hidden", dark);
+        toggle?.querySelector("[data-icon-sun]")?.classList.toggle("hidden", !dark);
+      };
+      paintToggle();
+      toggle?.addEventListener("click", () => {
+        const next = root.dataset.theme === "dark" ? "light" : "dark";
+        root.dataset.theme = next;
+        localStorage.setItem("hermes-theme", next);
+        paintToggle();
+      });
+
       const blocks = Array.from(
         document.querySelectorAll("[data-animate], [data-stagger]"),
       );

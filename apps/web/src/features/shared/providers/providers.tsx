@@ -12,7 +12,7 @@ interface ProvidersProps {
 }
 
 export const Providers = ({ children }: ProvidersProps): ReactNode => (
-  <MantineProvider theme={theme} defaultColorScheme="light">
+  <MantineProvider theme={theme} defaultColorScheme="auto">
     <Suspense>
       <NuqsAdapter>
         <TanstackQueryClientProvider>{children}</TanstackQueryClientProvider>

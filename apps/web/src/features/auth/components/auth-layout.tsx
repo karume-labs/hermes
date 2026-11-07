@@ -18,14 +18,15 @@ interface AuthLayoutProps {
 export const AuthLayout = ({ children }: AuthLayoutProps): ReactNode => (
   <Box
     mih="100vh"
-    bg="brandChalk.1"
+    bg="var(--hermes-canvas)"
     style={{ display: "grid", gridTemplateColumns: "1fr" }}
   >
     <Group align="stretch" gap={0} wrap="nowrap" mih="100vh">
       <Box
         visibleFrom="md"
         w="46%"
-        bg="brandSlate.9"
+        bg="var(--hermes-surface-tint)"
+        bd="1px solid var(--hermes-line)"
         p={56}
         style={{
           display: "flex",
@@ -35,19 +36,19 @@ export const AuthLayout = ({ children }: AuthLayoutProps): ReactNode => (
       >
         <Group gap="sm">
           <HermesMark variant="clinic" size={44} title="Hermes Care" />
-          <HermesWordmark size={22} color="#F8FAFC" />
+          <HermesWordmark size={22} />
         </Group>
 
         <Stack gap="lg" maw={420}>
           <Title
             order={1}
-            c="brandChalk.0"
+            c="var(--hermes-ink)"
             lts="0.02em"
             style={{ lineHeight: 1.15 }}
           >
             Screening to sign-off, without the phone calls.
           </Title>
-          <Text c="brandChalk.4" size="sm" lh={1.7}>
+          <Text c="var(--hermes-ink-soft)" size="sm" lh={1.7}>
             Hermes closes the loop between the lab, the clinic and the patient.
           </Text>
           <Stack gap="sm">
@@ -57,10 +58,10 @@ export const AuthLayout = ({ children }: AuthLayoutProps): ReactNode => (
                   mt={6}
                   w={6}
                   h={6}
-                  bg="brandSky.6"
+                  bg="var(--hermes-spark)"
                   style={{ borderRadius: 999, flexShrink: 0 }}
                 />
-                <Text size="sm" c="brandChalk.3">
+                <Text size="sm" c="var(--hermes-ink-soft)">
                   {point}
                 </Text>
               </Group>
@@ -68,7 +69,7 @@ export const AuthLayout = ({ children }: AuthLayoutProps): ReactNode => (
           </Stack>
         </Stack>
 
-        <Text size="xs" c="brandChalk.5" lts="0.12em" tt="uppercase">
+        <Text size="xs" c="var(--hermes-ink-muted)" lts="0.12em" tt="uppercase">
           Hermes care loop · 2026
         </Text>
       </Box>

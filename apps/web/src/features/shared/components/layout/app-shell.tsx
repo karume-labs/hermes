@@ -19,6 +19,7 @@ import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { authClient } from "@/features/auth/services/client";
 import { AppNavbar } from "@/features/shared/components/layout/app-navbar";
+import { ThemeToggle } from "@/features/shared/components/layout/theme-toggle";
 import { UserMenu } from "@/features/shared/components/layout/user-menu";
 
 const HEADER_HEIGHT = 76;
@@ -68,14 +69,20 @@ export const AppShellLayout = ({
         collapsed: { mobile: !mobileOpened },
       }}
       padding="lg"
-      bg="brandChalk.1"
-      c="brandSlate.9"
+      bg="var(--hermes-canvas)"
+      c="var(--hermes-ink)"
       styles={{
         main: { width: "100%", maxWidth: 1480, margin: "0 auto" },
       }}
     >
       <AppShellHeader withBorder={false} px="md" pt="md" bg="transparent">
-        <Paper h="100%" px="md" radius="lg" bg="brandChalk.0" withBorder>
+        <Paper
+          h="100%"
+          px="md"
+          radius="lg"
+          bg="var(--hermes-surface)"
+          withBorder
+        >
           <Group h="100%" justify="space-between">
             <Group gap="xs">
               <Burger
@@ -102,7 +109,10 @@ export const AppShellLayout = ({
                 </ActionIcon>
               </Tooltip>
             </Group>
-            <UserMenu user={user} />
+            <Group gap="xs">
+              <ThemeToggle />
+              <UserMenu user={user} />
+            </Group>
           </Group>
         </Paper>
       </AppShellHeader>

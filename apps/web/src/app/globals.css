@@ -22,6 +22,18 @@
   --mantine-color-black: var(--hermes-ink);
 }
 
+/* Dark theme: near-black canvas and neutral surfaces. Spark keeps its hex. */
+[data-mantine-color-scheme="dark"] {
+  --hermes-ink: #f8fafc;
+  --hermes-ink-soft: #cbd5e1;
+  --hermes-ink-muted: #94a3b8;
+  --hermes-canvas: #0b0e14;
+  --hermes-surface: #141922;
+  --hermes-surface-tint: #1d2430;
+  --hermes-line: #2a3343;
+  --hermes-line-strong: #3b4558;
+}
+
 body {
   background-color: var(--hermes-canvas);
   color: var(--mantine-color-text);

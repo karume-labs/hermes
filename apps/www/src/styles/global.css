@@ -7,17 +7,17 @@
  * status pairs never borrow spark.
  */
 @theme {
-  --color-ink: #0f172a;
-  --color-ink-soft: #334155;
-  --color-ink-muted: #475569;
+  --color-ink: var(--hermes-ink);
+  --color-ink-soft: var(--hermes-ink-soft);
+  --color-ink-muted: var(--hermes-ink-muted);
   --color-wing: #38bdf8;
   --color-spark: #ff4500;
   --color-spark-soft: #ffe0d6;
-  --color-canvas: #f8fafc;
-  --color-surface: #ffffff;
-  --color-surface-tint: #f1f5f9;
-  --color-line: #e2e8f0;
-  --color-line-strong: #cbd5e1;
+  --color-canvas: var(--hermes-canvas);
+  --color-surface: var(--hermes-surface);
+  --color-surface-tint: var(--hermes-surface-tint);
+  --color-line: var(--hermes-line);
+  --color-line-strong: var(--hermes-line-strong);
 
   --color-routine: #166534;
   --color-routine-fill: #dcfce7;
@@ -29,10 +29,10 @@
   --color-info-fill: #e0f2fe;
 
   /* Aliases the existing sections already use. */
-  --color-canvas-raised: #ffffff;
-  --color-canvas-line: #e2e8f0;
-  --color-ink-inverse: #f8fafc;
-  --color-navy: #0f172a;
+  --color-canvas-raised: var(--hermes-surface);
+  --color-canvas-line: var(--hermes-line);
+  --color-ink-inverse: var(--hermes-ink);
+  --color-navy: var(--hermes-navy);
   --color-accent: #ff4500;
   --color-accent-strong: #475569;
   --color-accent-soft: #ffe0d6;
@@ -49,6 +49,31 @@
   --font-display:
     "Plus Jakarta Sans Variable", "Avenir Next", ui-sans-serif, system-ui,
     sans-serif;
+}
+
+:root {
+  --hermes-ink: #0f172a;
+  --hermes-ink-soft: #334155;
+  --hermes-ink-muted: #475569;
+  --hermes-canvas: #f8fafc;
+  --hermes-surface: #ffffff;
+  --hermes-surface-tint: #f1f5f9;
+  --hermes-line: #e2e8f0;
+  --hermes-line-strong: #cbd5e1;
+  --hermes-navy: #141922;
+}
+
+/* Dark theme: same tokens as the apps, inverted to near-black. */
+:root[data-theme="dark"] {
+  --hermes-ink: #f8fafc;
+  --hermes-ink-soft: #cbd5e1;
+  --hermes-ink-muted: #94a3b8;
+  --hermes-canvas: #0b0e14;
+  --hermes-surface: #141922;
+  --hermes-surface-tint: #1d2430;
+  --hermes-line: #2a3343;
+  --hermes-line-strong: #3b4558;
+  --hermes-navy: #1d2430;
 }
 
 html {
