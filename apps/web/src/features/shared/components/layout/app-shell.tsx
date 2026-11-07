@@ -6,10 +6,9 @@ import {
   AppShellHeader,
   AppShellMain,
   Burger,
-  Center,
   Group,
-  Loader,
   Paper,
+  Skeleton,
   Tooltip,
 } from "@mantine/core";
 import { useDisclosure, useLocalStorage } from "@mantine/hooks";
@@ -31,6 +30,14 @@ interface AppShellLayoutProps {
   children: ReactNode;
 }
 
+/** Shown while the client session read lands: the shell, not a white page. */
+const ShellSkeleton = (): ReactNode => (
+  <div className="hermes-shell-skeleton">
+    <Skeleton height={56} radius="lg" />
+    <Skeleton height={420} radius="lg" />
+  </div>
+);
+
 export const AppShellLayout = ({
   children,
 }: AppShellLayoutProps): ReactNode => {
@@ -48,16 +55,9 @@ export const AppShellLayout = ({
     if (!isPending && session === null) router.replace("/sign-in");
   }, [isPending, session, router]);
 
-  if (session === null) {
-    return (
-      <Center mih="100vh" bg="brandChalk.1">
-        <Loader size="sm" color="brandSlate.9" />
-      </Center>
-    );
-  }
-
-  const user = session.user;
-  const isAdmin = user.role === "admin";
+  // `useSession` reports `isPending` until the read lands; until then the menu
+  // keeps its placeholder instead of flashing a signed-out header.
+  const user = isPending || session === null ? null : session.user;
 
   return (
     <AppShell
@@ -82,9 +82,10 @@ export const AppShellLayout = ({
           radius="lg"
           bg="var(--hermes-surface)"
           withBorder
+          style={{ overflow: "hidden" }}
         >
-          <Group h="100%" justify="space-between">
-            <Group gap="xs">
+          <Group h="100%" justify="space-between" wrap="nowrap" gap="sm">
+            <Group gap="xs" wrap="nowrap">
               <Burger
                 opened={mobileOpened}
                 onClick={toggleMobile}
@@ -109,9 +110,16 @@ export const AppShellLayout = ({
                 </ActionIcon>
               </Tooltip>
             </Group>
-            <Group gap="xs">
+            <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
               <ThemeToggle />
-              <UserMenu user={user} />
+              {user === null ? (
+                <Group gap="xs" wrap="nowrap" px="sm">
+                  <Skeleton height={30} circle />
+                  <Skeleton height={14} width={90} radius="xl" />
+                </Group>
+              ) : (
+                <UserMenu user={user} />
+              )}
             </Group>
           </Group>
         </Paper>
@@ -119,12 +127,12 @@ export const AppShellLayout = ({
 
       <AppNavbar
         isExpanded={isExpanded}
-        isAdmin={isAdmin}
+        isAdmin={user?.role === "admin"}
         mobileOpened={mobileOpened}
         toggleMobile={toggleMobile}
       />
 
-      <AppShellMain>{children}</AppShellMain>
+      <AppShellMain>{isPending ? <ShellSkeleton /> : children}</AppShellMain>
     </AppShell>
   );
 };

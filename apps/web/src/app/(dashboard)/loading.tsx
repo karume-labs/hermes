@@ -1,15 +1,6 @@
-import { Center, Loader, Stack, Text } from "@mantine/core";
 import type { ReactNode } from "react";
+import { PageSkeleton } from "@/features/shared/components/layout/page-skeleton";
 
-const DashboardLoading = (): ReactNode => (
-  <Center mih="50vh">
-    <Stack align="center" gap="sm">
-      <Loader size="sm" color="brandSlate.9" />
-      <Text size="sm" c="dimmed">
-        Loading the care queue…
-      </Text>
-    </Stack>
-  </Center>
-);
+const DashboardLoading = (): ReactNode => <PageSkeleton />;
 
 export default DashboardLoading;

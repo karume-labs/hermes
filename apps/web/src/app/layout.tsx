@@ -8,10 +8,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Hermes Care Loop",
+    default: "Hermes Care",
     template: "%s · Hermes Care",
   },
-  description: "Screening to sign-off: patient loop closure for clinics.",
+  description:
+    "Screening to sign-off for clinics, with the patient in the loop.",
 };
 
 interface RootLayoutProps {

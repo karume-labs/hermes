@@ -107,15 +107,68 @@ h6,
   background-color: var(--hermes-surface-tint);
 }
 
-/* Sidebar nav links and the account menu trigger. */
+/* Sidebar: one width transition, and content that fades instead of popping. */
+.hermes-sidebar {
+  transition: width 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: width;
+}
+
+.hermes-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  overflow: hidden;
+  padding: 14px 16px;
+}
+
+.hermes-sidebar[data-collapsed="true"] .hermes-sidebar-brand {
+  justify-content: center;
+  padding: 14px 0;
+}
+
+/* Fades the wordmark and footer without unmounting them mid-transition. */
+.hermes-sidebar-fade {
+  opacity: 1;
+  transition: opacity 160ms ease 40ms;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.hermes-sidebar-fade[data-visible="false"] {
+  opacity: 0;
+  transition-duration: 80ms;
+  transition-delay: 0ms;
+}
+
+.hermes-nav-link {
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
+}
+
 .hermes-nav-link:hover:not([data-active]) {
   background-color: var(--hermes-surface-tint);
 }
 
+.hermes-nav-link[data-active] svg {
+  color: var(--hermes-spark);
+}
+
+.hermes-shell-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Account trigger: never lets the name push the role or chevron out of frame. */
 .hermes-user-trigger {
+  display: block;
+  min-width: 0;
+  max-width: 240px;
   padding: 4px 8px;
   border-radius: var(--mantine-radius-md);
-  max-width: 220px;
   transition: background-color 150ms ease-out;
 }
 

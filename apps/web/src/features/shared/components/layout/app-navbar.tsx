@@ -15,7 +15,7 @@ import {
   HermesMark,
   HermesWordmark,
 } from "@/features/shared/components/brand/hermes-mark";
-import { NAV_ITEMS } from "@/features/shared/components/layout/nav-items";
+import { navSections } from "@/features/shared/components/layout/nav-items";
 import { NavLinkList } from "@/features/shared/components/layout/nav-link-list";
 
 interface AppNavbarProps {
@@ -37,9 +37,9 @@ export const AppNavbar = ({
   const closeOnMobile = (): void => {
     if (mobileOpened) toggleMobile();
   };
-  const items = NAV_ITEMS.filter((item) => item.adminOnly !== true || isAdmin);
-  // Right mark for the surface: the clinic plus inside the care dashboard,
-  // the admin shield once you are in administration.
+  const sections = navSections(isAdmin);
+  // Right mark for the surface: the admin shield in administration, the clinic
+  // plus everywhere else.
   const surface: "clinic" | "admin" = pathname.startsWith("/admin")
     ? "admin"
     : "clinic";
@@ -49,15 +49,14 @@ export const AppNavbar = ({
       p="md"
       bg="transparent"
       withBorder={false}
-      styles={{
-        navbar: { overflow: "hidden", transition: "width 0.2s ease" },
-      }}
+      className="hermes-sidebar"
+      data-collapsed={!isExpanded}
     >
       <Paper
         h="100%"
-        radius="sm"
-        bg="brandChalk.0"
-        bd="1px solid var(--mantine-color-brandChalk-3)"
+        radius="lg"
+        bg="var(--hermes-surface)"
+        bd="1px solid var(--hermes-line)"
         style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}
       >
         <UnstyledButton
@@ -65,36 +64,21 @@ export const AppNavbar = ({
           href="/queue"
           aria-label="Hermes queue"
           onClick={closeOnMobile}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            flexShrink: 0,
-            overflow: "hidden",
-            justifyContent: isExpanded ? "flex-start" : "center",
-            padding: isExpanded ? "14px 16px" : "14px 0",
-          }}
+          className="hermes-sidebar-brand"
         >
           <HermesMark
             variant={surface}
             size={32}
             title={surface === "admin" ? "Hermes admin" : "Hermes clinic"}
           />
-          {isExpanded ? <HermesWordmark size={18} /> : null}
+          <span
+            className="hermes-sidebar-fade"
+            data-visible={isExpanded}
+            aria-hidden={!isExpanded}
+          >
+            <HermesWordmark size={18} />
+          </span>
         </UnstyledButton>
-
-        <Text
-          size="xs"
-          fw={700}
-          c="brandChalk.6"
-          tt="uppercase"
-          lts="0.12em"
-          px="md"
-          pb={6}
-          hidden={!isExpanded}
-        >
-          {isAdmin ? "Administration" : "Care team"}
-        </Text>
 
         <ScrollArea
           flex={1}
@@ -104,24 +88,24 @@ export const AppNavbar = ({
           px="xs"
         >
           <NavLinkList
-            items={items}
+            sections={sections}
             expanded={isExpanded}
             onNavigate={closeOnMobile}
           />
         </ScrollArea>
 
-        {isExpanded ? (
+        <div className="hermes-sidebar-fade" data-visible={isExpanded}>
           <Text
             size="xs"
-            c="brandChalk.5"
+            c="var(--hermes-ink-muted)"
             px="md"
             py="sm"
-            style={{ borderTop: "1px solid var(--mantine-color-brandChalk-2)" }}
+            style={{ borderTop: "1px solid var(--hermes-line)" }}
           >
             <IconActivityHeartbeat size={12} style={{ marginRight: 6 }} />
             Screening to sign-off
           </Text>
-        ) : null}
+        </div>
       </Paper>
     </AppShellNavbar>
   );

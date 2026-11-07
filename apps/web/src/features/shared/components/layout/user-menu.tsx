@@ -2,6 +2,7 @@
 
 import {
   Avatar,
+  Box,
   Group,
   Menu,
   MenuDivider,
@@ -9,7 +10,6 @@ import {
   MenuItem,
   MenuLabel,
   MenuTarget,
-  Skeleton,
   Text,
   UnstyledButton,
 } from "@mantine/core";
@@ -17,10 +17,13 @@ import { IconChevronDown, IconLogout } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { useSignOut } from "@/features/auth/services/mutations";
 import type { SessionUser } from "@/features/auth/services/types";
+import { Pill } from "@/features/shared/components/ui/pill";
 
-interface UserMenuProps {
-  user: SessionUser | null;
-}
+const ROLE_COPY: Record<string, string | undefined> = {
+  admin: "Administrator",
+  coordinator: "Care coordinator",
+  clinician: "Clinician",
+};
 
 const initialsOf = (value: string): string =>
   value
@@ -31,19 +34,13 @@ const initialsOf = (value: string): string =>
     .slice(0, 2)
     .toUpperCase();
 
-export const UserMenu = ({ user }: UserMenuProps): ReactNode => {
+export const UserMenu = ({ user }: { user: SessionUser }): ReactNode => {
   const signOut = useSignOut();
-
-  if (user === null) {
-    return (
-      <Group gap="xs" wrap="nowrap" px="sm">
-        <Skeleton height={30} circle />
-        <Skeleton height={16} width={90} radius="xl" />
-      </Group>
-    );
-  }
-
   const displayName = user.name.length > 0 ? user.name : user.email;
+  const rawRole =
+    user.role === null || user.role === undefined ? "" : user.role;
+  const roleLabel = ROLE_COPY[rawRole];
+  const role = roleLabel === undefined ? "Staff" : roleLabel;
 
   return (
     <Menu shadow="md" width={260} position="bottom-end" withArrow>
@@ -53,26 +50,42 @@ export const UserMenu = ({ user }: UserMenuProps): ReactNode => {
           aria-label="Account menu"
         >
           <Group gap="xs" wrap="nowrap">
-            <Avatar size={30} radius="xl" color="brandSlate.9">
+            <Avatar size={30} radius="xl" color="ink">
               {initialsOf(displayName)}
             </Avatar>
-            <Group gap={6} wrap="nowrap" visibleFrom="sm">
-              <Text size="sm" fw={600} truncate maw={140}>
+            <Box style={{ minWidth: 0, flex: 1 }}>
+              <Text size="sm" fw={600} truncate lh={1.3}>
                 {displayName}
               </Text>
-              <Text size="xs" c="dimmed" tt="capitalize">
-                {user.role}
+              <Text size="xs" c="dimmed" truncate lh={1.3}>
+                {role}
               </Text>
-            </Group>
-            <IconChevronDown size={14} stroke={1.75} />
+            </Box>
+            <IconChevronDown
+              size={14}
+              stroke={1.75}
+              style={{ flexShrink: 0 }}
+            />
           </Group>
         </UnstyledButton>
       </MenuTarget>
       <MenuDropdown>
         <MenuLabel>Signed in as</MenuLabel>
-        <Text px="xs" py="xs" size="sm" style={{ overflowWrap: "anywhere" }}>
-          {user.email}
-        </Text>
+        <Box px="xs" pb="xs">
+          <Text size="sm" fw={600} style={{ overflowWrap: "anywhere" }}>
+            {displayName}
+          </Text>
+          <Text size="xs" c="dimmed" style={{ overflowWrap: "anywhere" }}>
+            {user.email}
+          </Text>
+          <Pill
+            tone="info"
+            size="xs"
+            description="Your role decides which pages and actions you can use."
+          >
+            {role}
+          </Pill>
+        </Box>
         <MenuDivider />
         <MenuItem
           c="dimmed"
@@ -80,7 +93,7 @@ export const UserMenu = ({ user }: UserMenuProps): ReactNode => {
           onClick={() => signOut.mutate()}
           disabled={signOut.isPending}
         >
-          Sign out
+          {signOut.isPending ? "Signing out…" : "Sign out"}
         </MenuItem>
       </MenuDropdown>
     </Menu>

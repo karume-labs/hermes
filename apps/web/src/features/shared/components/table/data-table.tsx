@@ -15,12 +15,9 @@ import {
   DataTablePagination,
 } from "@/features/shared/components/table/data-table-parts";
 import { DataTableRow } from "@/features/shared/components/table/data-table-row";
-import { DataTableSkeleton } from "@/features/shared/components/table/data-toolbar";
+import { DataTableSkeleton } from "@/features/shared/components/table/data-table-skeleton";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 40, 50];
-
-const _TableTr = MantineTable.Tr;
-const _TableTd = MantineTable.Td;
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData, unknown>[];
@@ -72,10 +69,10 @@ export const DataTable = <TData,>({
   return (
     <Stack gap="md">
       <Card
-        radius="sm"
+        radius="lg"
         p={0}
-        bg="brandChalk.0"
-        bd="1px solid var(--mantine-color-brandChalk-3)"
+        bg="var(--hermes-surface)"
+        bd="1px solid var(--hermes-line)"
       >
         <ScrollArea type="scroll" offsetScrollbars>
           <MantineTable
