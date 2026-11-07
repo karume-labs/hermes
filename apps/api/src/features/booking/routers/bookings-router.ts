@@ -9,10 +9,8 @@ import {
   patientHasCaseAtClinic,
 } from "@api/features/booking/services/booking-repository";
 import { ensureSlots } from "@api/features/booking/services/slot-service";
-import {
-  findCase,
-  logAudit,
-} from "@api/features/care-loop/services/case-repository";
+import { logAudit } from "@api/features/care-loop/services/case-audit";
+import { findCase } from "@api/features/care-loop/services/case-repository";
 import {
   type CarePrincipal,
   requireCarePrincipal,

@@ -1,7 +1,5 @@
-import {
-  findCase,
-  logAudit,
-} from "@api/features/care-loop/services/case-repository";
+import { logAudit } from "@api/features/care-loop/services/case-audit";
+import { findCase } from "@api/features/care-loop/services/case-repository";
 import { queueNotification } from "@api/features/notify/services/notification-service";
 import { createMessage } from "@api/features/patient/services/patient-repository";
 import { NotFoundError } from "@api/features/shared/errors/index";

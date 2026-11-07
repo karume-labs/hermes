@@ -1,5 +1,5 @@
 import { toBooking, toSlot } from "@api/features/booking/services/booking-dto";
-import { toCareCase } from "@api/features/care-loop/services/case-repository";
+import { toCareCase } from "@api/features/care-loop/services/case-dto";
 import {
   journeyStage,
   toMessage,

@@ -1,8 +1,8 @@
+import { logAudit } from "@api/features/care-loop/services/case-audit";
 import { getCaseDetail } from "@api/features/care-loop/services/case-detail";
 import {
   findCase,
   listCases,
-  logAudit,
   updateCase,
 } from "@api/features/care-loop/services/case-repository";
 import { ensureTask } from "@api/features/care-loop/services/task-service";

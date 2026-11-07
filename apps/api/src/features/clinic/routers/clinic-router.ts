@@ -1,7 +1,7 @@
+import { listClinicReferrals } from "@api/features/clinic/services/clinic-referrals";
 import {
   listClinicAppointments,
   listClinicPatients,
-  listClinicReferrals,
 } from "@api/features/clinic/services/clinic-service";
 import { requireStaff } from "@api/features/shared/auth/index";
 import { Type } from "@sinclair/typebox";

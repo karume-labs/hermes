@@ -1,11 +1,9 @@
 import { findBookingByCaseId } from "@api/features/booking/services/booking-repository";
 import { findSlot } from "@api/features/booking/services/slot-service";
 import { teamMember } from "@api/features/care-loop/services/assignment-service";
-import {
-  findCase,
-  listAudit,
-} from "@api/features/care-loop/services/case-repository";
-import { listTasks } from "@api/features/care-loop/services/task-service";
+import { listAudit } from "@api/features/care-loop/services/case-audit";
+import { findCase } from "@api/features/care-loop/services/case-repository";
+import { listTasks } from "@api/features/care-loop/services/task-queries";
 import { listAttachments } from "@api/features/documents/services/attachment-repository";
 import { listNotifications } from "@api/features/notify/services/notification-service";
 import { listMessages } from "@api/features/patient/services/patient-repository";

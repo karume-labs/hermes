@@ -1,7 +1,7 @@
 import { defaultAssigneeId } from "@api/features/care-loop/services/assignment-service";
+import { logAudit } from "@api/features/care-loop/services/case-audit";
 import {
   listAllCases,
-  logAudit,
   updateCase,
 } from "@api/features/care-loop/services/case-repository";
 import {

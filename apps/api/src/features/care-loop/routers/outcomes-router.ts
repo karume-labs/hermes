@@ -1,13 +1,11 @@
 import { assignCase } from "@api/features/care-loop/services/assignment-service";
+import { logAudit } from "@api/features/care-loop/services/case-audit";
 import {
   findCase,
-  logAudit,
   updateCase,
 } from "@api/features/care-loop/services/case-repository";
-import {
-  completeTask,
-  listTasks,
-} from "@api/features/care-loop/services/task-service";
+import { listTasks } from "@api/features/care-loop/services/task-queries";
+import { completeTask } from "@api/features/care-loop/services/task-service";
 import {
   assertClinician,
   assertCoordinator,

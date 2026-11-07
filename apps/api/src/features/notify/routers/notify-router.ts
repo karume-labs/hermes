@@ -1,7 +1,5 @@
-import {
-  findCase,
-  isCaseId,
-} from "@api/features/care-loop/services/case-repository";
+import { isCaseId } from "@api/features/care-loop/services/case-dto";
+import { findCase } from "@api/features/care-loop/services/case-repository";
 import { dispatchPending } from "@api/features/notify/services/notification-dispatch";
 import {
   listNotifications,

@@ -1,7 +1,5 @@
-import {
-  findCase,
-  logAudit,
-} from "@api/features/care-loop/services/case-repository";
+import { logAudit } from "@api/features/care-loop/services/case-audit";
+import { findCase } from "@api/features/care-loop/services/case-repository";
 import {
   findAttachment,
   insertAttachment,

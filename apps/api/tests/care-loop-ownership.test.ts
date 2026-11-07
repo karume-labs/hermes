@@ -7,9 +7,9 @@ import { ensureSlots } from "@api/features/booking/services/slot-service";
 import { findCaseByLabPayloadId } from "@api/features/care-loop/services/case-repository";
 import {
   acceptReferral,
-  createReferral,
   declineReferral,
-} from "@api/features/care-loop/services/referral-service";
+} from "@api/features/care-loop/services/referral-actions";
+import { createReferral } from "@api/features/care-loop/services/referral-service";
 import { ingestLab } from "@api/features/ingestion/services/ingest-service";
 import { referralsRouter } from "@api/features/referral/routers/referrals-router";
 import { env } from "@api/features/shared/env/index";

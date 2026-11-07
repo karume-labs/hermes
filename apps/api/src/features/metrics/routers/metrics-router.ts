@@ -1,7 +1,5 @@
-import {
-  findCase,
-  listAudit,
-} from "@api/features/care-loop/services/case-repository";
+import { listAudit } from "@api/features/care-loop/services/case-audit";
+import { findCase } from "@api/features/care-loop/services/case-repository";
 import { buildMetrics } from "@api/features/metrics/services/metrics-service";
 import { requireStaff } from "@api/features/shared/auth/index";
 import { NotFoundError } from "@api/features/shared/errors/index";

@@ -1,8 +1,8 @@
 import { defaultAssigneeId } from "@api/features/care-loop/services/assignment-service";
+import { logAudit } from "@api/features/care-loop/services/case-audit";
 import {
   createCase,
   findCaseByLabPayloadId,
-  logAudit,
 } from "@api/features/care-loop/services/case-repository";
 import {
   gradeSeverity,
