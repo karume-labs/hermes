@@ -267,7 +267,7 @@ share it; it is never returned to the patient app.
 | **File** | PDF, PNG, JPEG, WebP or plain text, up to 10 MB |
 | **Type** | Lab report, Referral letter, Closure evidence, Other |
 | **Upload** | `POST /cases/:id/attachments` as multipart; file goes to the API server's disk, metadata to `case_attachments`, `attachment_uploaded` to the audit trail |
-| File name link | `GET /attachments/:id`, opens inline (staff session or `?patientId=`) |
+| File name link | `GET /attachments/:id`, opens inline for staff of that clinic or for the owning patient's bearer token |
 
 **Tab 5 — Audit trail** — every transition in order: `lab_ingested`,
 `push_queued`, `mobile_acknowledged`, `appointment_booked`, `referral_linked`,
@@ -756,10 +756,11 @@ Upload (dashboard): `FormData{file, kind}` → API validates MIME and size →
 writes `<UPLOAD_DIR>/<uuid>.<ext>` → inserts `case_attachments` → audit
 `attachment_uploaded`.
 
-Download: `GET /attachments/:id` looks up the attachment, then the case. Without
-`?patientId` it requires a staff session; with it the id must equal the case's
-patient. The API streams the file with the stored MIME type, a sanitised
-filename and `cache-control: private, no-store`.
+Download: `GET /attachments/:id` looks up the attachment, then the case. A staff
+session must belong to the case's clinic; otherwise the request needs the patient
+bearer token whose id matches the case's patient. The API streams the file with
+the stored MIME type, a sanitised filename, `nosniff`, a sandbox CSP and
+`cache-control: private, no-store`.
 
 ### 8.5 Messaging and outreach
 

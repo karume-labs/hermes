@@ -2,7 +2,10 @@
 
 Audit of the Hermes monorepo before opening it to real clinics and patients.
 Originally reviewed from `main` at `2ae1180`; this revision records the
-implementation pass completed on 6 November 2026.
+implementation pass completed on 6 November 2026. Statuses and evidence were
+rechecked against the code and `docs/hermes-guide.md` on 7 November 2026, after
+the module-split refactor (behaviour unchanged), and the checks in section 7
+were re-run then.
 
 **Verdict: code-side launch blockers are closed.** The application now has
 patient authentication, invite-only staff accounts, clinic tenancy, guarded
@@ -76,7 +79,7 @@ and now carries a status and the evidence for it.
 | 3.1 | Notifications undeliverable | P0 | **Partial** | Consent-aware outbox dispatch: Expo push direct with invalid-token cleanup, SMS via `NOTIFY_WEBHOOK_URL`, in-app settles locally, bounded retries and SMS fallback, `FOR UPDATE SKIP LOCKED` claim. **External:** live SMS/notification provider credentials. |
 | 3.2 | No patient lifecycle | P1 | **Partial** | Sign-in, session restore, sign-out, consent capture/update and device registration are wired. **Remaining:** account deletion and phone-change verification. |
 | 3.3 | Queue usability at scale | P1 | **Deferred** | Server-side pagination and saved views are not in this pass; the queue remains filtered but unpaginated. |
-| 3.4 | Admin capabilities | P1/P2 | **Done** | Staff list, role/clinic change, ban/unban, invite create/list/revoke, clinic list, plus the existing delivery, webhook and routing views. |
+| 3.4 | Admin capabilities | P1/P2 | **Done** | Staff list, role/clinic change, ban/unban, invite create/list/revoke, clinic create/edit/pause (`/admin/clinics`), the global audit view (`/admin/audit`), plus the existing delivery, webhook and routing views. |
 | 3.5 | Web UX resilience | P2 | **Done** | Route error boundary, not-found page and dashboard loading state; Eden errors keep the API message/status instead of a rewritten response. |
 | 3.6 | Accessibility | P2 | **External** | The product is English-only by design: result summaries and SMS copy are English and there is no language preference or selection step. **External:** WCAG 2.2 AA audit. |
 | 3.7 | File handling | P2 | **Partial** | Server-side uploads, magic-byte MIME verification, size cap, UUID names. **External:** object storage and off-host replication. |
@@ -98,12 +101,17 @@ and now carries a status and the evidence for it.
 | --- | --- | --- |
 | Patient sign-in | **Done** | `/sign-in`: phone, consent, code, dev-code hint, session storage. |
 | Token storage and auth headers | **Done** | `expo-secure-store`; every `careApi` call sends `Authorization: Bearer`. |
-| Remove seeded identity switcher | **Done** | `PATIENT_IDS`/`nextPatient` deleted; home shows the signed-in patient and clinic. |
+| Remove seeded identity switcher | **Done** | `PATIENT_IDS`/`nextPatient` deleted; home shows the signed-in patient's name and id. |
 | Sign-out | **Done** | Revokes server session and clears token/profile. |
-| Consent | **Done** | Required checkbox at sign-in; persisted through `/patient-auth/consent`. |
+| Consent | **Done** | Required checkbox at sign-in; persisted through `/patient-auth/consent` and editable on the Profile tab. |
+| First-run intro | **Done** | `/onboarding`: four slides with skip and a stored completion flag. |
+| Visits tab | **Done** | Next visit with preparation note, reschedule, cancel, later bookings and visit history. |
+| Profile tab | **Done** | Identity, appearance (system/light/dark), push/SMS consent switches, notification history, sign out. |
+| Notification centre | **Done** | `/notifications` grouped by day; opening an unread alert marks it read and deep-links to the case. |
+| Teach-back | **Done** | Understood yes/no plus confidence 1–5 on the care-action screen; a negative answer opens a staff follow-up task. |
 | Push registration | **Done (code)** | Registers the Expo token after sign-in; invalid tokens are pruned server-side. |
 | EAS project, signing keys, store listings | **External** | Build and submission credentials. |
-| Device testing / crash reporting | **External** | Not exercised on a physical device in this pass. |
+| Device testing / crash reporting | **External** | The APK installed on the test device predates the November mobile refactor, so the tabbed screens are typechecked but not visually re-verified. |
 
 ## 6. Marketing site
 
@@ -119,13 +127,11 @@ and now carries a status and the evidence for it.
 
 | Check | Result |
 | --- | --- |
-| `bun run --cwd apps/api typecheck` | pass |
-| `bun run --cwd apps/web typecheck` | pass |
-| `bun run --cwd apps/mobile typecheck` | pass |
-| `bun run --cwd apps/www typecheck` | pass (0 errors) |
-| `bun run --cwd packages/validators typecheck` | pass |
-| `bun run --cwd apps/api test` | 25 pass (includes DB-backed ownership, referral, surveillance, teach-back and consult-visibility tests) |
-| `bun run --cwd apps/web build` | pass |
+| `bun run lint` | pass (0 findings) |
+| `bun run typecheck` (web, api, mobile, db, validators, types, www) | pass, 0 errors |
+| `bun run --cwd apps/api test` | 40 pass across 8 files (DB-backed ownership, referrals, booking lifecycle, surveillance, teach-back, consult visibility, notifications, ingestion, triage, patient auth) |
+| `bun run --cwd apps/web build` | pass (re-run 7 Nov 2026; all routes incl. `/appointments`, `/patients`, `/referrals`, `/admin/clinics`, `/admin/audit`) |
+| `cd apps/mobile && npx tsc --noEmit` | pass |
 | Patient auth + scoping (curl) | 200 own cases, 404 other patient, 401 anonymous |
 | Staff invite → accept → sign in (curl) | 200; coordinator sees only `clinic-1`; admin route 401 |
 | Webhook signature / unsigned / replay (curl) | 200 / 401 / 409 |
@@ -142,8 +148,8 @@ Not run in this pass: Docker image build, full browser click-through, physical-d
 mobile run, load test, penetration test, accessibility audit. The dashboard queue
 and case file were rendered in the local browser after the build; the mobile app
 was typechecked but not run on a device.
-The unrelated Expo-generated `ios/**` files still fail formatting; they are
-untracked and were left untouched.
+The Expo-generated `ios/` and `android/` directories are git-ignored and outside
+the lint scope; they were left untouched.
 
 ## 8. Go/No-Go checklist
 
@@ -218,6 +224,8 @@ untracked and were left untouched.
 | `GET/POST /cases/:id/attachments` | staff |
 | `GET /attachments/:id` | staff or owning patient |
 | `POST /referrals`, `/cases/close` | coordinator/admin |
+| `GET /clinic/appointments`, `/clinic/patients`, `/clinic/referrals` | staff, clinic-scoped |
+| `GET/POST/PATCH /admin/clinics`, `GET /admin/audit` | admin |
 | `GET /metrics`, `/audit/:caseId`, `/notifications*`, `/webhooks/logs` | staff; notifications admin |
 | `POST /notifications/dispatch` | admin |
 | `GET/POST /staff/*` | admin, except `/staff/invites/accept` (public, rate limited) |
