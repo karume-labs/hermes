@@ -5,7 +5,7 @@ import { Alert, Card, Group, Stack, Text } from "@mantine/core";
 import type { ReactNode } from "react";
 import { Pill } from "@/features/shared/components/ui/pill";
 
-const CARD_STYLE = "1px solid var(--mantine-color-brandChalk-3)";
+const CARD_STYLE = "1px solid var(--hermes-line)";
 
 const asSentence = (value: string | null): string => {
   if (value === null) return "not recorded";
@@ -17,10 +17,10 @@ export const CaseSummaryCard = ({
 }: {
   careCase: CaseDetail;
 }): ReactNode => (
-  <Card radius="sm" p="xl" bg="brandChalk.0" bd={CARD_STYLE}>
+  <Card radius="sm" p="xl" bg="var(--hermes-surface)" bd={CARD_STYLE}>
     <Text
       size="xs"
-      c="brandSlate.5"
+      c="var(--hermes-ink-muted)"
       tt="uppercase"
       fw={700}
       lts="0.1em"

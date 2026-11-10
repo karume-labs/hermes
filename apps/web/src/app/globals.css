@@ -1,15 +1,28 @@
+/*
+ * Hermes tokens. Values mirror `packages/tokens/src/semantic.ts`, which is the
+ * single source of truth; `packages/tokens/test/tokens.test.ts` fails when this
+ * file drifts. Contrast pairs are documented in docs/design-system.md.
+ */
 :root {
-  /* Hermes tokens: the same hexes on every platform. */
   --hermes-ink: #0f172a;
   --hermes-ink-soft: #334155;
   --hermes-ink-muted: #475569;
-  --hermes-wing: #38bdf8;
-  --hermes-spark: #ff4500;
+  /* Blaze Orange: primary action, focus, indicator. Label text is always ink. */
+  --hermes-accent: #ff5500;
+  --hermes-accent-hover: #ff6a1a;
+  --hermes-on-accent: #111315;
+  /* Cerulean for text/icon/line accents; darkened here so small copy is AA. */
+  --hermes-link: #22739b;
+  /* Dark Navy is a brand surface only: hero, band, logo container. */
+  --hermes-brand-surface: #003b5c;
+  --hermes-on-brand: #ffffff;
+  --hermes-on-brand-muted: #cfe3ee;
   --hermes-canvas: #f8fafc;
   --hermes-surface: #ffffff;
   --hermes-surface-tint: #f1f5f9;
   --hermes-line: #e2e8f0;
-  --hermes-line-strong: #cbd5e1;
+  /* Only border allowed on inputs and other meaning-carrying edges (4.8:1). */
+  --hermes-line-strong: #64748b;
   --hermes-routine-text: #166534;
   --hermes-routine-fill: #dcfce7;
   --hermes-actionable-text: #92400e;
@@ -18,11 +31,35 @@
   --hermes-urgent-fill: #fee2e2;
   --hermes-info-text: #075985;
   --hermes-info-fill: #e0f2fe;
-  /* Filled buttons auto-contrast against spark; use ink rather than pure black. */
-  --mantine-color-black: var(--hermes-ink);
+
 }
 
-/* Dark theme: near-black canvas and neutral surfaces. Spark keeps its hex. */
+/*
+ * Mantine's defaults resolve to gray-6 text, gray-4 input borders and dark-6
+ * panels, which are 3.3:1, 1.5:1 and a foreign grey. Point them at the semantic
+ * roles instead so every `c="dimmed"`, placeholder, panel and input edge is AA
+ * without touching each call site. Mantine injects its palette into the head at
+ * runtime, after this sheet, on the same root element plus a scheme attribute;
+ * the doubled attribute selector matches that specificity from a later position.
+ */
+:root[data-mantine-color-scheme][data-mantine-color-scheme] {
+  --mantine-color-body: var(--hermes-surface);
+  --mantine-color-text: var(--hermes-ink);
+  --mantine-color-dimmed: var(--hermes-ink-soft);
+  --mantine-color-placeholder: var(--hermes-ink-muted);
+  --mantine-color-default-border: var(--hermes-line);
+  --mantine-color-default: var(--hermes-surface);
+  --mantine-color-default-hover: var(--hermes-surface-tint);
+  --mantine-color-default-color: var(--hermes-ink);
+  /*
+   * Filled controls pick their text by luminance: spark resolves to black, so
+   * `black` must stay a fixed dark ink. Theming it would flip it to near-white
+   * in dark mode and drop every primary button to 3.3:1.
+   */
+  --mantine-color-black: #0f172a;
+}
+
+/* Dark theme: layered near-black surfaces, never pure black. */
 [data-mantine-color-scheme="dark"] {
   --hermes-ink: #f8fafc;
   --hermes-ink-soft: #cbd5e1;
@@ -31,7 +68,19 @@
   --hermes-surface: #141922;
   --hermes-surface-tint: #1d2430;
   --hermes-line: #2a3343;
-  --hermes-line-strong: #3b4558;
+  --hermes-line-strong: #64748b;
+  /* Navy surfaces muddy against near-black, so the brand surface is neutral. */
+  --hermes-brand-surface: #141922;
+  --hermes-link: #4bb8e7;
+  --hermes-routine-text: #86efac;
+  --hermes-routine-fill: #0f3a22;
+  --hermes-actionable-text: #fcd34d;
+  --hermes-actionable-fill: #3b2606;
+  --hermes-urgent-text: #fca5a5;
+  --hermes-urgent-fill: #3f1414;
+  --hermes-info-text: #7dd3fc;
+  --hermes-info-fill: #062f45;
+
 }
 
 body {
@@ -72,7 +121,7 @@ h6,
 
 /* 2px spark ring, 3px offset, on every interactive element. */
 :focus-visible {
-  outline: 2px solid var(--hermes-spark);
+  outline: 2px solid var(--hermes-accent);
   outline-offset: 3px;
 }
 
@@ -81,14 +130,20 @@ h6,
   letter-spacing: 0.15em;
 }
 
-.border-dark {
-  border: 1px solid var(--hermes-line-strong);
-  box-shadow: none;
+/*
+ * Mantine sets `--input-bd` from gray-4/dark-4 (1.5:1 and 1.4:1). The doubled
+ * attribute selector outranks its own wrapper rule while leaving the focus
+ * variable free to take over.
+ */
+[data-mantine-color-scheme][data-mantine-color-scheme] .mantine-Paper-root {
+  /* Card/Paper hairlines: line token, not Mantine's gray-3. */
+  --paper-border-color: var(--hermes-line);
 }
 
-.border-light {
-  border: 1px solid var(--hermes-line);
-  box-shadow: none;
+[data-mantine-color-scheme][data-mantine-color-scheme]
+  .mantine-Input-wrapper[data-variant="default"] {
+  --input-bd: var(--hermes-line-strong);
+  --input-bd-focus: var(--hermes-accent);
 }
 
 .hermes-clickable-cell {
@@ -153,7 +208,7 @@ h6,
 }
 
 .hermes-nav-link[data-active] svg {
-  color: var(--hermes-spark);
+  color: var(--hermes-accent);
 }
 
 .hermes-shell-skeleton {
@@ -192,7 +247,11 @@ h6,
 
 /* Breached rows keep the chip as the signal; the row only gets a wash. */
 .hermes-sla-breached td {
-  background-color: #fef6f6;
+  background-color: color-mix(
+    in srgb,
+    var(--hermes-urgent-fill) 60%,
+    var(--hermes-surface)
+  );
 }
 
 /* Escalated rows carry a 4px urgent marker, not colour alone. */

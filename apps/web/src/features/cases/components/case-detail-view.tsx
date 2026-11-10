@@ -21,8 +21,6 @@ interface CaseDetailViewProps {
   caseId: string;
 }
 
-const _CARD_STYLE = "1px solid var(--mantine-color-brandChalk-3)";
-
 // Clinical free text often ends in its own full stop; keep exactly one.
 const _asSentence = (value: string | null): string => {
   if (value === null || value.trim() === "") return "not recorded";

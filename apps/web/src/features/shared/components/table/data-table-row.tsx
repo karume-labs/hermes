@@ -28,7 +28,7 @@ export const DataTableRow = <TData,>({
     {row.getVisibleCells().map((cell) => (
       <TableTd
         key={cell.id}
-        c="brandSlate.8"
+        c="var(--hermes-ink)"
         onClick={
           onRowClick === undefined || cell.column.id === "actions"
             ? undefined

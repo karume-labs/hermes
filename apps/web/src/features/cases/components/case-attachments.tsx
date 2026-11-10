@@ -17,7 +17,7 @@ import { AttachmentUploadCard } from "@/features/cases/components/attachment-upl
 import { useUploadAttachment } from "@/features/cases/services/mutations-attachment";
 import { env } from "@/features/shared/env/index";
 
-const CARD_STYLE = "1px solid var(--mantine-color-brandChalk-3)";
+const CARD_STYLE = "1px solid var(--hermes-line)";
 
 const KIND_OPTIONS = [
   { value: "lab_report", label: "Lab report" },
@@ -50,9 +50,15 @@ export const CaseAttachments = ({
     <Stack gap="md">
       <AttachmentUploadCard caseId={detail.id} />
 
-      <Card radius="sm" p="lg" bg="brandChalk.0" bd={CARD_STYLE}>
+      <Card radius="sm" p="lg" bg="var(--hermes-surface)" bd={CARD_STYLE}>
         <Group justify="space-between" mb="sm">
-          <Text size="xs" c="brandSlate.5" tt="uppercase" fw={700} lts="0.1em">
+          <Text
+            size="xs"
+            c="var(--hermes-ink-muted)"
+            tt="uppercase"
+            fw={700}
+            lts="0.1em"
+          >
             Documents
           </Text>
           <Badge variant="light">{detail.attachments.length}</Badge>

@@ -15,7 +15,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { useUploadAttachment } from "@/features/cases/services/mutations-attachment";
 
-const CARD_STYLE = "1px solid var(--mantine-color-brandChalk-3)";
+const CARD_STYLE = "1px solid var(--hermes-line)";
 
 const KIND_OPTIONS = [
   { value: "lab_report", label: "Lab report" },
@@ -43,7 +43,7 @@ export const AttachmentUploadCard = ({
   const [kind, setKind] = useState<string>("lab_report");
 
   return (
-    <Card radius="sm" p="lg" bg="brandChalk.0" bd={CARD_STYLE}>
+    <Card radius="sm" p="lg" bg="var(--hermes-surface)" bd={CARD_STYLE}>
       <Stack gap="sm">
         <Group gap="xs">
           <IconFileText size={18} />

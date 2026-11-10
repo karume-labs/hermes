@@ -1,19 +1,19 @@
 import { Badge, Button, Card, createTheme } from "@mantine/core";
 import {
   actionable,
+  blaze,
+  cerulean,
   info,
   ink,
   routine,
-  spark,
   urgent,
-  wing,
 } from "@/features/shared/styles/theme-colors";
 
 export const theme = createTheme({
   colors: {
     ink,
-    wing,
-    spark,
+    cerulean,
+    blaze,
     routine,
     actionable,
     urgent,
@@ -32,15 +32,32 @@ export const theme = createTheme({
     gray: ink,
     /* Legacy aliases kept so existing surfaces do not change meaning. */
     brandSlate: ink,
-    brandSky: wing,
     brandChalk: ink,
+    /*
+     * Mantine's dark components read colors.dark directly: dark-4 for borders,
+     * dark-5 for hover, dark-6 for cards and inputs, dark-7 for the page. Stock
+     * values are neutral greys that do not sit on the Hermes ladder, so the ramp
+     * is re-pointed at it: text first, then lines, then the layered surfaces.
+     */
+    dark: [
+      "#f8fafc",
+      "#e2e8f0",
+      "#cbd5e1",
+      "#94a3b8",
+      "#2a3343",
+      "#1d2430",
+      "#141922",
+      "#10151d",
+      "#0b0e14",
+      "#080b10",
+    ],
   },
-  primaryColor: "spark",
+  primaryColor: "blaze",
   primaryShade: { light: 6, dark: 6 },
-  /* Orange is mid-luminance: filled buttons take ink text, not white (3.4:1). */
+  /* Blaze is mid-luminance: filled buttons take ink text (5.8:1), not white. */
   autoContrast: true,
-  /* Spark (#FF4500) sits at ~0.25 luminance: below 0.3 Mantine would pick
-   * white text (3.4:1). At 0.2 it picks ink (5.2:1). */
+  /* Blaze (#FF5500) sits at ~0.27 luminance: at Mantine's 0.3 default it would
+   * pick white text (3.2:1). At 0.2 it picks ink (5.8:1). */
   luminanceThreshold: 0.2,
   defaultRadius: "md",
   radius: {
@@ -86,8 +103,9 @@ export const theme = createTheme({
     Card: Card.extend({
       defaultProps: { radius: "lg", withBorder: true },
     }),
+    /* Badges read as labels, not pills: 4px, one variant, ink text. */
     Badge: Badge.extend({
-      defaultProps: { radius: "xl", variant: "light", tt: "none" },
+      defaultProps: { radius: "sm", variant: "light", tt: "none" },
     }),
   },
 });

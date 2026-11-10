@@ -22,7 +22,7 @@ const AcceptInvitePage = async ({
     <AuthLayout>
       {token === undefined || token.length === 0 ? (
         <Card w={440} maw="100%" p="xl" radius="sm">
-          <Title order={2} fw={900} c="brandSlate.9">
+          <Title order={2} fw={900} c="var(--hermes-ink)">
             Invite link incomplete
           </Title>
           <Text size="sm" c="dimmed" mt="sm">

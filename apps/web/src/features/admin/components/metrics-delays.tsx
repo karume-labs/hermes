@@ -13,8 +13,8 @@ export const DelayReasonsCard = ({
     <Card
       radius="sm"
       p="xl"
-      bg="brandChalk.0"
-      bd="1px solid var(--mantine-color-brandChalk-3)"
+      bg="var(--hermes-surface)"
+      bd="1px solid var(--hermes-line)"
     >
       <Text size="md" fw={700} mb="sm">
         Delay and drop-off reasons

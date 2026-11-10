@@ -48,7 +48,7 @@ export const DataTableSkeleton = ({
                     <Skeleton
                       height={12}
                       width={`${Math.max(40, 78 - index * 10)}%`}
-                      radius="xl"
+                      radius="sm"
                     />
                   </TableTh>
                 ))}
@@ -73,7 +73,7 @@ export const DataTableSkeleton = ({
         </ScrollArea>
       </Card>
       <Group justify="space-between">
-        <Skeleton height={14} width={180} radius="xl" />
+        <Skeleton height={14} width={180} radius="sm" />
         <Skeleton height={32} width={210} radius="md" />
       </Group>
     </Stack>

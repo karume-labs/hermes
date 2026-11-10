@@ -10,9 +10,9 @@ const FIELD_IDS = ["field-0", "field-1"];
 const HeaderSkeleton = (): ReactNode => (
   <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
     <Stack gap={8}>
-      <Skeleton height={10} width={90} radius="xl" />
+      <Skeleton height={10} width={90} radius="sm" />
       <Skeleton height={30} width={280} radius="sm" />
-      <Skeleton height={14} width={420} radius="xl" />
+      <Skeleton height={14} width={420} radius="sm" />
     </Stack>
     <Skeleton height={36} width={150} radius="md" />
   </Group>
@@ -23,8 +23,8 @@ const ToolbarSkeleton = (): ReactNode => (
     <Stack gap="md">
       <Group justify="space-between">
         <Stack gap={6}>
-          <Skeleton height={14} width={80} radius="xl" />
-          <Skeleton height={10} width={160} radius="xl" />
+          <Skeleton height={14} width={80} radius="sm" />
+          <Skeleton height={10} width={160} radius="sm" />
         </Stack>
         <Skeleton height={32} width={120} radius="md" />
       </Group>
@@ -66,9 +66,9 @@ export const PageSkeleton = ({
             bg="var(--hermes-surface)"
           >
             <Stack gap={10}>
-              <Skeleton height={10} width="50%" radius="xl" />
+              <Skeleton height={10} width="50%" radius="sm" />
               <Skeleton height={26} width="35%" radius="sm" />
-              <Skeleton height={10} width="75%" radius="xl" />
+              <Skeleton height={10} width="75%" radius="sm" />
             </Stack>
           </Card>
         ))}
@@ -84,9 +84,9 @@ export const PageSkeleton = ({
       <Stack gap={0}>
         <Group gap="lg" px="md" py="sm">
           {FIELD_IDS.map((fieldId) => (
-            <Skeleton key={fieldId} height={10} width={90} radius="xl" />
+            <Skeleton key={fieldId} height={10} width={90} radius="sm" />
           ))}
-          <Skeleton height={10} width={70} radius="xl" />
+          <Skeleton height={10} width={70} radius="sm" />
         </Group>
         {Array.from({ length: rows }, (_, index) => `row-${index}`).map(
           (rowId) => (

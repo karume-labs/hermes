@@ -50,8 +50,8 @@ export const StaffInviteCard = (): ReactNode => {
     <Card
       radius="sm"
       p="xl"
-      bg="brandChalk.0"
-      bd="1px solid var(--mantine-color-brandChalk-3)"
+      bg="var(--hermes-surface)"
+      bd="1px solid var(--hermes-line)"
     >
       <Stack gap="md">
         <Text fw={700}>Invite a staff member</Text>

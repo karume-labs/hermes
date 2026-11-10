@@ -37,7 +37,7 @@ export const SignInForm = (): ReactNode => {
     <Card w={420} maw="100%" p="xl" radius="sm">
       <Stack gap="md">
         <Stack gap={4}>
-          <Title order={2} fw={900} c="brandSlate.9">
+          <Title order={2} fw={900} c="var(--hermes-ink)">
             Sign in
           </Title>
           <Text size="sm" c="dimmed">

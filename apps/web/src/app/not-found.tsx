@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const NotFoundPage = (): ReactNode => (
   <Card maw={520} mx="auto" mt="xl" p="xl" radius="sm">
     <Stack gap="md">
-      <Title order={2} fw={900} c="brandSlate.9">
+      <Title order={2} fw={900} c="var(--hermes-ink)">
         Page not found
       </Title>
       <Text size="sm" c="dimmed">

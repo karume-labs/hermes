@@ -50,8 +50,8 @@ export const StaffView = (): ReactNode => {
       <Card
         radius="sm"
         p="lg"
-        bg="brandChalk.0"
-        bd="1px solid var(--mantine-color-brandChalk-3)"
+        bg="var(--hermes-surface)"
+        bd="1px solid var(--hermes-line)"
       >
         <Text fw={700} mb="md">
           Staff accounts
@@ -62,8 +62,8 @@ export const StaffView = (): ReactNode => {
       <Card
         radius="sm"
         p="lg"
-        bg="brandChalk.0"
-        bd="1px solid var(--mantine-color-brandChalk-3)"
+        bg="var(--hermes-surface)"
+        bd="1px solid var(--hermes-line)"
       >
         <Text fw={700} mb="md">
           Pending invites

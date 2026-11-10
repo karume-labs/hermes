@@ -4,7 +4,7 @@ import { Card, Group, Progress, SimpleGrid, Stack, Text } from "@mantine/core";
 import type { ReactNode } from "react";
 
 /* One accent for every bar: the label and value carry the comparison. */
-const BAR_COLOR = "brandSlate.6";
+const BAR_COLOR = "var(--hermes-ink-muted)";
 
 interface SeverityBarProps {
   label: string;
@@ -45,8 +45,8 @@ export const SeveritySection = ({
     <Card
       radius="sm"
       p="xl"
-      bg="brandChalk.0"
-      bd="1px solid var(--mantine-color-brandChalk-3)"
+      bg="var(--hermes-surface)"
+      bd="1px solid var(--hermes-line)"
     >
       <Text size="md" fw={700} mb="lg">
         How fast patients respond, by severity
@@ -73,8 +73,8 @@ export const SeveritySection = ({
     <Card
       radius="sm"
       p="xl"
-      bg="brandChalk.0"
-      bd="1px solid var(--mantine-color-brandChalk-3)"
+      bg="var(--hermes-surface)"
+      bd="1px solid var(--hermes-line)"
     >
       <Text size="md" fw={700} mb="lg">
         Severity mix

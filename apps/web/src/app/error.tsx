@@ -11,7 +11,7 @@ interface ErrorPageProps {
 const ErrorPage = ({ error, reset }: ErrorPageProps): ReactNode => (
   <Card maw={560} mx="auto" mt="xl" p="xl" radius="sm">
     <Stack gap="md">
-      <Title order={2} fw={900} c="brandSlate.9">
+      <Title order={2} fw={900} c="var(--hermes-ink)">
         Something went wrong
       </Title>
       <Text size="sm" c="dimmed">

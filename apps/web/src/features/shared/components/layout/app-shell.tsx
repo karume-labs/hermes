@@ -91,7 +91,7 @@ export const AppShellLayout = ({
                 onClick={toggleMobile}
                 hiddenFrom="md"
                 size="sm"
-                color="brandSlate.9"
+                color="var(--hermes-ink)"
               />
               <Tooltip
                 label={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
@@ -100,7 +100,7 @@ export const AppShellLayout = ({
               >
                 <ActionIcon
                   variant="subtle"
-                  color="brandSlate.9"
+                  color="var(--hermes-ink)"
                   size="lg"
                   onClick={() => setIsExpanded((open) => !open)}
                   visibleFrom="md"
@@ -115,7 +115,7 @@ export const AppShellLayout = ({
               {user === null ? (
                 <Group gap="xs" wrap="nowrap" px="sm">
                   <Skeleton height={30} circle />
-                  <Skeleton height={14} width={90} radius="xl" />
+                  <Skeleton height={14} width={90} radius="sm" />
                 </Group>
               ) : (
                 <UserMenu user={user} />

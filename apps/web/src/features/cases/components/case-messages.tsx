@@ -78,7 +78,11 @@ export const CaseMessages = ({ detail }: { detail: CaseDetail }): ReactNode => {
               <Card
                 key={message.id}
                 withBorder
-                bg={fromPatient ? "brandChalk.2" : "brandSky.0"}
+                bg={
+                  fromPatient
+                    ? "var(--hermes-surface-tint)"
+                    : "var(--hermes-info-fill)"
+                }
                 p="xs"
               >
                 <Group justify="space-between">

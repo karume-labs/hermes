@@ -50,7 +50,7 @@ export const UserMenu = ({ user }: { user: SessionUser }): ReactNode => {
           aria-label="Account menu"
         >
           <Group gap="xs" wrap="nowrap">
-            <Avatar size={30} radius="xl" color="ink">
+            <Avatar size={30} radius="sm" color="ink">
               {initialsOf(displayName)}
             </Avatar>
             <Box style={{ minWidth: 0, flex: 1 }}>

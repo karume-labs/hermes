@@ -15,16 +15,16 @@ interface HermesMarkProps {
   title?: string;
 }
 
-export const SPARK = "#FF4500";
-export const INK = "#0F172A";
-export const WING = "#38BDF8";
+export const BLAZE = "#FF5500";
+export const NAVY = "#003B5C";
+export const CERULEAN = "#4BB8E7";
 
 interface WingProps {
   transform?: string;
 }
 
 const Wing = ({ transform }: WingProps): ReactNode => (
-  <g fill={WING} transform={transform}>
+  <g fill={CERULEAN} transform={transform}>
     <path d="M56 48 L92 24 L74 50 Z" />
     <path d="M58 52 L78 52 L92 64 L62 60 Z" />
     <path d="M60 63 L86 68 L72 80 Z" />
@@ -39,7 +39,7 @@ const Wings = (): ReactNode => (
 );
 
 const PARTICLES_NODE = (
-  <g fill={SPARK}>
+  <g fill={BLAZE}>
     {HERMES_PARTICLES.map((dot) => (
       <circle
         key={`${dot.cx}-${dot.cy}`}
@@ -61,14 +61,14 @@ const ACCENTS: Partial<Record<HermesMarkVariant, string>> = {
 };
 
 const BASE: Record<HermesMarkVariant, ReactNode> = {
-  core: <rect width="96" height="96" rx="20" fill={INK} />,
-  patient: <rect width="96" height="96" rx="26" fill={INK} />,
-  clinic: <circle cx="48" cy="48" r="46" fill={INK} />,
+  core: <rect width="96" height="96" rx="20" fill={NAVY} />,
+  patient: <rect width="96" height="96" rx="26" fill={NAVY} />,
+  clinic: <circle cx="48" cy="48" r="46" fill={NAVY} />,
   admin: (
     <path
       d="M48 5 L86 26 V70 L48 91 L10 70 V26 Z"
-      fill={INK}
-      stroke={INK}
+      fill={NAVY}
+      stroke={NAVY}
       strokeWidth="8"
       strokeLinejoin="round"
     />
@@ -95,8 +95,8 @@ export const HermesMark = ({
     {ACCENTS[variant] === undefined ? null : (
       <path
         d={ACCENTS[variant]}
-        fill={SPARK}
-        stroke={INK}
+        fill={BLAZE}
+        stroke={NAVY}
         strokeWidth="3"
         strokeLinejoin="round"
         paintOrder="stroke"
@@ -112,7 +112,8 @@ interface HermesWordmarkProps {
 
 export const HermesWordmark = ({
   size = 20,
-  color = INK,
+  /* Follows the theme: the wordmark sits on surfaces, not on the navy tile. */
+  color = "var(--hermes-ink)",
 }: HermesWordmarkProps): ReactNode => (
   <span
     style={{

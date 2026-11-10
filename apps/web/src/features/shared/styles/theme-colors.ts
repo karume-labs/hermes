@@ -14,32 +14,34 @@ export const ink: MantineColorsTuple = [
   "#0f172a",
 ];
 
-/* Wing — Sky Blue. Fills and graphics only, never text on light. */
-export const wing: MantineColorsTuple = [
-  "#eff9ff",
-  "#dff3ff",
-  "#bfeaff",
-  "#9fdfff",
-  "#7ed4ff",
-  "#5ac7fb",
-  "#38bdf8",
-  "#0ea5e9",
-  "#0b83b4",
-  "#075985",
+/* Cerulean — secondary accent. Text, icons and lines only; shade 9 is the
+ * darkened text variant that clears 4.5:1 on light surfaces. */
+export const cerulean: MantineColorsTuple = [
+  "#eef8fd",
+  "#d9f0fb",
+  "#b3e2f6",
+  "#8bd3f0",
+  "#67c6eb",
+  "#55bfe9",
+  "#4bb8e7",
+  "#3aa9d6",
+  "#2c93bc",
+  "#22739b",
 ];
 
-/* Spark — Electric Orange. Primary actions, focus, particles. */
-export const spark: MantineColorsTuple = [
-  "#fff1ec",
-  "#ffe0d6",
-  "#ffc2ad",
-  "#ff9d7a",
-  "#ff7a4d",
-  "#ff5d26",
-  "#ff4500",
-  "#e63e00",
-  "#cc3700",
-  "#b33000",
+/* Blaze Orange — primary actions, focus, indicators. Labels use ink, never
+ * white, so shade 6 (5.8:1 against ink) is the filled default. */
+export const blaze: MantineColorsTuple = [
+  "#fff2eb",
+  "#ffe1d1",
+  "#ffc6ab",
+  "#ffa578",
+  "#ff8447",
+  "#ff6a1a",
+  "#ff5500",
+  "#e64c00",
+  "#cc4400",
+  "#b33b00",
 ];
 
 /* Status pairs. Deliberately separate from spark so urgent never reads as a

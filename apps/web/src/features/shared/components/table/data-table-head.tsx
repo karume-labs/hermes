@@ -30,7 +30,7 @@ export const DataTableHead = <TData,>({
           return (
             <TableTh
               key={header.id}
-              c="brandSlate.6"
+              c="var(--hermes-ink-muted)"
               fz={11}
               lts="0.08em"
               tt="uppercase"
