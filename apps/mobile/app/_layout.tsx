@@ -13,7 +13,7 @@ import { StatusBar } from "expo-status-bar";
 import { type ReactNode, useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { useUniwind } from "uniwind";
-import { getPatientToken } from "@/lib/auth";
+import { getPatientToken, onSessionExpired } from "@/lib/auth";
 import { isOnboardingDone } from "@/lib/onboarding";
 import "@/lib/notifications";
 import { NAV_THEME } from "@/lib/theme";
@@ -33,6 +33,16 @@ const AuthGate = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const segments = useSegments();
   const [checked, setChecked] = useState(false);
+
+  // A 401 from any authenticated call clears the token; leave the tab stack
+  // immediately rather than letting each screen render its own error.
+  useEffect(
+    () =>
+      onSessionExpired(() => {
+        router.replace("/sign-in");
+      }),
+    [router],
+  );
 
   useEffect(() => {
     void (async () => {

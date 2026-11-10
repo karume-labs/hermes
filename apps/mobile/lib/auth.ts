@@ -63,6 +63,36 @@ export const clearPatientToken = async (): Promise<void> => {
   await SecureStore.deleteItemAsync(PROFILE_KEY);
 };
 
+type SessionListener = () => void;
+
+const expiryListeners = new Set<SessionListener>();
+
+/** The root gate subscribes here so an expired token leaves the tabs at once. */
+export const onSessionExpired = (listener: SessionListener): (() => void) => {
+  expiryListeners.add(listener);
+  return () => {
+    expiryListeners.delete(listener);
+  };
+};
+
+let expiring = false;
+
+/**
+ * Called when any authenticated request answers 401 (a revoked or expired
+ * 30-day token). Clears the stored credential once and notifies the gate, so
+ * every screen lands back on sign-in instead of showing raw errors.
+ */
+export const expirePatientSession = async (): Promise<void> => {
+  if (expiring) return;
+  expiring = true;
+  try {
+    await clearPatientToken();
+    for (const listener of expiryListeners) listener();
+  } finally {
+    expiring = false;
+  }
+};
+
 const cacheProfile = async (patient: PatientProfile): Promise<void> => {
   await SecureStore.setItemAsync(PROFILE_KEY, JSON.stringify(patient));
 };
@@ -110,7 +140,7 @@ export const loadPatientProfile = async (): Promise<PatientProfile | null> => {
     headers: { authorization: `Bearer ${token}` },
   });
   if (response.status === 401) {
-    await clearPatientToken();
+    await expirePatientSession();
     return null;
   }
   if (!response.ok) throw new Error(await parseError(response));
@@ -144,6 +174,10 @@ export const updateConsent = async (
     },
     body: JSON.stringify({ pushConsent, smsConsent }),
   });
+  if (response.status === 401) {
+    await expirePatientSession();
+    throw new Error("Your session has expired. Sign in again.");
+  }
   if (!response.ok) throw new Error(await parseError(response));
   return await readJson<PatientProfile>(response);
 };

@@ -10,7 +10,7 @@ import type {
   PatientCase,
   Slot,
 } from "@hermes/types";
-import { getPatientToken } from "@/lib/auth";
+import { expirePatientSession, getPatientToken } from "@/lib/auth";
 import { env } from "@/lib/env/index";
 import { readJson } from "@/lib/http";
 
@@ -44,6 +44,12 @@ const requestJson = async <T>(path: string, init?: RequestInit): Promise<T> => {
       ...init?.headers,
     },
   });
+  // A revoked or expired token must not be shown as a per-screen error: the
+  // shared expiry handler sends the app back to sign-in.
+  if (response.status === 401) {
+    await expirePatientSession();
+    throw new Error("Your session has expired. Sign in again.");
+  }
   if (!response.ok) {
     const body: unknown = await response.json().catch(() => null);
     const message =
