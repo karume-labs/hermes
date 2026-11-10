@@ -18,7 +18,9 @@ import {
 import { db } from "@db/client";
 import { clinics, patients } from "@db/directory/schema/index";
 import { patientLoginCodes, patientSessions } from "@db/patient/schema/index";
-import { and, desc, eq, gt, isNull } from "drizzle-orm";
+import { and, desc, eq, gt, isNull, lt, sql } from "drizzle-orm";
+
+const MAX_ATTEMPTS = 5;
 
 export interface VerifyResult {
   token: string;
@@ -47,17 +49,31 @@ export const verifyPatientCode = async (
     .orderBy(desc(patientLoginCodes.createdAt))
     .limit(1);
   if (row === undefined) throw new UnauthorizedError("That code is not valid.");
-  if (row.attempts >= 5)
+  if (row.attempts >= MAX_ATTEMPTS)
     throw new TooManyRequestsError(
       0,
       "This code has been entered too many times. Ask for a new code to continue.",
     );
 
   if (!safeEqual(row.codeHash, hashCode(patient.id, code))) {
-    await db
+    // Increment in SQL, not from the value we read: parallel guesses would
+    // otherwise overwrite each other and outrun the five-attempt cap.
+    const [bumped] = await db
       .update(patientLoginCodes)
-      .set({ attempts: row.attempts + 1 })
-      .where(eq(patientLoginCodes.id, row.id));
+      .set({ attempts: sql`${patientLoginCodes.attempts} + 1` })
+      .where(
+        and(
+          eq(patientLoginCodes.id, row.id),
+          lt(patientLoginCodes.attempts, MAX_ATTEMPTS),
+        ),
+      )
+      .returning({ attempts: patientLoginCodes.attempts });
+    if (bumped !== undefined && bumped.attempts >= MAX_ATTEMPTS) {
+      throw new TooManyRequestsError(
+        0,
+        "This code has been entered too many times. Ask for a new code to continue.",
+      );
+    }
     throw new UnauthorizedError("That code is not valid.");
   }
 

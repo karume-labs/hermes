@@ -45,9 +45,9 @@ export const staffRouter = new Elysia({ prefix: "/staff" })
   // Public: an invited person sets their password once.
   .post(
     "/invites/accept",
-    async ({ body, request }) => {
+    async ({ body, request, server }) => {
       enforceRateLimit(
-        `invite-accept:${clientAddress(request.headers)}`,
+        `invite-accept:${clientAddress(request.headers, server, request)}`,
         10,
         60 * 60 * 1000,
       );

@@ -30,9 +30,9 @@ const TEN_MINUTES = 10 * 60 * 1000;
 export const patientAuthRouter = new Elysia({ prefix: "/patient-auth" })
   .post(
     "/request-code",
-    async ({ body, request }) => {
+    async ({ body, request, server }) => {
       enforceRateLimit(
-        `patient-code:${clientAddress(request.headers)}`,
+        `patient-code:${clientAddress(request.headers, server, request)}`,
         5,
         TEN_MINUTES,
       );
@@ -42,9 +42,9 @@ export const patientAuthRouter = new Elysia({ prefix: "/patient-auth" })
   )
   .post(
     "/verify",
-    async ({ body, request }) => {
+    async ({ body, request, server }) => {
       enforceRateLimit(
-        `patient-verify:${clientAddress(request.headers)}`,
+        `patient-verify:${clientAddress(request.headers, server, request)}`,
         10,
         TEN_MINUTES,
       );

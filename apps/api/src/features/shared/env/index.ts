@@ -4,8 +4,12 @@ import { Value } from "@sinclair/typebox/value";
 const envSchema = Type.Object({
   PORT: Type.String({ default: "8001" }),
   DATABASE_URL: Type.String({ default: "" }),
+  // Shared service credential accepted as `Authorization: Bearer <secret>`.
   API_SECRET: Type.String({ default: "dev-secret-change-me" }),
-  API_URL: Type.String({ default: "http://localhost:18003" }),
+  API_URL: Type.String({ default: "http://localhost:8001" }),
+  // Only enable when a reverse proxy rewrites X-Forwarded-For; otherwise the
+  // header is caller-supplied and would defeat every rate limit.
+  TRUST_PROXY: Type.Boolean({ default: false }),
   FRONTEND_URL: Type.String({ default: "http://localhost:3100" }),
   BETTER_AUTH_SECRET: Type.String({
     default: "hermes-development-secret-change-me-now",
@@ -53,7 +57,13 @@ export const env: EnvSchemaType = Value.Parse(envSchema, data);
 if (env.NODE_ENV === "production") {
   const unsafe: string[] = [];
   if (env.DATABASE_URL === "") unsafe.push("DATABASE_URL");
-  if (env.API_SECRET === "dev-secret-change-me") unsafe.push("API_SECRET");
+  // An empty secret would match `Bearer ` and hand admin access to anyone.
+  if (
+    env.API_SECRET === "dev-secret-change-me" ||
+    env.API_SECRET.trim().length < 24
+  ) {
+    unsafe.push("API_SECRET (24+ chars)");
+  }
   if (
     env.BETTER_AUTH_SECRET === "hermes-development-secret-change-me-now" ||
     env.BETTER_AUTH_SECRET.length < 32
