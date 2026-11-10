@@ -8,9 +8,9 @@ import { HERMES_PARTICLES } from "@/components/brand/hermes-particles";
  */
 export type HermesMarkVariant = "core" | "patient" | "clinic" | "admin";
 
-const INK = "#0F172A";
-const WING = "#38BDF8";
-const SPARK = "#FF4500";
+const NAVY = "#003B5C";
+const CERULEAN = "#4BB8E7";
+const BLAZE = "#FF5500";
 
 const WINGS = [
   "M56 48 L92 24 L74 50 Z",
@@ -40,12 +40,12 @@ export const HermesMark = ({
 }: HermesMarkProps): React.ReactElement => (
   <Svg width={size} height={size} viewBox="0 0 96 96">
     {variant === "clinic" ? (
-      <Circle cx={48} cy={48} r={46} fill={INK} />
+      <Circle cx={48} cy={48} r={46} fill={NAVY} />
     ) : variant === "admin" ? (
       <Path
         d="M48 5 L86 26 V70 L48 91 L10 70 V26 Z"
-        fill={INK}
-        stroke={INK}
+        fill={NAVY}
+        stroke={NAVY}
         strokeWidth={8}
         strokeLinejoin="round"
       />
@@ -54,16 +54,16 @@ export const HermesMark = ({
         width={96}
         height={96}
         rx={variant === "patient" ? 26 : 20}
-        fill={INK}
+        fill={NAVY}
       />
     )}
-    <G transform={WING_TRANSFORM} fill={WING}>
+    <G transform={WING_TRANSFORM} fill={CERULEAN}>
       {WINGS.map((shape) => (
         <Path key={shape} d={shape} />
       ))}
     </G>
     <G transform={WING_TRANSFORM}>
-      <G transform={MIRROR_TRANSFORM} fill={WING}>
+      <G transform={MIRROR_TRANSFORM} fill={CERULEAN}>
         {WINGS.map((shape) => (
           <Path key={shape} d={shape} />
         ))}
@@ -76,7 +76,7 @@ export const HermesMark = ({
             cx={dot.cx}
             cy={dot.cy}
             r={dot.r}
-            fill={SPARK}
+            fill={BLAZE}
             opacity={dot.o}
           />
         ))
@@ -84,8 +84,8 @@ export const HermesMark = ({
     {ACCENTS[variant] === undefined ? null : (
       <Path
         d={ACCENTS[variant]}
-        fill={SPARK}
-        stroke={INK}
+        fill={BLAZE}
+        stroke={NAVY}
         strokeWidth={3}
         strokeLinejoin="round"
       />

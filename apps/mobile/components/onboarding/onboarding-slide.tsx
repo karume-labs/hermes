@@ -21,20 +21,14 @@ export const OnboardingSlideView = ({ slide, pageWidth, children }: Props) => {
       style={{ width: pageWidth }}
       className="flex-1 justify-center gap-6 px-8"
     >
-      <View
+      {/* One icon, no tile: the copy carries the slide, not a coloured square. */}
+      <Icon
+        as={slide.icon}
         className={cn(
-          "items-center justify-center self-start rounded-[28px] bg-primary/12",
-          isWelcome || isFinish ? "size-36" : "size-20",
+          "text-primary",
+          isWelcome || isFinish ? "size-12" : "size-8",
         )}
-      >
-        <Icon
-          as={slide.icon}
-          className={cn(
-            "text-primary",
-            isWelcome || isFinish ? "size-16" : "size-9",
-          )}
-        />
-      </View>
+      />
 
       <View className="gap-3">
         <Text

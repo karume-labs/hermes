@@ -19,7 +19,7 @@
       "package": "com.hermes.care",
       "adaptiveIcon": {
         "foregroundImage": "./public/core/adaptive-icon.png",
-        "backgroundColor": "#0F172A"
+        "backgroundColor": "#003B5C"
       }
     },
     "web": {
@@ -46,7 +46,7 @@
           "backgroundColor": "#F8FAFC",
           "dark": {
             "image": "./public/core/splash-icon.png",
-            "backgroundColor": "#0F172A"
+            "backgroundColor": "#003B5C"
           }
         }
       ],

@@ -1,3 +1,4 @@
+import { SEMANTIC } from "@hermes/tokens";
 import {
   DarkTheme,
   DefaultTheme,
@@ -5,40 +6,46 @@ import {
 } from "expo-router/react-navigation";
 
 /**
- * Hermes tokens, identical hexes to apps/web and apps/www. Spark is the only
- * primary action colour; ink carries text and tiles; status pairs stay apart
- * from spark so "urgent" never reads as a button.
+ * Runtime theme for React Navigation and any native surface that needs a hex
+ * rather than a Tailwind class. Values come from `@hermes/tokens`, the same
+ * source the CSS in `global.css` is checked against.
  */
 export const THEME = {
   light: {
-    background: "#f7f7f5",
-    foreground: "#111315",
-    card: "#ffffff",
-    cardForeground: "#111315",
-    primary: "#ff4500",
-    primaryForeground: "#111315",
-    border: "#e4e4e0",
-    mutedForeground: "#565c63",
-    destructive: "#991b1b",
-    success: "#166534",
-    warning: "#92400e",
-    info: "#075985",
+    background: SEMANTIC.light.canvas,
+    foreground: SEMANTIC.light.textPrimary,
+    card: SEMANTIC.light.surface,
+    cardForeground: SEMANTIC.light.textPrimary,
+    primary: SEMANTIC.light.accent,
+    primaryForeground: SEMANTIC.light.accentForeground,
+    border: SEMANTIC.light.border,
+    mutedForeground: SEMANTIC.light.textMuted,
+    destructive: SEMANTIC.light.danger,
+    success: SEMANTIC.light.success,
+    warning: SEMANTIC.light.warning,
+    info: SEMANTIC.light.info,
   },
   dark: {
-    background: "#0d0e10",
-    foreground: "#f5f5f4",
-    card: "#16181b",
-    cardForeground: "#f5f5f4",
-    primary: "#ff5a1f",
-    primaryForeground: "#0d0e10",
-    border: "#292d33",
-    mutedForeground: "#a1a7ae",
-    destructive: "#fca5a5",
-    success: "#86efac",
-    warning: "#fcd34d",
-    info: "#7dd3fc",
+    background: SEMANTIC.dark.canvas,
+    foreground: SEMANTIC.dark.textPrimary,
+    card: SEMANTIC.dark.surface,
+    cardForeground: SEMANTIC.dark.textPrimary,
+    primary: SEMANTIC.dark.accent,
+    primaryForeground: SEMANTIC.dark.accentForeground,
+    border: SEMANTIC.dark.border,
+    mutedForeground: SEMANTIC.dark.textMuted,
+    destructive: SEMANTIC.dark.danger,
+    success: SEMANTIC.dark.success,
+    warning: SEMANTIC.dark.warning,
+    info: SEMANTIC.dark.info,
   },
 } as const;
+
+/** Native `TextInput` props need a hex, not a CSS variable. */
+export const placeholderColor = (
+  scheme: "light" | "dark" | null | undefined,
+): string =>
+  scheme === "dark" ? SEMANTIC.dark.textMuted : SEMANTIC.light.textMuted;
 
 export const NAV_THEME: Record<"light" | "dark", Theme> = {
   light: {

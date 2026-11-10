@@ -92,10 +92,7 @@ export const ListRow = ({
     )}
     {trailing}
     {chevron ? (
-      <Icon
-        as={ChevronRight}
-        className="size-[18px] text-muted-foreground/60"
-      />
+      <Icon as={ChevronRight} className="size-[18px] text-muted-foreground" />
     ) : null}
   </Pressable>
 );

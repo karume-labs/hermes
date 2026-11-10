@@ -57,7 +57,7 @@ export const ResultRow = ({ item, first, onPress }: ResultRowProps) => (
     </View>
     <Icon
       as={ChevronRight}
-      className="mt-1 size-[18px] text-muted-foreground/60"
+      className="mt-1 size-[18px] text-muted-foreground"
     />
   </Pressable>
 );

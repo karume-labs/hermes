@@ -4,15 +4,18 @@ import {
   Pressable,
   ScrollView,
   TextInput,
+  useColorScheme,
   View,
 } from "react-native";
 import { SignInError, SignInHeader } from "@/components/auth/sign-in-header";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+import { placeholderColor } from "@/lib/theme";
 import { usePatientSignIn } from "@/lib/use-patient-sign-in";
 
 const SignInScreen = () => {
+  const scheme = useColorScheme();
   const {
     step,
     phone,
@@ -53,7 +56,7 @@ const SignInScreen = () => {
                 placeholder="+254712345678"
                 keyboardType="phone-pad"
                 autoComplete="tel"
-                placeholderTextColor="#94a3b8"
+                placeholderTextColor={placeholderColor(scheme)}
               />
             </View>
           </View>
@@ -95,7 +98,7 @@ const SignInScreen = () => {
               placeholder="000000"
               keyboardType="number-pad"
               maxLength={6}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={placeholderColor(scheme)}
             />
             {devCode === null ? null : (
               <Text className="text-xs text-muted-foreground">
