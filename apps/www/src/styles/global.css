@@ -3,17 +3,23 @@
 
 /*
  * Hermes tokens mirror apps/web and apps/mobile so all three surfaces read as
- * one product. Spark is the only primary action colour; sky stays wing-only;
- * status pairs never borrow spark.
+ * one product. Blaze Orange is the only primary action colour; Cerulean is
+ * text/icon accent only; Dark Navy is a brand surface, never a page or card.
+ * Status pairs never borrow the brand palette.
  */
 @theme {
   --color-ink: var(--hermes-ink);
   --color-ink-soft: var(--hermes-ink-soft);
   --color-ink-muted: var(--hermes-ink-muted);
-  --color-wing: #38bdf8;
-  --color-spark: #ff4500;
-  --color-spark-soft: #ffe0d6;
-  --color-spark-strong: #e63e00;
+  /* Cerulean: graphics and text accents only, never a large fill. */
+  --color-cerulean: #4bb8e7;
+  --color-accent: #ff5500;
+  --color-accent-soft: #ffe1d1;
+  /* Blaze is mid-luminance: labels stay dark ink in both themes (5.8:1). */
+  --color-on-accent: #111315;
+  --color-accent-strong: #e64c00;
+  /* Cerulean for links and small text; themes to the darkened variant in light. */
+  --color-link: var(--hermes-link);
   --color-canvas: var(--hermes-canvas);
   --color-surface: var(--hermes-surface);
   --color-surface-tint: var(--hermes-surface-tint);
@@ -32,13 +38,10 @@
   /* Aliases the existing sections already use. */
   --color-canvas-raised: var(--hermes-surface);
   --color-canvas-line: var(--hermes-line);
-  /* Text on the dark band. Fixed light: the band is dark in both themes. */
-  --color-ink-inverse: #f8fafc;
-  --color-ink-inverse-muted: #cbd5e1;
-  --color-navy: var(--hermes-navy);
-  --color-accent: #ff4500;
-  --color-accent-strong: #475569;
-  --color-accent-soft: #ffe0d6;
+  /* Text on brand surfaces. Fixed light: the navy band is dark in light mode. */
+  --color-on-brand: #ffffff;
+  --color-on-brand-muted: #cfe3ee;
+  --color-brand-surface: var(--hermes-brand-surface);
   --color-success: #166534;
   --color-warning: #92400e;
 
@@ -58,12 +61,26 @@
   --hermes-ink: #0f172a;
   --hermes-ink-soft: #334155;
   --hermes-ink-muted: #475569;
+  --hermes-link: #22739b;
+  /*
+   * Illustration tones. Artwork keeps its own fixed colours, including skin;
+   * these live here so component markup never carries raw hex.
+   */
+  --ill-skin: #e2b48f;
+  --ill-shirt: #cbd5e1;
+  --ill-shirt-shade: #94a3b8;
+  --ill-hair: #334155;
+  --ill-screen: #ffffff;
+  --ill-device: #0f172a;
+  --ill-bubble-info: #e0f2fe;
+  --ill-bubble-accent: #ffe1d1;
   --hermes-canvas: #f8fafc;
   --hermes-surface: #ffffff;
   --hermes-surface-tint: #f1f5f9;
   --hermes-line: #e2e8f0;
-  --hermes-line-strong: #cbd5e1;
-  --hermes-navy: #141922;
+  /* Meaning-carrying borders (inputs, controls): 4.8:1 on white. */
+  --hermes-line-strong: #64748b;
+  --hermes-brand-surface: #003b5c;
 }
 
 /* Dark theme: same tokens as the apps, inverted to near-black. */
@@ -75,8 +92,9 @@
   --hermes-surface: #141922;
   --hermes-surface-tint: #1d2430;
   --hermes-line: #2a3343;
-  --hermes-line-strong: #3b4558;
-  --hermes-navy: #1d2430;
+  --hermes-line-strong: #64748b;
+  --hermes-brand-surface: #141922;
+  --hermes-link: #4bb8e7;
 }
 
 html {
@@ -111,11 +129,11 @@ a:focus-visible,
 button:focus-visible,
 summary:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--color-spark);
+  outline: 2px solid var(--color-accent);
 }
 
 ::selection {
-  background-color: var(--color-spark-soft);
+  background-color: var(--color-accent-soft);
 }
 
 [data-animate],
@@ -123,8 +141,8 @@ summary:focus-visible,
   opacity: 0;
   transform: translateY(8px);
   transition:
-    opacity 420ms ease-out,
-    transform 420ms ease-out;
+    opacity 240ms ease-out,
+    transform 240ms ease-out;
 }
 
 [data-animate].is-visible,

@@ -4,7 +4,7 @@ import { STEPS } from "@/lib/constants";
 
 <section id="how-it-works" class="mx-auto max-w-6xl scroll-mt-24 px-6 py-20">
   <div class="max-w-2xl" data-animate>
-    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent-strong">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-muted">
       The loop
     </p>
     <h2 class="mt-3 font-display text-3xl font-extrabold text-ink sm:text-4xl">
@@ -16,12 +16,12 @@ import { STEPS } from "@/lib/constants";
     </p>
   </div>
 
-  <ol class="mt-12 grid gap-px overflow-hidden rounded-xl border border-canvas-line bg-canvas-line md:grid-cols-2">
+  <ol class="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-canvas-line bg-canvas-line md:grid-cols-2">
     {
       STEPS.map((step) => (
         <li class="bg-canvas-raised p-8" data-animate>
           <div class="flex items-baseline justify-between gap-4">
-            <span class="font-display text-3xl font-extrabold text-canvas-line">
+            <span class="font-display text-3xl font-extrabold text-ink-muted">
               {step.number}
             </span>
             <span class="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-muted">

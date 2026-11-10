@@ -28,7 +28,7 @@ const STATUS: Record<string, "urgent" | "actionable" | "routine"> = {
       <div data-animate>
         <div class="flex items-center gap-3">
           <img src="/logo-admin.svg" alt="" width="40" height="40" />
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent-strong">
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-muted">
             Governance
           </p>
         </div>
@@ -41,7 +41,7 @@ const STATUS: Record<string, "urgent" | "actionable" | "routine"> = {
           quietly in a folder.
         </p>
 
-        <div class="mt-8 overflow-hidden rounded-lg border border-canvas-line">
+        <div class="mt-8 overflow-hidden rounded-[12px] border border-canvas-line">
           <table class="w-full text-left text-sm">
             <thead class="bg-canvas">
               <tr>
@@ -79,7 +79,7 @@ const STATUS: Record<string, "urgent" | "actionable" | "routine"> = {
         <h3 class="font-display text-sm font-bold uppercase tracking-[0.14em] text-ink-muted">
           What the governance view reports
         </h3>
-        <dl class="mt-4 grid gap-px overflow-hidden rounded-lg border border-canvas-line bg-canvas-line sm:grid-cols-2">
+        <dl class="mt-4 grid gap-px overflow-hidden rounded-[12px] border border-canvas-line bg-canvas-line sm:grid-cols-2">
           {
             METRICS.map((metric) => (
               <div class="bg-canvas-raised p-5">

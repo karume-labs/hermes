@@ -28,7 +28,7 @@ import { DASHBOARD_URL, HERO_HEADLINE } from "@/lib/constants";
       <div class="mt-9 flex flex-wrap items-center gap-3">
         <a
           href="#patients"
-          class="group inline-flex items-center gap-2 rounded-md bg-spark px-6 py-3.5 text-sm font-bold text-ink shadow-[0_1px_0_0_rgba(15,23,42,0.12)] transition-colors hover:bg-spark-strong"
+          class="group inline-flex items-center gap-2 rounded-md bg-accent px-6 py-3.5 text-sm font-bold text-on-accent transition-colors hover:bg-accent-strong"
         >
           Get the patient app
           <svg
@@ -72,7 +72,7 @@ import { DASHBOARD_URL, HERO_HEADLINE } from "@/lib/constants";
 
     <!-- Who this is for: a patient, a phone, and the one line that matters. -->
     <div
-      class="relative overflow-hidden rounded-2xl border border-canvas-line bg-canvas-raised"
+      class="relative overflow-hidden rounded-[18px] border border-canvas-line bg-canvas-raised"
       data-animate
     >
       <svg
@@ -82,21 +82,21 @@ import { DASHBOARD_URL, HERO_HEADLINE } from "@/lib/constants";
         class="block h-auto w-full"
       >
         <rect width="420" height="260" fill="var(--hermes-surface-tint)"></rect>
-        <circle cx="312" cy="74" r="86" fill="#e0f2fe" opacity="0.7"></circle>
-        <circle cx="86" cy="196" r="58" fill="#ffe0d6" opacity="0.55"></circle>
+        <circle cx="312" cy="74" r="86" fill="var(--ill-bubble-info)" opacity="0.7"></circle>
+        <circle cx="86" cy="196" r="58" fill="var(--ill-bubble-accent)" opacity="0.55"></circle>
 
         <!-- Person: shoulders, neck, head, arm to the phone -->
         <path
           d="M96 260c0-52 34-88 86-88s86 36 86 88z"
-          fill="#cbd5e1"></path>
-        <path d="M158 150h48v40c0 12-48 12-48 0z" fill="#94a3b8"></path>
-        <circle cx="182" cy="118" r="44" fill="#e2b48f"></circle>
+          fill="var(--ill-shirt)"></path>
+        <path d="M158 150h48v40c0 12-48 12-48 0z" fill="var(--ill-shirt-shade)"></path>
+        <circle cx="182" cy="118" r="44" fill="var(--ill-skin)"></circle>
         <path
           d="M138 112c0-28 20-48 44-48s44 20 44 48c0-16-14-22-44-22s-44 6-44 22z"
-          fill="#334155"></path>
+          fill="var(--ill-hair)"></path>
         <path
           d="M244 196c18-6 30-16 34-30"
-          stroke="#94a3b8"
+          stroke="var(--ill-shirt-shade)"
           stroke-width="16"
           stroke-linecap="round"
           fill="none"></path>
@@ -109,22 +109,22 @@ import { DASHBOARD_URL, HERO_HEADLINE } from "@/lib/constants";
             width="104"
             height="176"
             rx="16"
-            fill="#0f172a"></rect>
-          <rect x="259" y="111" width="90" height="162" rx="12" fill="#ffffff"
+            fill="var(--ill-device)"></rect>
+          <rect x="259" y="111" width="90" height="162" rx="12" fill="var(--ill-screen)"
           ></rect>
-          <rect x="270" y="126" width="52" height="7" rx="3.5" fill="#cbd5e1"
+          <rect x="270" y="126" width="52" height="7" rx="3.5" fill="var(--ill-shirt)"
           ></rect>
-          <rect x="270" y="144" width="70" height="34" rx="6" fill="#fef3c7"
+          <rect x="270" y="144" width="70" height="34" rx="6" fill="var(--color-actionable-fill)"
           ></rect>
-          <rect x="278" y="154" width="46" height="6" rx="3" fill="#92400e"
+          <rect x="278" y="154" width="46" height="6" rx="3" fill="var(--color-actionable)"
           ></rect>
-          <rect x="278" y="165" width="30" height="5" rx="2.5" fill="#92400e"
+          <rect x="278" y="165" width="30" height="5" rx="2.5" fill="var(--color-actionable)"
           ></rect>
-          <rect x="270" y="190" width="70" height="6" rx="3" fill="#e2e8f0"
+          <rect x="270" y="190" width="70" height="6" rx="3" fill="var(--color-line)"
           ></rect>
-          <rect x="270" y="202" width="58" height="6" rx="3" fill="#e2e8f0"
+          <rect x="270" y="202" width="58" height="6" rx="3" fill="var(--color-line)"
           ></rect>
-          <rect x="270" y="216" width="48" height="6" rx="3" fill="#e2e8f0"
+          <rect x="270" y="216" width="48" height="6" rx="3" fill="var(--color-line)"
           ></rect>
           <rect
             x="270"
@@ -132,8 +132,8 @@ import { DASHBOARD_URL, HERO_HEADLINE } from "@/lib/constants";
             width="70"
             height="20"
             rx="10"
-            fill="#ff4500"></rect>
-          <rect x="288" y="246" width="34" height="5" rx="2.5" fill="#0f172a"
+            fill="var(--hermes-accent)"></rect>
+          <rect x="288" y="246" width="34" height="5" rx="2.5" fill="var(--ill-device)"
           ></rect>
         </g>
       </svg>

@@ -3,7 +3,7 @@ import StoreBadges from "@/components/StoreBadges.astro";
 import { DASHBOARD_URL } from "@/lib/constants";
 ---
 
-<section class="border-t border-canvas-line bg-navy py-20 text-ink-inverse">
+<section class="border-t border-canvas-line bg-brand-surface py-20 text-on-brand">
   <div
     class="mx-auto flex max-w-6xl flex-col items-start gap-8 px-6 sm:flex-row sm:items-center sm:justify-between"
     data-animate
@@ -12,17 +12,17 @@ import { DASHBOARD_URL } from "@/lib/constants";
       <h2 class="font-display text-3xl font-extrabold">
         Get the result. Understand it. Close the loop.
       </h2>
-      <p class="mt-3 text-sm leading-relaxed text-ink-inverse-muted">
+      <p class="mt-3 text-sm leading-relaxed text-on-brand-muted">
         Patients: download the app and sign in with the number your clinic has.
         Clinics: sign in to a seeded workspace, work a case from result to
         sign-off, and read the same result in the patient app.
       </p>
-      <StoreBadges size="compact" tone="dark" class="mt-6" />
+      <StoreBadges size="compact" class="mt-6" />
     </div>
     <div class="flex flex-col items-start gap-3">
       <a
         href={DASHBOARD_URL}
-        class="group inline-flex items-center gap-2 rounded-md bg-spark px-6 py-3 text-sm font-bold text-ink transition-colors hover:bg-spark-strong"
+        class="group inline-flex items-center gap-2 rounded-md bg-accent px-6 py-3 text-sm font-bold text-on-accent transition-colors hover:bg-accent-strong"
       >
         Open the clinic dashboard
         <svg
@@ -40,7 +40,7 @@ import { DASHBOARD_URL } from "@/lib/constants";
       </a>
       <a
         href="#how-it-works"
-        class="rounded-md border border-ink-inverse/40 bg-transparent px-6 py-3 text-sm font-bold text-ink-inverse transition-colors hover:border-ink-inverse hover:bg-ink-inverse/10"
+        class="rounded-md border border-on-brand/40 bg-transparent px-6 py-3 text-sm font-bold text-on-brand transition-colors hover:border-on-brand hover:bg-on-brand/10"
       >
         Walk through the steps
       </a>

@@ -6,7 +6,7 @@ import { DASHBOARD_URL } from "@/lib/constants";
 <section id="surfaces" class="mx-auto max-w-6xl px-6 py-20">
   <div class="grid gap-6 lg:grid-cols-2">
     <article
-      class="flex flex-col rounded-xl border border-canvas-line bg-canvas-raised p-8"
+      class="flex flex-col rounded-[12px] border border-canvas-line bg-canvas-raised p-8"
       data-animate
     >
       <img src="/logo-clinic.svg" alt="" width="52" height="52" />
@@ -28,34 +28,34 @@ import { DASHBOARD_URL } from "@/lib/constants";
       </ul>
       <a
         href={DASHBOARD_URL}
-        class="mt-8 inline-flex w-fit rounded-md bg-spark px-5 py-2.5 text-sm font-bold text-ink transition-colors hover:bg-spark-strong"
+        class="mt-8 inline-flex w-fit rounded-md bg-accent px-5 py-2.5 text-sm font-bold text-on-accent transition-colors hover:bg-accent-strong"
       >
         Sign in to the dashboard
       </a>
     </article>
 
     <article
-      class="flex flex-col rounded-xl border border-canvas-line bg-navy p-8 text-ink-inverse"
+      class="flex flex-col rounded-[12px] border border-canvas-line bg-brand-surface p-8 text-on-brand"
       data-animate
     >
       <img src="/logo-patient.svg" alt="" width="52" height="52" />
-      <p class="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-canvas-line">
+      <p class="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-on-brand-muted">
         Patient
       </p>
       <h2 class="mt-2 font-display text-2xl font-extrabold">
         A result a person can act on
       </h2>
-      <p class="mt-3 text-sm leading-relaxed text-canvas-line">
+      <p class="mt-3 text-sm leading-relaxed text-on-brand-muted">
         The mobile app unlocks behind device biometrics, explains the result in
         plain language, and puts booking, the care journey and a message thread
         in the same place.
       </p>
-      <ul class="mt-6 flex flex-col gap-2 text-sm text-canvas-line">
+      <ul class="mt-6 flex flex-col gap-2 text-sm text-on-brand-muted">
         <li>Biometric gate before any clinical detail is shown.</li>
         <li>One-tap acknowledgment, recorded against the case.</li>
         <li>Booking with a 24-hour reminder written to the device calendar.</li>
       </ul>
-      <StoreBadges tone="dark" class="mt-8" />
+      <StoreBadges class="mt-8" />
     </article>
   </div>
 </section>
