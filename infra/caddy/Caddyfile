@@ -1,13 +1,28 @@
 {
-  admin off
+	admin off
+	# Set HERMES_DOMAIN to the public hostname in production; Caddy then gets
+	# and renews the certificate itself. localhost uses Caddy's internal CA.
 }
 
-:80 {
-  handle /api/* {
-    uri strip_prefix /api
-    reverse_proxy hermes-elysia-api:8001
-  }
-  handle {
-    reverse_proxy hermes-next-web:3000
-  }
+{$HERMES_DOMAIN:localhost} {
+	encode zstd gzip
+
+	# The dashboard has no inline scripts beyond Next's own bundles, so these
+	# are safe defaults for both the app and the API responses behind /api.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		-Server
+	}
+
+	handle /api/* {
+		uri strip_prefix /api
+		reverse_proxy hermes-elysia-api:8001
+	}
+	handle {
+		reverse_proxy hermes-next-web:3000
+	}
 }

@@ -30,6 +30,12 @@ services:
     env_file:
       - ../../apps/api/.env
     environment:
+      # Containers are the deployed stack: production mode is the default so
+      # login codes are never echoed back. Set NODE_ENV=development in
+      # apps/api/.env if you run this compose file against localhost URLs.
+      NODE_ENV: ${NODE_ENV:-production}
+      # Caddy rewrites X-Forwarded-For, so the rate limiter may trust it here.
+      TRUST_PROXY: "true"
       DATABASE_URL: postgresql://${POSTGRES_USER:-hermes}:${POSTGRES_PASSWORD:-hermes}@postgres:5432/${POSTGRES_DB:-hermes}
     depends_on:
       postgres:
