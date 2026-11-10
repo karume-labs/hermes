@@ -1,5 +1,6 @@
 ---
-import { DASHBOARD_URL, SITE_TAGLINE } from "@/lib/constants";
+import StoreBadges from "@/components/StoreBadges.astro";
+import { DASHBOARD_URL, HERO_HEADLINE } from "@/lib/constants";
 ---
 
 <section class="mx-auto max-w-6xl px-6 pt-14 pb-20 sm:pt-20">
@@ -8,27 +9,28 @@ import { DASHBOARD_URL, SITE_TAGLINE } from "@/lib/constants";
       <p
         class="text-xs font-semibold uppercase tracking-[0.2em] text-ink-muted"
       >
-        For clinics that follow up
+        For patients and the clinics that look after them
       </p>
 
       <h1
         class="mt-5 max-w-xl font-display text-4xl leading-[1.08] font-extrabold text-ink sm:text-[52px]"
       >
-        {SITE_TAGLINE}
+        {HERO_HEADLINE}
       </h1>
 
       <p class="mt-6 max-w-xl text-lg leading-relaxed text-ink-muted">
-        A lab result lands. Hermes works out how urgent it is, tells the patient
-        in plain words, and keeps the case with a named person until a clinician
-        signs it off. Nobody has to ring round to find out what happened.
+        A lab result lands. Hermes works out how urgent it is, sends it to you in
+        plain words, and keeps the case with a named person at your clinic until
+        a clinician signs it off. You see what it means and what happens next;
+        nobody has to ring round to find out.
       </p>
 
       <div class="mt-9 flex flex-wrap items-center gap-3">
         <a
-          href={DASHBOARD_URL}
+          href="#patients"
           class="group inline-flex items-center gap-2 rounded-md bg-spark px-6 py-3.5 text-sm font-bold text-ink shadow-[0_1px_0_0_rgba(15,23,42,0.12)] transition-colors hover:bg-spark-strong"
         >
-          Open the dashboard
+          Get the patient app
           <svg
             class="size-4 transition-transform group-hover:translate-x-0.5"
             viewBox="0 0 24 24"
@@ -43,23 +45,28 @@ import { DASHBOARD_URL, SITE_TAGLINE } from "@/lib/constants";
           </svg>
         </a>
         <a
-          href="#how-it-works"
+          href={DASHBOARD_URL}
           class="rounded-md border border-line-strong bg-canvas-raised px-6 py-3.5 text-sm font-bold text-ink transition-colors hover:border-ink hover:bg-surface-tint"
         >
-          See how it works
+          I work at a clinic
         </a>
       </div>
 
       <p class="mt-4 text-xs text-ink-muted">
-        Sign in with a seeded clinic. No card, no setup call.
+        Free on Android and iOS. Clinics sign in with a seeded account — no card,
+        no setup call.
       </p>
 
-      <ul class="mt-9 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-muted">
-        <li>Accepts FHIR and HL7 lab feeds</li>
+      <div class="mt-8">
+        <StoreBadges size="compact" />
+      </div>
+
+      <ul class="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-muted">
+        <li>Results in plain language</li>
         <li aria-hidden="true">·</li>
-        <li>4h, 24h and 72h response windows</li>
+        <li>One tap to say you've seen it</li>
         <li aria-hidden="true">·</li>
-        <li>Push, with SMS as a fallback</li>
+        <li>4h, 48h and 7 day follow-up windows</li>
       </ul>
     </div>
 
@@ -74,7 +81,7 @@ import { DASHBOARD_URL, SITE_TAGLINE } from "@/lib/constants";
         aria-label="A patient reading a lab result on their phone"
         class="block h-auto w-full"
       >
-        <rect width="420" height="260" fill="var(--hermes-surface-tint)" />
+        <rect width="420" height="260" fill="var(--hermes-surface-tint)"></rect>
         <circle cx="312" cy="74" r="86" fill="#e0f2fe" opacity="0.7"></circle>
         <circle cx="86" cy="196" r="58" fill="#ffe0d6" opacity="0.55"></circle>
 

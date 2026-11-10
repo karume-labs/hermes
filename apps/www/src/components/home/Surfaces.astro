@@ -1,8 +1,9 @@
 ---
+import StoreBadges from "@/components/StoreBadges.astro";
 import { DASHBOARD_URL } from "@/lib/constants";
 ---
 
-<section class="mx-auto max-w-6xl px-6 py-20">
+<section id="surfaces" class="mx-auto max-w-6xl px-6 py-20">
   <div class="grid gap-6 lg:grid-cols-2">
     <article
       class="flex flex-col rounded-xl border border-canvas-line bg-canvas-raised p-8"
@@ -54,9 +55,7 @@ import { DASHBOARD_URL } from "@/lib/constants";
         <li>One-tap acknowledgment, recorded against the case.</li>
         <li>Booking with a 24-hour reminder written to the device calendar.</li>
       </ul>
-      <p class="mt-8 text-xs text-canvas-line/70">
-        Android and iOS · Expo · push deep links
-      </p>
+      <StoreBadges tone="dark" class="mt-8" />
     </article>
   </div>
 </section>

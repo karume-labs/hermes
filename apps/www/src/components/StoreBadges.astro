@@ -1,0 +1,78 @@
+---
+import { APP_LINKS } from "@/lib/constants";
+
+interface Props {
+  /** `compact` drops to a single row height for tight spots like the header. */
+  size?: "regular" | "compact";
+  /** `dark` puts the badges on a light fill, for use on a navy panel. */
+  tone?: "default" | "dark";
+  class?: string;
+}
+
+const { size = "regular", tone = "default", class: className } = Astro.props;
+const pad = size === "compact" ? "px-3 py-2" : "px-4 py-2.5";
+const fill =
+  tone === "dark"
+    ? "border border-white/70 bg-white text-[#0b0e14] hover:bg-slate-100"
+    : "border border-white/30 bg-[#0b0e14] text-white hover:border-white/55 hover:bg-[#111722]";
+---
+
+<!--
+  Store badges as real links, not screenshots: they stay crisp, follow the
+  theme, and screen readers get the store name rather than an image.
+-->
+<div class:list={["flex flex-wrap items-center gap-3", className]}>
+  <a
+    href={APP_LINKS.ios}
+    class:list={[
+      "group inline-flex items-center gap-2.5 rounded-lg transition-colors",
+      fill,
+      pad,
+    ]}
+    rel="noopener"
+  >
+    <svg
+      class="size-6 shrink-0"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"
+      ></path>
+    </svg>
+    <span class="flex flex-col leading-none">
+      <span class="text-[10px] font-medium tracking-[0.04em] uppercase opacity-80">
+        Download on the
+      </span>
+      <span class="mt-1 text-[15px] font-semibold">App Store</span>
+    </span>
+  </a>
+
+  <a
+    href={APP_LINKS.android}
+    class:list={[
+      "group inline-flex items-center gap-2.5 rounded-lg transition-colors",
+      fill,
+      pad,
+    ]}
+    rel="noopener"
+  >
+    <svg
+      class="size-6 shrink-0"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        d="M22.018 13.298l-3.919 2.218-3.515-3.482 3.515-3.482 3.918 2.218a1.5 1.5 0 0 1 0 2.528M1.5 1.272A1.49 1.49 0 0 0 1.48 1.72v20.56a1.5 1.5 0 0 0 2.16 1.34l12.19-6.89-3.47-3.44zm9.86 9.02L1.5 22.728a1.49 1.49 0 0 0 1.24.65c.31 0 .61-.1.86-.27l12.19-6.89z"
+      ></path>
+    </svg>
+    <span class="flex flex-col leading-none">
+      <span class="text-[10px] font-medium tracking-[0.04em] uppercase opacity-80">
+        Get it on
+      </span>
+      <span class="mt-1 text-[15px] font-semibold">Google Play</span>
+    </span>
+  </a>
+</div>

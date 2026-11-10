@@ -1,0 +1,82 @@
+---
+import { PATIENT_STEPS } from "@/lib/constants";
+import StoreBadges from "@/components/StoreBadges.astro";
+---
+
+<section id="patients" class="border-t border-canvas-line bg-surface-tint">
+  <div class="mx-auto max-w-6xl px-6 py-20">
+    <div class="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+      <div data-animate>
+        <p class="text-xs font-semibold tracking-[0.2em] text-ink-muted uppercase">
+          For patients
+        </p>
+        <h2
+          class="mt-4 max-w-lg font-display text-3xl leading-tight font-extrabold text-ink sm:text-4xl"
+        >
+          Your result arrives on your phone, not in a phone call.
+        </h2>
+        <p class="mt-5 max-w-lg text-lg leading-relaxed text-ink-muted">
+          If your clinic uses Hermes, a screening result reaches you in plain
+          language, with the next step written down. The app is free to
+          download, and there is nothing to remember beyond the phone number
+          your clinic already has.
+        </p>
+
+        <StoreBadges class="mt-8" />
+
+        <p class="mt-4 text-xs text-ink-muted">
+          Android and iOS · sign in with a one-time code sent by SMS.
+        </p>
+      </div>
+
+      <ol class="flex flex-col gap-4" data-animate>
+        {
+          PATIENT_STEPS.map((step, index) => (
+            <li class="flex gap-4 rounded-xl border border-canvas-line bg-canvas-raised p-6">
+              <span class="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-spark-soft font-display text-sm font-extrabold text-ink">
+                {index + 1}
+              </span>
+              <div>
+                <h3 class="font-display text-lg font-bold text-ink">
+                  {step.title}
+                </h3>
+                <p class="mt-2 text-sm leading-relaxed text-ink-muted">
+                  {step.copy}
+                </p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <div
+      class="mt-10 flex flex-col gap-3 rounded-xl border border-canvas-line bg-canvas-raised p-6 sm:flex-row sm:items-center sm:justify-between"
+      data-animate
+    >
+      <p class="max-w-2xl text-sm leading-relaxed text-ink-muted">
+        <span class="font-semibold text-ink">Not sure if your clinic is on Hermes?</span>{" "}
+        Ask them the next time you visit. Staff can invite the clinics they work
+        with from the dashboard — there is nothing for you to set up.
+      </p>
+      <a
+        href="#surfaces"
+        class="inline-flex w-fit items-center gap-2 rounded-md border border-line-strong bg-canvas px-5 py-2.5 text-sm font-bold text-ink transition-colors hover:border-ink hover:bg-surface-tint"
+      >
+        How clinics use it
+        <svg
+          class="size-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14M13 6l6 6-6 6"></path>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>

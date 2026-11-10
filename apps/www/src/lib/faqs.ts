@@ -10,6 +10,16 @@ export interface Faq {
  */
 export const FAQS: Faq[] = [
   {
+    question: "I am a patient. How do I get my results on my phone?",
+    answer:
+      "Download Hermes Care from the App Store or Google Play and sign in with the phone number your clinic has on file. The app sends a one-time code by SMS, so there is no password to create and no account to buy.",
+  },
+  {
+    question: "What does the app cost a patient?",
+    answer:
+      "Nothing. The app is free to download and to use; there are no in-app purchases or subscriptions. Your clinic decides whether to share results through Hermes, and it can revoke access at any time.",
+  },
+  {
     question: "What happens when a lab result comes in?",
     answer:
       "Hermes accepts FHIR Observations and HL7 ORU messages on a webhook signed with HMAC-SHA256 and a timestamp, rejecting stale or replayed calls. It maps the marker to a LOINC code, grades it urgent (4 hours), actionable (48 hours) or routine (168 hours), routes it to the owning clinic and pushes the result to the patient in plain language.",
