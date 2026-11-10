@@ -1,4 +1,4 @@
-import { Fingerprint, Lock, ShieldCheck } from "lucide-react-native";
+import { Fingerprint, Lock } from "lucide-react-native";
 import * as React from "react";
 import { View } from "react-native";
 import { Button } from "@/components/ui/button";
@@ -7,9 +7,10 @@ import { Text } from "@/components/ui/text";
 import {
   authenticateWithBiometrics,
   isBiometricAvailable,
+  isBiometricUnlockEnabled,
 } from "@/lib/biometrics";
 
-type LockState = "checking" | "locked" | "unlocked" | "unavailable";
+type LockState = "checking" | "locked" | "unlocked";
 
 interface BiometricGateProps {
   children: React.ReactNode;
@@ -35,9 +36,16 @@ export const BiometricGate = ({ children }: BiometricGateProps) => {
 
   React.useEffect(() => {
     void (async () => {
+      const enabled = await isBiometricUnlockEnabled().catch(() => false);
+      if (!enabled) {
+        setState("unlocked");
+        return;
+      }
+      // Enabled but the phone has no enrolled fingerprint or Face ID: showing
+      // the results is better than locking somebody out of their own record.
       const available = await isBiometricAvailable().catch(() => false);
       if (!available) {
-        setState("unavailable");
+        setState("unlocked");
         return;
       }
       setState("locked");
@@ -53,20 +61,14 @@ export const BiometricGate = ({ children }: BiometricGateProps) => {
     <View className="flex-1 justify-center gap-5 bg-background p-6">
       <View className="items-center gap-3">
         <View className="size-16 items-center justify-center rounded-full bg-muted">
-          <Icon
-            as={state === "unavailable" ? ShieldCheck : Lock}
-            className="size-8 text-foreground"
-          />
+          <Icon as={Lock} className="size-8 text-foreground" />
         </View>
         <Text variant="h3" className="text-center">
-          {state === "unavailable"
-            ? "Biometric unlock is off"
-            : "Your results are locked"}
+          Your results are locked
         </Text>
         <Text className="text-center text-muted-foreground">
-          {state === "unavailable"
-            ? "This device has no enrolled Face ID or fingerprint. You can continue without device biometrics."
-            : "Confirm it is you with Face ID or your fingerprint to review screening updates."}
+          Confirm it is you with Face ID or your fingerprint to review screening
+          updates.
         </Text>
       </View>
       {state === "checking" ? (
@@ -78,11 +80,6 @@ export const BiometricGate = ({ children }: BiometricGateProps) => {
           <Text>
             {busy ? "Waiting for biometrics…" : "Unlock with biometrics"}
           </Text>
-        </Button>
-      ) : null}
-      {state === "unavailable" ? (
-        <Button onPress={() => setState("unlocked")} size="lg">
-          <Text>Continue without biometrics</Text>
         </Button>
       ) : null}
       {error === "" ? null : (

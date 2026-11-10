@@ -21,6 +21,19 @@ const pushProjectId = (): string | undefined => {
   return typeof projectId === "string" ? projectId : undefined;
 };
 
+export const hasNotificationPermission = async (): Promise<boolean> => {
+  if (Platform.OS === "web") return false;
+  const { status } = await Notifications.getPermissionsAsync();
+  return status === "granted";
+};
+
+/** Asks the OS once; the answer is sticky, so onboarding is the one place it asks. */
+export const requestNotificationPermission = async (): Promise<boolean> => {
+  if (Platform.OS === "web") return false;
+  const { status } = await Notifications.requestPermissionsAsync();
+  return status === "granted";
+};
+
 export const registerPushToken = async (): Promise<string | null> => {
   if (Platform.OS === "web") return null;
   const projectId = pushProjectId();

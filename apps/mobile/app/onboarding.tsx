@@ -1,12 +1,5 @@
 import { router } from "expo-router";
-import {
-  CalendarCheck,
-  CalendarDays,
-  HeartPulse,
-  type LucideIcon,
-  ShieldCheck,
-} from "lucide-react-native";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   FlatList,
   type ListRenderItem,
@@ -16,131 +9,150 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
+import { OnboardingControls } from "@/components/onboarding/onboarding-controls";
+import { OnboardingSlideView } from "@/components/onboarding/onboarding-slide";
 import { Text } from "@/components/ui/text";
+import {
+  hasNotificationPermission,
+  registerPushToken,
+  requestNotificationPermission,
+} from "@/lib/notifications";
 import { markOnboardingDone } from "@/lib/onboarding";
-
-type Slide = {
-  id: string;
-  icon: LucideIcon;
-  title: string;
-  body: string;
-};
-
-const SLIDES: Slide[] = [
-  {
-    id: "welcome",
-    icon: HeartPulse,
-    title: "Care, close to home",
-    body: "Hermes Care keeps your visits, results and messages with your clinic in one place.",
-  },
-  {
-    id: "visits",
-    icon: CalendarDays,
-    title: "Book in a few taps",
-    body: "Pick a time that suits you. Reschedule or cancel from the Visits tab whenever plans change.",
-  },
-  {
-    id: "privacy",
-    icon: ShieldCheck,
-    title: "Your results, privately",
-    body: "Results are shared only with your care team and are never used for marketing.",
-  },
-  {
-    id: "start",
-    icon: CalendarCheck,
-    title: "You're all set",
-    body: "Check your journey any time. We'll let you know when there's something new to read.",
-  },
-];
+import {
+  ONBOARDING_SLIDES,
+  type OnboardingSlide,
+} from "@/lib/onboarding-slides";
 
 const OnboardingScreen = () => {
   const { width } = useWindowDimensions();
-  const listRef = useRef<FlatList<Slide>>(null);
+  const listRef = useRef<FlatList<OnboardingSlide>>(null);
   const [index, setIndex] = useState(0);
-  const isLast = index === SLIDES.length - 1;
+  const [alertsOn, setAlertsOn] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  const finish = async () => {
+  const slide = ONBOARDING_SLIDES[index];
+  const isLast = index === ONBOARDING_SLIDES.length - 1;
+  const needsAlerts = slide.kind === "permission" && !alertsOn;
+
+  useEffect(() => {
+    void (async () => {
+      setAlertsOn(await hasNotificationPermission().catch(() => false));
+    })();
+  }, []);
+
+  const finish = async (): Promise<void> => {
     await markOnboardingDone();
     router.replace("/");
   };
 
-  const goTo = (next: number) => {
+  const goTo = (next: number): void => {
     listRef.current?.scrollToIndex({ index: next, animated: true });
     setIndex(next);
   };
 
-  const onMomentumEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+  const turnOnAlerts = async (): Promise<void> => {
+    setBusy(true);
+    const granted = await requestNotificationPermission().catch(() => false);
+    setAlertsOn(granted);
+    setBusy(false);
+    if (granted) {
+      // Registers the device token so the next result actually reaches the
+      // phone; the permission prompt alone does not subscribe anything.
+      void registerPushToken();
+    }
+  };
+
+  const onNext = (): void => {
+    if (needsAlerts) {
+      void turnOnAlerts();
+      return;
+    }
+    if (isLast) {
+      void finish();
+      return;
+    }
+    goTo(index + 1);
+  };
+
+  const onSkip = (): void => {
+    if (slide.kind === "permission" && !isLast) {
+      goTo(index + 1);
+      return;
+    }
+    void finish();
+  };
+
+  const onMomentumEnd = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+  ): void => {
     setIndex(Math.round(event.nativeEvent.contentOffset.x / width));
   };
 
-  const renderSlide: ListRenderItem<Slide> = ({ item }) => (
-    <View style={{ width }} className="flex-1 items-center justify-center px-8">
-      <View className="mb-10 size-32 items-center justify-center rounded-[40px] bg-primary/15">
-        <Icon as={item.icon} className="size-14 text-primary" />
-      </View>
-      <Text className="text-center text-3xl font-extrabold">{item.title}</Text>
-      <Text className="mt-4 text-center text-base leading-6 text-muted-foreground">
-        {item.body}
-      </Text>
-    </View>
+  const renderSlide: ListRenderItem<OnboardingSlide> = ({ item }) => (
+    <OnboardingSlideView slide={item} pageWidth={width}>
+      {item.kind === "permission" ? (
+        <Text className="text-[14px] font-medium text-primary">
+          {busy
+            ? "Asking your phone…"
+            : alertsOn
+              ? "Alerts are on for this phone."
+              : "You can change this later in Profile."}
+        </Text>
+      ) : null}
+    </OnboardingSlideView>
   );
+
+  const ctaLabel = needsAlerts
+    ? busy
+      ? "Waiting for your phone…"
+      : "Turn on result alerts"
+    : isLast
+      ? "Go to my care loop"
+      : "Next";
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
-      <View className="flex-row justify-end px-6 pt-2" style={{ height: 48 }}>
-        {isLast ? null : (
-          <Button
-            variant="ghost"
-            onPress={finish}
-            accessibilityLabel="Skip intro"
-          >
-            <Text className="text-muted-foreground">Skip</Text>
-          </Button>
-        )}
+      <View className="h-12 flex-row items-center justify-between px-6">
+        <Text className="text-[12px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+          Hermes Care
+        </Text>
+        <Text className="text-[12px] font-medium text-muted-foreground">
+          {index + 1} of {ONBOARDING_SLIDES.length}
+        </Text>
       </View>
 
       <FlatList
         ref={listRef}
-        data={SLIDES}
+        data={ONBOARDING_SLIDES}
         keyExtractor={(item) => item.id}
         renderItem={renderSlide}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
+        bounces={false}
         onMomentumScrollEnd={onMomentumEnd}
         getItemLayout={(_, i) => ({
           length: width,
           offset: width * i,
           index: i,
         })}
+        initialNumToRender={1}
+        maxToRenderPerBatch={1}
+        windowSize={3}
         className="flex-1"
       />
 
-      <View className="px-6 pb-6 pt-4">
-        <View className="mb-6 flex-row items-center justify-center gap-2">
-          {SLIDES.map((slide, i) => (
-            <View
-              key={slide.id}
-              className={
-                i === index
-                  ? "h-2 w-6 rounded-full bg-primary"
-                  : "size-2 rounded-full bg-border"
-              }
-            />
-          ))}
-        </View>
-        <Button
-          size="lg"
-          className="w-full"
-          onPress={isLast ? finish : () => goTo(index + 1)}
-        >
-          <Text className="text-base font-bold text-primary-foreground">
-            {isLast ? "Get started" : "Next"}
-          </Text>
-        </Button>
-      </View>
+      <OnboardingControls
+        slideIds={ONBOARDING_SLIDES.map((entry) => entry.id)}
+        activeIndex={index}
+        ctaLabel={ctaLabel}
+        busy={busy}
+        skipLabel={
+          isLast ? undefined : slide.kind === "permission" ? "Not now" : "Skip"
+        }
+        onNext={onNext}
+        onSkip={onSkip}
+      />
     </SafeAreaView>
   );
 };

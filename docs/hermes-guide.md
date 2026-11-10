@@ -335,9 +335,10 @@ matching marker prefix wins and anything unmatched falls back to `clinic-1`.
 
 ## 4. Using the patient app (`apps/mobile`)
 
-The app launches into a first-run intro, then sign-in; a stored patient token
-skips the intro on later launches. Tabs are **Home**, **Care**, **Visits**,
-**Messages** and **Profile**. The biometric gate sits in front of the two
+The app launches into sign-in, then a first-run intro once the patient is in; a
+stored patient token skips the intro on later launches. Tabs are **Home**,
+**Care**, **Visits**, **Messages** and **Profile**. Biometric unlock is off by
+default and, when the patient turns it on in Profile, sits in front of the two
 screens that render a result — Home and the care-action screen — not the whole
 app.
 
@@ -363,18 +364,24 @@ That device is now the session: `_layout.tsx` sends signed-out visitors to
 
 ### 4.2 First-run intro — `/onboarding`
 
-Four swipeable slides (welcome, booking, privacy, ready) with **Next**,
-**Skip** and **Get started**. Finishing writes the flag in
-`expo-secure-store`, so the intro appears once per install.
+Six swipeable slides (welcome, what a result means, booking, who can see it,
+alerts, ready) with an animated paginator, a slide counter, **Next**, **Skip**
+and, on the alerts slide, **Turn on result alerts** — the one place the app asks
+for notification permission, then registers the push token. The slide can be
+skipped with **Not now**. Finishing writes the flag in `expo-secure-store`, so
+the intro appears once per install.
 
-### 4.3 Biometric gate — Home and care action
+### 4.3 Biometric unlock — Home and care action
+
+Off until the patient enables **Unlock with fingerprint or Face ID** in
+Profile, so a first launch never asks for a fingerprint.
 
 | State | Control | Result |
 | --- | --- | --- |
 | checking | — | "Checking…" |
 | locked | **Unlock with biometrics** | Face ID / fingerprint via `expo-local-authentication` |
-| unavailable (no enrolment) | **Continue without biometrics** | unlocks for this session |
-| unlocked | — | renders the screen |
+| unlocked (setting off) | — | renders the screen without a prompt |
+| enabled but no enrolment | — | renders the screen; Profile explains the device has nothing set up |
 
 A cancelled prompt keeps the results hidden and shows
 "Unlock cancelled. Your results stay hidden until you confirm."
