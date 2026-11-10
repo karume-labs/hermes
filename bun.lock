@@ -36,6 +36,7 @@
       "version": "1.0.0",
       "dependencies": {
         "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
+        "@hermes/tokens": "workspace:*",
         "@hermes/types": "workspace:*",
         "@rn-primitives/accordion": "^1.5.2",
         "@rn-primitives/alert-dialog": "^1.5.2",
@@ -176,6 +177,14 @@
       },
       "devDependencies": {
         "drizzle-kit": "0.31.10",
+        "typescript": "^5",
+      },
+    },
+    "packages/tokens": {
+      "name": "@hermes/tokens",
+      "version": "0.1.0",
+      "devDependencies": {
+        "bun-types": "^1.4.4",
         "typescript": "^5",
       },
     },
@@ -634,6 +643,8 @@
     "@hermes/db": ["@hermes/db@workspace:packages/db"],
 
     "@hermes/mobile": ["@hermes/mobile@workspace:apps/mobile"],
+
+    "@hermes/tokens": ["@hermes/tokens@workspace:packages/tokens"],
 
     "@hermes/types": ["@hermes/types@workspace:packages/types"],
 

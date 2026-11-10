@@ -17,11 +17,11 @@
     "start:api": "bun run --cwd apps/api start",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "typecheck": "bun run --cwd apps/web typecheck && bun run --cwd apps/api typecheck && bun run --cwd apps/mobile typecheck && bun run --cwd packages/db typecheck && bun run --cwd packages/validators typecheck && bun run --cwd packages/types typecheck && bun run --cwd apps/www typecheck",
+    "typecheck": "bun run --cwd apps/web typecheck && bun run --cwd apps/api typecheck && bun run --cwd apps/mobile typecheck && bun run --cwd packages/db typecheck && bun run --cwd packages/validators typecheck && bun run --cwd packages/types typecheck && bun run --cwd packages/tokens typecheck && bun run --cwd apps/www typecheck",
     "typecheck:web": "bun run --cwd apps/web typecheck",
     "typecheck:api": "bun run --cwd apps/api typecheck",
     "typecheck:mobile": "bun run --cwd apps/mobile typecheck",
-    "test": "bun run --cwd apps/api test",
+    "test": "bun run --cwd packages/tokens test && bun run --cwd apps/api test",
     "test:api": "bun run --cwd apps/api test",
     "db:generate": "bun run --cwd packages/db db:generate",
     "db:seed": "bun run --cwd packages/db db:seed",
@@ -44,7 +44,8 @@
     "www": "bun run --cwd apps/www dev",
     "preview:www": "bun run --cwd apps/www preview",
     "format:check": "biome format .",
-    "clean": "rm -rf .expo node_modules apps/*/node_modules apps/*/.expo apps/*/.astro apps/*/dist apps/*/.next"
+    "clean": "rm -rf .expo node_modules apps/*/node_modules apps/*/.expo apps/*/.astro apps/*/dist apps/*/.next",
+    "test:tokens": "bun run --cwd packages/tokens test"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.14",
