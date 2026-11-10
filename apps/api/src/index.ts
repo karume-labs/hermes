@@ -81,26 +81,30 @@ export const app = new Elysia()
   .use(webhookLogRouter);
 
 // One five-minute tick owns the safety nets: SLA escalation, 24h visit
-// reminders and the outbox drain.
-new Cron("*/5 * * * *", async () => {
-  try {
-    await runSlaSweep(new Date());
-    await queueVisitReminders(new Date());
-    await dispatchPending();
-    await pruneWebhookReceipts();
-  } catch (error) {
-    console.error(
-      JSON.stringify({
-        level: "error",
-        msg: "background_job_failed",
-        error: error instanceof Error ? error.message : String(error),
-      }),
-    );
-  }
-});
+// reminders and the outbox drain. Started only by the real entry point, so a
+// test that imports `app` does not run background work.
+const startCron = (): void => {
+  new Cron("*/5 * * * *", async () => {
+    try {
+      await runSlaSweep(new Date());
+      await queueVisitReminders(new Date());
+      await dispatchPending();
+      await pruneWebhookReceipts();
+    } catch (error) {
+      console.error(
+        JSON.stringify({
+          level: "error",
+          msg: "background_job_failed",
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      );
+    }
+  });
+};
 
 const isMain = import.meta.main;
 if (isMain) {
+  startCron();
   await ensureUploadsDirectory();
   app.listen(Number(env.PORT));
   console.log(`API listening on :${env.PORT}`);

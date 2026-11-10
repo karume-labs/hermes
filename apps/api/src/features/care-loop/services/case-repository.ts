@@ -10,7 +10,20 @@ import { careCases, caseReferrals } from "@db/care-loop/schema/index";
 import { db } from "@db/client";
 import { patients } from "@db/directory/schema/index";
 import type { CareCase, CaseListItem } from "@hermes/types";
-import { and, desc, eq, inArray, isNull, lt, ne, or } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  lte,
+  ne,
+  notInArray,
+  or,
+  sql,
+} from "drizzle-orm";
 
 const inClinicScope = (clinicId: string) =>
   or(
@@ -109,6 +122,47 @@ export const listAllCases = async (
     .select()
     .from(careCases)
     .where(clinicId === null ? undefined : inClinicScope(clinicId));
+  return rows.map(toCareCase);
+};
+
+/**
+ * Open cases whose deadline has passed, or that stayed unacknowledged past
+ * the window for their severity. The cron uses this instead of scanning every
+ * case ever recorded.
+ */
+export const listCasesNeedingEscalation = async (
+  now: Date,
+): Promise<CareCase[]> => {
+  const rows = await db
+    .select()
+    .from(careCases)
+    .where(
+      and(
+        notInArray(careCases.status, ["closed", "escalated"]),
+        or(
+          lte(careCases.slaDueAt, now),
+          and(
+            isNull(careCases.acknowledgedAt),
+            sql`${careCases.createdAt} <= ${now.toISOString()}::timestamptz - case when ${careCases.severity} = 'Routine' then interval '168 hours' else interval '48 hours' end`,
+          ),
+        ),
+      ),
+    );
+  return rows.map(toCareCase);
+};
+
+/** Surveillance reviews whose date has arrived and that are still open. */
+export const listSurveillanceDue = async (now: Date): Promise<CareCase[]> => {
+  const rows = await db
+    .select()
+    .from(careCases)
+    .where(
+      and(
+        ne(careCases.status, "closed"),
+        isNotNull(careCases.nextReviewAt),
+        lte(careCases.nextReviewAt, now),
+      ),
+    );
   return rows.map(toCareCase);
 };
 

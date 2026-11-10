@@ -1,7 +1,8 @@
 import { defaultAssigneeId } from "@api/features/care-loop/services/assignment-service";
 import { logAudit } from "@api/features/care-loop/services/case-audit";
 import {
-  listAllCases,
+  listCasesNeedingEscalation,
+  listSurveillanceDue,
   updateCase,
 } from "@api/features/care-loop/services/case-repository";
 import {
@@ -45,10 +46,13 @@ export const queueSurveillanceReviews = async (
 // SLA sweep runs every 5 minutes. It flags breached cases and alerts the
 // coordinator queue, plus an SMS fallback when the in-app alert went unread.
 export const runSlaSweep = async (now: Date = new Date()): Promise<number> => {
-  const all = await listAllCases();
-  await queueSurveillanceReviews(all, now);
+  // Two bounded reads: reviews that came due, and open cases past their
+  // deadline. Neither grows with the number of cases already closed.
+  const reviews = await listSurveillanceDue(now);
+  await queueSurveillanceReviews(reviews, now);
+  const due = await listCasesNeedingEscalation(now);
   let escalated = 0;
-  for (const careCase of all) {
+  for (const careCase of due) {
     if (careCase.status === "closed" || careCase.status === "escalated")
       continue;
     const slaBreach = dayjs(now).isAfter(dayjs(careCase.slaDueAt));

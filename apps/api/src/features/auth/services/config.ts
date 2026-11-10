@@ -67,8 +67,11 @@ export const auth = betterAuth({
     },
   },
 
+  // No cookie cache: every request re-reads the session row. A cached session
+  // would survive the deletion below for its whole TTL, so a banned or
+  // re-roled account would keep a working dashboard for minutes.
   session: {
-    cookieCache: { enabled: true, maxAge: 5 * 60 },
+    cookieCache: { enabled: false },
   },
 
   plugins: [admin({ defaultRole: "coordinator", adminRoles: ["admin"] })],

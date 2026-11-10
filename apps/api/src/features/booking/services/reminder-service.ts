@@ -1,14 +1,23 @@
 import { findCase } from "@api/features/care-loop/services/case-repository";
-import {
-  listNotifications,
-  queueNotification,
-} from "@api/features/notify/services/notification-service";
+import { queueNotification } from "@api/features/notify/services/notification-service";
 import { bookings, slots } from "@db/booking/schema/index";
 import { db } from "@db/client";
-import { and, eq, gte, lte } from "drizzle-orm";
+import { notifications } from "@db/notify/schema/index";
+import { and, eq, gte, inArray, lte } from "drizzle-orm";
+
+const reminderKey = (caseId: string, appointmentId: string): string =>
+  `${caseId}:${appointmentId}`;
+
+const appointmentIdOf = (payload: unknown): string | null => {
+  if (payload === null || typeof payload !== "object") return null;
+  if (!("appointmentId" in payload)) return null;
+  const value = payload.appointmentId;
+  return typeof value === "string" && value !== "" ? value : null;
+};
 
 // 24h reminder sweep. Runs with the same five-minute tick as the SLA sweep and
-// queues exactly one reminder per booking, so a restart cannot spam patients.
+// queues exactly one reminder per *booking*, so a rescheduled or follow-up
+// visit still gets its own reminder, and a restart cannot spam patients.
 export const queueVisitReminders = async (
   now: Date = new Date(),
 ): Promise<number> => {
@@ -24,13 +33,39 @@ export const queueVisitReminders = async (
         lte(slots.startAt, in24h),
       ),
     );
+  if (rows.length === 0) return 0;
+
+  const caseIds = [...new Set(rows.map((row) => row.booking.caseId))];
+  const reminders = await db
+    .select({
+      caseId: notifications.caseId,
+      payload: notifications.payload,
+    })
+    .from(notifications)
+    .where(
+      and(
+        inArray(notifications.caseId, caseIds),
+        eq(notifications.kind, "visit_reminder"),
+      ),
+    );
+  const alreadyReminded = new Set(
+    reminders
+      .map((row) => {
+        const appointmentId = appointmentIdOf(row.payload);
+        return appointmentId === null
+          ? null
+          : reminderKey(row.caseId, appointmentId);
+      })
+      .filter((key): key is string => key !== null),
+  );
 
   let queued = 0;
   for (const row of rows) {
+    if (alreadyReminded.has(reminderKey(row.booking.caseId, row.booking.id))) {
+      continue;
+    }
     const careCase = await findCase(row.booking.caseId);
     if (careCase === null) continue;
-    const existing = await listNotifications(careCase.id);
-    if (existing.some((item) => item.kind === "visit_reminder")) continue;
     await queueNotification({
       caseId: careCase.id,
       patientId: careCase.patientId,
@@ -43,6 +78,7 @@ export const queueVisitReminders = async (
         prep: row.booking.prepInstructions,
       },
     });
+    alreadyReminded.add(reminderKey(row.booking.caseId, row.booking.id));
     queued += 1;
   }
   return queued;
