@@ -24,8 +24,9 @@ const severityIcon = (severity: string): ReactNode => {
 
 const SEVERITY_DESCRIPTION: Record<string, string> = {
   Urgent: "Needs a clinician within 4 hours of the result arriving.",
-  Actionable: "Needs a decision within 24 hours.",
-  Routine: "Can wait up to 72 hours for the next step.",
+  // Matches SLA_HOURS in apps/api (triage.ts).
+  Actionable: "Needs a decision within 48 hours.",
+  Routine: "Can wait up to 168 hours for the next step.",
 };
 
 export const SeverityBadge = ({

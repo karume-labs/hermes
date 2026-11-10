@@ -11,10 +11,11 @@ import {
   DataToolbarSelect,
 } from "@/features/shared/components/table/data-toolbar-fields";
 
+// These labels must match SLA_HOURS in apps/api (triage.ts): 4 / 48 / 168.
 const SEVERITY_OPTIONS = [
   { value: "urgent", label: "Urgent — 4 hours" },
-  { value: "actionable", label: "Actionable — 24 hours" },
-  { value: "routine", label: "Routine — 72 hours" },
+  { value: "actionable", label: "Actionable — 48 hours" },
+  { value: "routine", label: "Routine — 168 hours" },
 ];
 
 const STATUS_OPTIONS = [

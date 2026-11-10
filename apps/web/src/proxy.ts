@@ -1,5 +1,9 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import {
+  type DASHBOARD_ROLES,
+  isDashboardRole,
+} from "@/features/auth/services/dashboard-role";
 import { env } from "@/features/shared/env/index";
 
 const SESSION_COOKIES = [
@@ -7,8 +11,12 @@ const SESSION_COOKIES = [
   "better-auth.session_token",
 ] as const;
 
+// Every staff role reaches the dashboard; the API still decides what each may
+// do. `panelRole` mirrors DASHBOARD_ROLES so a new role cannot be half-added.
+type PanelRole = (typeof DASHBOARD_ROLES)[number];
+
 type SessionProbe = {
-  role: "coordinator" | "admin";
+  role: PanelRole;
 };
 
 const sessionCookie = (request: NextRequest): string | null => {
@@ -41,7 +49,7 @@ const readSession = async (
     if (user === null || typeof user !== "object" || !("role" in user)) {
       return null;
     }
-    if (user.role !== "admin" && user.role !== "coordinator") return null;
+    if (!isDashboardRole(user.role)) return null;
     return { role: user.role };
   } catch {
     return null;
