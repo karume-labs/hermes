@@ -1,16 +1,16 @@
 import { demoResultRoutes } from "@api/features/ingestion/routers/demo-result-routes";
 import { routingRoutes } from "@api/features/ingestion/routers/routing-routes";
 import {
-  logFailure,
   validationMessage,
   webhookSourceFor,
+  withWebhook,
 } from "@api/features/ingestion/routers/webhook-guard";
 import { fromFhirObservation } from "@api/features/ingestion/services/fhir";
 import { parseHl7Oru } from "@api/features/ingestion/services/hl7";
 import { ingestLab } from "@api/features/ingestion/services/ingest-service";
 import {
+  bodyDigest,
   rememberRawBody,
-  verifyWebhook,
 } from "@api/features/ingestion/services/webhook-auth";
 import { recordWebhook } from "@api/features/notify/services/notification-webhooks";
 import { UnprocessableError } from "@api/features/shared/errors/index";
@@ -42,9 +42,8 @@ export const ingestionRouter = new Elysia()
   })
   .post(
     "/webhooks/lab",
-    async ({ body, request }) => {
-      try {
-        await verifyWebhook(request, "lab");
+    async ({ body, request }) =>
+      withWebhook("lab", request, async () => {
         const result = await ingestLab({
           patientId: body.patientId,
           clinicId: body.clinicId,
@@ -53,25 +52,21 @@ export const ingestionRouter = new Elysia()
           unit: body.unit,
           takenAt: body.takenAt,
           facilityId: body.facilityId,
-          sourceMessageId: body.rawHl7Fhir ?? `lab_${crypto.randomUUID()}`,
+          // A retry of the same signed body must resolve to the same case.
+          sourceMessageId: body.rawHl7Fhir ?? `lab_${bodyDigest(request)}`,
         });
         await recordWebhook("lab", true, "accepted", {
           caseId: result.caseId,
           duplicate: result.duplicate,
         });
         return result;
-      } catch (error) {
-        await logFailure("lab", error);
-        throw error;
-      }
-    },
+      }),
     { body: LabResultSchema },
   )
   .post(
     "/webhooks/fhir",
-    async ({ body, request }) => {
-      try {
-        await verifyWebhook(request, "fhir");
+    async ({ body, request }) =>
+      withWebhook("fhir", request, async () => {
         const observation: FhirObservationInput = body;
         const result = await ingestLab(fromFhirObservation(observation));
         await recordWebhook("fhir", true, "accepted", {
@@ -79,18 +74,13 @@ export const ingestionRouter = new Elysia()
           duplicate: result.duplicate,
         });
         return result;
-      } catch (error) {
-        await logFailure("fhir", error);
-        throw error;
-      }
-    },
+      }),
     { body: FhirObservationSchema },
   )
   .post(
     "/webhooks/hl7",
-    async ({ body, request }) => {
-      try {
-        await verifyWebhook(request, "hl7");
+    async ({ body, request }) =>
+      withWebhook("hl7", request, async () => {
         const labs = parseHl7Oru(body.message).map((lab) => ({
           ...lab,
           clinicId: lab.clinicId ?? body.clinicId ?? null,
@@ -102,11 +92,7 @@ export const ingestionRouter = new Elysia()
           caseIds: results.map((result) => result.caseId),
         });
         return results;
-      } catch (error) {
-        await logFailure("hl7", error);
-        throw error;
-      }
-    },
+      }),
     { body: Hl7MessageSchema },
   )
   .use(routingRoutes)
