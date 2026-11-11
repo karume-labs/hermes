@@ -15,6 +15,7 @@ type SeedAccount = {
   password: string;
   role: StaffRole;
   clinicId: string | null;
+  organizationId: string | null;
 };
 
 // Vaunt pattern: seed accounts through Better Auth itself so the password row is
@@ -37,6 +38,7 @@ const seedAccounts = (): SeedAccount[] => [
     password: seedEnv.COORDINATOR_PASSWORD,
     role: "coordinator",
     clinicId: "clinic-1",
+    organizationId: "hermes-network",
   },
   {
     name: "Avery Admin",
@@ -44,6 +46,7 @@ const seedAccounts = (): SeedAccount[] => [
     password: seedEnv.ADMIN_PASSWORD,
     role: "admin",
     clinicId: null,
+    organizationId: null,
   },
   {
     name: "Dr. Ada Okafor",
@@ -51,6 +54,17 @@ const seedAccounts = (): SeedAccount[] => [
     password: seedEnv.CLINICIAN_PASSWORD,
     role: "clinician",
     clinicId: "clinic-1",
+    organizationId: "hermes-network",
+  },
+  // The organization owner for the AAR-style pitch: one account that runs the
+  // network's clinics and invites its staff.
+  {
+    name: "Olivia Org Admin",
+    email: "orgadmin@hermescare.test",
+    password: "hermes-care",
+    role: "org_admin",
+    clinicId: null,
+    organizationId: "hermes-network",
   },
 ];
 
@@ -71,7 +85,11 @@ export const seedAuth = async (_context: SeedContext): Promise<number> => {
     if (existing !== null) {
       await db
         .update(user)
-        .set({ role: accountSeed.role, clinicId: accountSeed.clinicId })
+        .set({
+          role: accountSeed.role,
+          clinicId: accountSeed.clinicId,
+          organizationId: accountSeed.organizationId,
+        })
         .where(eq(user.id, existing.id));
       // Keep the seeded password in step with the configured one, so changing
       // the default does not strand an existing database on the old credential.
@@ -106,7 +124,11 @@ export const seedAuth = async (_context: SeedContext): Promise<number> => {
 
     await db
       .update(user)
-      .set({ role: accountSeed.role, clinicId: accountSeed.clinicId })
+      .set({
+        role: accountSeed.role,
+        clinicId: accountSeed.clinicId,
+        organizationId: accountSeed.organizationId,
+      })
       .where(eq(user.id, response.user.id));
     created += 1;
     console.log(

@@ -1,5 +1,5 @@
-import { clinics } from "@db/directory/schema/index";
-import type { StaffRole } from "@hermes/types";
+import { clinics, organizations } from "@db/directory/schema/index";
+import type { NotificationPreference, StaffRole } from "@hermes/types";
 import {
   boolean,
   index,
@@ -33,6 +33,16 @@ export const user = pgTable("user", {
   clinicId: text("clinic_id").references(() => clinics.id, {
     onDelete: "set null",
   }),
+  // Org admins and org staff belong to one organization; platform admins and
+  // service accounts keep this null.
+  organizationId: text("organization_id").references(() => organizations.id, {
+    onDelete: "set null",
+  }),
+  // Where staff want their own alerts (invites, referrals, assignments).
+  notificationChannel: text("notification_channel")
+    .notNull()
+    .default("both")
+    .$type<NotificationPreference>(),
 });
 
 // Single-use staff invitations. Only the token hash is stored; the raw token is
@@ -45,6 +55,9 @@ export const staffInvites = pgTable(
     name: text("name").notNull(),
     role: text("role").notNull().default("coordinator").$type<StaffRole>(),
     clinicId: text("clinic_id").references(() => clinics.id, {
+      onDelete: "cascade",
+    }),
+    organizationId: text("organization_id").references(() => organizations.id, {
       onDelete: "cascade",
     }),
     tokenHash: text("token_hash").notNull().unique(),

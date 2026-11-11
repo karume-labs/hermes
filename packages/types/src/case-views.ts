@@ -11,8 +11,8 @@ import type {
   NotificationEntry,
   Slot,
 } from "./case-records";
-import type { JourneyStep, Severity, StaffRole } from "./literals";
-import type { Clinic, Patient } from "./people";
+import type { CaseAccess, JourneyStep, Severity, StaffRole } from "./literals";
+import type { Clinic, Organization, Patient } from "./people";
 export type CaseAssignee = {
   id: string;
   name: string;
@@ -20,6 +20,12 @@ export type CaseAssignee = {
   role: StaffRole;
   clinicId: string | null;
   clinicName: string | null;
+};
+
+/** One person on the case, with the access they hold. */
+export type CaseParticipant = CaseAssignee & {
+  access: CaseAccess;
+  grantedAt: string;
 };
 
 // ------------------------------------------------------------ composites ----
@@ -35,6 +41,7 @@ export type CaseDetail = CareCase & {
   feedback: CaseFeedback | null;
   consultNotes: CaseConsultNote[];
   assignee: CaseAssignee | null;
+  clinicians: CaseParticipant[];
 };
 
 /** Queue row: the case plus the identity the care team recognises. */
@@ -94,6 +101,12 @@ export type AdminClinicSummary = Clinic & {
   patientCount: number;
   staffCount: number;
   openCaseCount: number;
+};
+
+/** Organization row with the footprint the operator needs to see. */
+export type OrganizationSummary = Organization & {
+  clinicCount: number;
+  staffCount: number;
 };
 
 /** Global audit row with the patient, clinic and case it belongs to. */

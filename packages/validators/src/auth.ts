@@ -3,8 +3,26 @@ import { type Static, Type } from "@sinclair/typebox";
 export const staffRoleSchema = Type.Union([
   Type.Literal("coordinator"),
   Type.Literal("clinician"),
+  Type.Literal("org_admin"),
   Type.Literal("admin"),
 ]);
+
+export const notificationPreferenceSchema = Type.Union([
+  Type.Literal("email"),
+  Type.Literal("in_app"),
+  Type.Literal("both"),
+]);
+export type NotificationPreferenceBody = Static<
+  typeof notificationPreferenceSchema
+>;
+
+export const notificationPreferencesSchema = Type.Object({
+  channel: notificationPreferenceSchema,
+});
+export type NotificationPreferencesBody = Static<
+  typeof notificationPreferencesSchema
+>;
+export const NotificationPreferencesSchema = notificationPreferencesSchema;
 
 export const signInBody = Type.Object({
   email: Type.String({
@@ -42,6 +60,7 @@ export const createStaffInviteSchema = Type.Object({
   name: Type.String({ minLength: 2, maxLength: 80 }),
   role: staffRoleSchema,
   clinicId: Type.Optional(Type.String({ minLength: 1 })),
+  organizationId: Type.Optional(Type.String({ minLength: 1 })),
 });
 export type CreateStaffInvite = Static<typeof createStaffInviteSchema>;
 export const CreateStaffInviteSchema = createStaffInviteSchema;

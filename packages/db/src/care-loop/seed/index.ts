@@ -71,7 +71,15 @@ export const seedCareLoop = async (context: SeedContext): Promise<number> => {
   const seededPatients = await db
     .select({ id: patients.id, clinicId: patients.clinicId })
     .from(patients);
-  const history = generateCaseHistory({ patients: seededPatients });
+  // Self-registered patients have no clinic yet, so they have no cases to
+  // generate until a clinic links them.
+  const history = generateCaseHistory({
+    patients: seededPatients.flatMap((patient) =>
+      patient.clinicId === null
+        ? []
+        : [{ ...patient, clinicId: patient.clinicId }],
+    ),
+  });
   const cases = [...curated, ...history.cases];
   const audit = [...curatedAudit, ...history.audit];
 

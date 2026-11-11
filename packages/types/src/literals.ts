@@ -23,7 +23,8 @@ export type NotificationKind =
   | "sms_fallback"
   | "escalation"
   | "secure_message"
-  | "visit_reminder";
+  | "visit_reminder"
+  | "staff_alert";
 export type MessageSender = "patient" | "coordinator" | "clinician";
 export type ConfirmationStatus = "pending" | "confirmed" | "ruled_out";
 export type ConsultationOutcome =
@@ -58,7 +59,17 @@ export type JourneyStep =
   | "appointment_booked"
   | "specialist_consultation"
   | "completed";
-export type StaffRole = "coordinator" | "clinician" | "admin";
+// `org_admin` runs one organization: its clinics, its staff and its invites.
+// `admin` is the platform operator and is not tied to an organization.
+export type StaffRole = "coordinator" | "clinician" | "org_admin" | "admin";
+
+/** How a clinician holds a case: the owner, a collaborator, or read-only. */
+export type CaseAccess = "owner" | "collaborator" | "read";
+
+/** Where a person wants their alerts delivered. */
+export type NotificationPreference = "email" | "in_app" | "both";
+
+export type EmailStatus = "sent" | "failed" | "skipped";
 export type AttachmentKind =
   | "lab_report"
   | "referral_letter"

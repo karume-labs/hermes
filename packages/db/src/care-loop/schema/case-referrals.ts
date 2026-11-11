@@ -3,6 +3,9 @@ import { clinics } from "@db/directory/schema/index";
 import type { ReferralStatus } from "@hermes/types";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
+// One row per referral attempt. The case keeps the active destination on
+// `referralClinicId`; this table preserves the hand-off history and, critically,
+// lets the receiving clinic accept, decline or complete the referral.
 export const caseReferrals = pgTable(
   "case_referrals",
   {
@@ -16,6 +19,10 @@ export const caseReferrals = pgTable(
     toClinicId: text("to_clinic_id")
       .notNull()
       .references(() => clinics.id, { onDelete: "restrict" }),
+    // A hand-over between two clinicians in the same clinic has no clinic
+    // change, so the people are recorded separately from the sites.
+    fromUserId: text("from_user_id"),
+    toUserId: text("to_user_id"),
     note: text("note").notNull(),
     status: text("status").notNull().default("sent").$type<ReferralStatus>(),
     sentBy: text("sent_by").notNull(),
@@ -37,6 +44,7 @@ export const caseReferrals = pgTable(
   (table) => [
     index("case_referrals_case_idx").on(table.caseId, table.createdAt),
     index("case_referrals_inbox_idx").on(table.toClinicId, table.status),
+    index("case_referrals_to_user_idx").on(table.toUserId, table.status),
   ],
 );
 

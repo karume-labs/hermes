@@ -53,12 +53,50 @@ export const patientCodeVerifySchema = Type.Object({
 export type PatientCodeVerify = Static<typeof patientCodeVerifySchema>;
 export const PatientCodeVerifySchema = patientCodeVerifySchema;
 
+// Clinic staff claim a self-registered account by the number the patient
+// signed up with.
+export const patientLinkSchema = Type.Object({
+  phone: patientPhoneSchema,
+});
+export type PatientLinkBody = Static<typeof patientLinkSchema>;
+export const PatientLinkSchema = patientLinkSchema;
+
 export const patientConsentSchema = Type.Object({
   pushConsent: Type.Boolean(),
   smsConsent: Type.Boolean(),
+  emailConsent: Type.Optional(Type.Boolean()),
+  notificationChannel: Type.Optional(
+    Type.Union([
+      Type.Literal("email"),
+      Type.Literal("in_app"),
+      Type.Literal("both"),
+    ]),
+  ),
 });
 export type PatientConsent = Static<typeof patientConsentSchema>;
 export const PatientConsentSchema = patientConsentSchema;
+
+// Self-service signup: anyone can create an account with their own phone
+// number. The clinic link is made by staff when the first result arrives.
+export const patientRegisterSchema = Type.Object({
+  name: Type.String({
+    minLength: 2,
+    maxLength: 120,
+    error: "Enter the name your clinic knows you by.",
+  }),
+  phone: patientPhoneSchema,
+  email: Type.Optional(Type.String({ format: "email", maxLength: 320 })),
+  emailConsent: Type.Optional(Type.Boolean()),
+  notificationChannel: Type.Optional(
+    Type.Union([
+      Type.Literal("email"),
+      Type.Literal("in_app"),
+      Type.Literal("both"),
+    ]),
+  ),
+});
+export type PatientRegister = Static<typeof patientRegisterSchema>;
+export const PatientRegisterSchema = patientRegisterSchema;
 
 // Teach-back: did the patient understand the result, and how reassured do
 // they feel? Both answers are stored against the case for outcome measures.
