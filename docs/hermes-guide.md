@@ -1317,3 +1317,100 @@ gateway and `NOTIFY_WEBHOOK_URL` at the SMS sink (push goes directly to Expo).
 5. **Legal review** of `/privacy` and `/terms` by counsel before launch.
 6. **No coordinator mobile app.** Staff work happens in the dashboard; the
    mobile app is patient-only.
+
+## 14. Organizations, self sign-up, email and case handover
+
+### 14.1 Organizations own clinics
+
+`organizations` is the customer row (for example a hospital group pitched as
+"AAR Health"). A clinic belongs to exactly one organization
+(`clinics.organization_id`), and staff belong to the organization of the clinic
+they work in (`user.organization_id`). `org_admin` is a staff role that runs one
+organization: its clinics, its team and its invites. It is not the platform
+`admin`, which runs every organization.
+
+| Action | Who | Where |
+| --- | --- | --- |
+| Create an organization | platform `admin` | `POST /organizations` |
+| Add or pause a clinic | `org_admin` | `POST /organizations/me/clinics`, `PATCH /organizations/me/clinics/:id` |
+| Invite a coordinator or clinician | `org_admin` | `POST /staff/invites` |
+| Invite an organization admin | platform `admin` | `POST /staff/invites` with `organizationId` |
+| Change a role, clinic or ban | `org_admin` (own org) or `admin` | `PATCH /staff/users/:id` |
+| Choose staff alert channel | any staff member | `PATCH /staff/me/preferences` |
+
+The organization is always taken from the signed-in session, never from the
+request body, so an org admin cannot invite into another customer's tenant. The
+dashboard's organization page is `/admin/organization`; the proxy allows
+`org_admin` into `/admin/organization` and `/admin/staff` only.
+
+Seeded accounts: `orgadmin@hermescare.test` / `hermes-care` (org admin of
+`hermes-network`), plus the existing coordinator, clinician and platform admin.
+
+### 14.2 Patients sign up themselves
+
+Patient accounts are public, not invite-only. `POST /patient-auth/register`
+takes a name, phone number and optional email, creates a `patients` row with
+`clinic_id = NULL` and `self_registered_at` set, and returns a bearer session.
+The patient lands in the app with an empty care loop that says the clinic link
+is pending. Sign-in afterwards is the usual phone code
+(`/patient-auth/request-code` then `/patient-auth/verify`).
+
+The clinic link is made by data, not paperwork: when a clinic admits the patient
+(`POST /patients/link` with the phone number, staff-only) the row is claimed by
+that clinic. Every later result, booking and message for that patient then shows
+up in the app automatically, because the app reads cases by patient id.
+
+If a clinic creates the patient first, the patient's sign-up answers "that
+number already has an account" and they sign in with a code instead — the
+directory row is the account.
+
+### 14.3 Email and notification preferences
+
+Mail uses SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`,
+`SMTP_PASSWORD`, `MAIL_FROM`) through one send path in
+`apps/api/src/features/shared/mail`, which records every attempt (sent, failed
+or skipped) in `email_logs`. Account-security mail (invites, password reset,
+patient sign-in codes) is always sent and fails loudly when SMTP is missing.
+Opt-in mail (result alerts, visit reminders, staff alerts) is suppressed when the
+person prefers in-app only.
+
+Send points: staff invite, Better Auth password reset, patient sign-in code
+(email fallback when SMS is unavailable), queued in-app patient alerts,
+hand-over alerts to the receiving clinician.
+
+Preferences are one value per person — `email`, `in_app` or `both` — stored on
+`patients.notification_channel` and `user.notification_channel`. Patients change
+it in Profile → Notifications (with push and SMS switches beside it); staff
+change it on the organization page or through `PATCH /staff/me/preferences`.
+In-app delivery always happens, so the app is never the only copy when email is
+chosen.
+
+### 14.4 Several clinicians on one case
+
+`care_clinicians` records everyone who may open a case and how: `owner`,
+`collaborator` or `read`. The named owner is still mirrored on
+`care_cases.assigned_to_id`. `GET /cases/:id/clinicians` lists the team;
+`POST /cases/:id/clinicians` adds a collaborator or reader.
+
+`POST /cases/:id/handover` (clinician or admin) moves a case to another
+clinician in the same clinic or organization:
+
+1. the receiving clinician becomes the named owner;
+2. the sending clinician is kept on the case with `read` access;
+3. a `case_referrals` row records both people (`from_user_id`, `to_user_id`) and
+   the note, so the hand-over appears in referral history;
+4. an assignment task opens for the new owner and the old one closes;
+5. the audit trail records `case_handed_over`, and the new owner gets an email
+   if their channel allows it.
+
+Read access is enforced in the case query itself: a staff member sees a case
+through their clinic, their organization or an unrevoked `care_clinicians` row,
+so a handed-over case stays visible to its previous clinician without widening
+access for the rest of their clinic.
+
+### 14.5 No demo surfaces
+
+`POST /cases/demo-result` and the dashboard's "Send a test result" button were
+removed. Cases only enter through a signed lab feed (`/webhooks/lab`,
+`/webhooks/fhir`, `/webhooks/hl7`). The seeders remain development fixtures and
+are not reachable from the running product.
