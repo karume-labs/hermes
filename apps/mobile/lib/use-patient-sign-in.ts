@@ -1,26 +1,46 @@
+import type { NotificationPreference } from "@hermes/types";
 import { useRouter } from "expo-router";
 import * as React from "react";
 import { Platform } from "react-native";
+import { useRecordEvent, useRegisterDevice } from "@/lib/api/queries";
 import {
   type PatientProfile,
+  registerPatient,
   requestPatientCode,
-  updateConsent,
   verifyPatientCode,
 } from "@/lib/auth";
-import { careApi } from "@/lib/care-api";
 import { registerPushToken } from "@/lib/notifications";
 
-type Step = "phone" | "code";
+type Step = "phone" | "code" | "signup";
+
+const messageOf = (error: unknown, fallback: string): string =>
+  error instanceof Error ? error.message : fallback;
 
 export const usePatientSignIn = () => {
   const router = useRouter();
+  const device = useRegisterDevice();
+  const recordEvent = useRecordEvent();
   const [step, setStep] = React.useState<Step>("phone");
   const [phone, setPhone] = React.useState("");
+  const [name, setName] = React.useState("");
+  const [email, setEmail] = React.useState("");
   const [code, setCode] = React.useState("");
   const [consent, setConsent] = React.useState(false);
+  const [channel, setChannel] =
+    React.useState<NotificationPreference>("in_app");
   const [devCode, setDevCode] = React.useState<string | null>(null);
   const [error, setError] = React.useState("");
   const [busy, setBusy] = React.useState(false);
+
+  const finish = async (patient: PatientProfile): Promise<void> => {
+    const token = await registerPushToken().catch(() => null);
+    if (token !== null) {
+      device.mutate({ token, platform: Platform.OS });
+    }
+    recordEvent.mutate({ type: "app_open" });
+    void patient;
+    router.replace("/");
+  };
 
   const sendCode = async (): Promise<void> => {
     setBusy(true);
@@ -30,22 +50,10 @@ export const usePatientSignIn = () => {
       setDevCode(result.devCode === undefined ? null : result.devCode);
       setStep("code");
     } catch (caught) {
-      setError(
-        caught instanceof Error ? caught.message : "Could not send a code.",
-      );
+      setError(messageOf(caught, "Could not send a code."));
     } finally {
       setBusy(false);
     }
-  };
-
-  const finish = async (patient: PatientProfile): Promise<void> => {
-    const token = await registerPushToken().catch(() => null);
-    if (token !== null) {
-      await careApi
-        .registerDevice(patient.id, token, Platform.OS)
-        .catch(() => undefined);
-    }
-    router.replace("/");
   };
 
   const verify = async (): Promise<void> => {
@@ -53,39 +61,66 @@ export const usePatientSignIn = () => {
     setError("");
     try {
       const patient = await verifyPatientCode(phone.trim(), code.trim());
-      // The checkbox is required before a code is sent, so this records the
-      // patient's explicit choice rather than relying on seeded defaults.
-      await updateConsent(true, true);
       await finish(patient);
     } catch (caught) {
-      setError(
-        caught instanceof Error ? caught.message : "That code did not work.",
-      );
+      setError(messageOf(caught, "That code did not work."));
       setBusy(false);
     }
   };
 
-  const chooseAnotherNumber = (): void => {
-    setStep("phone");
-    setCode("");
+  // Public sign-up: the account exists before any clinic knows the patient.
+  const signUp = async (): Promise<void> => {
+    setBusy(true);
     setError("");
+    try {
+      const patient = await registerPatient({
+        name: name.trim(),
+        phone: phone.trim(),
+        ...(email.trim() === "" ? {} : { email: email.trim() }),
+        emailConsent: consent && channel !== "in_app",
+        notificationChannel: channel,
+      });
+      await finish(patient);
+    } catch (caught) {
+      setError(messageOf(caught, "Could not create your account."));
+      setBusy(false);
+    }
   };
+
+  const toggleConsent = (): void => setConsent((value) => !value);
 
   return {
     step,
     phone,
     setPhone,
+    name,
+    setName,
+    email,
+    setEmail,
     code,
     setCode,
     consent,
-    toggleConsent: () => setConsent((value) => !value),
+    toggleConsent,
+    channel,
+    setChannel,
     devCode,
     error,
     busy,
     sendCode,
     verify,
-    chooseAnotherNumber,
+    signUp,
+    startSignUp: () => {
+      setError("");
+      setStep("signup");
+    },
+    chooseAnotherNumber: () => {
+      setStep("phone");
+      setCode("");
+      setError("");
+    },
     canSend: phone.trim().length >= 8 && consent && !busy,
     canVerify: code.trim().length === 6 && !busy,
+    canSignUp:
+      name.trim().length >= 2 && phone.trim().length >= 8 && consent && !busy,
   };
 };

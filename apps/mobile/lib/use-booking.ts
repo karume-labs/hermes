@@ -1,11 +1,15 @@
 import type { Booking, Slot } from "@hermes/types";
 import { useLocalSearchParams } from "expo-router";
 import * as React from "react";
+import {
+  useBookVisit,
+  useRecordEvent,
+  useRescheduleBooking,
+  useSlots,
+} from "@/lib/api/queries";
 import { addVisitToCalendar } from "@/lib/calendar";
-import { careApi } from "@/lib/care-api";
 import { scheduleVisitReminder } from "@/lib/notifications";
 import { paramString } from "@/lib/params";
-import { getPatientId, trackEvent } from "@/lib/session";
 
 export const useBooking = () => {
   const params = useLocalSearchParams<{
@@ -22,48 +26,36 @@ export const useBooking = () => {
   const kind =
     paramString(params.kind) === "telehealth" ? "telehealth" : "in_person";
 
-  const [slots, setSlots] = React.useState<Slot[]>([]);
+  const slots = useSlots(clinicId, kind);
+  const book = useBookVisit();
+  const reschedule = useRescheduleBooking();
+  const recordEvent = useRecordEvent();
   const [selected, setSelected] = React.useState<Slot | null>(null);
   const [confirmed, setConfirmed] = React.useState<{
     booking: Booking;
     slot: Slot;
   } | null>(null);
   const [calendarNote, setCalendarNote] = React.useState("Syncing calendar…");
-  const [busy, setBusy] = React.useState(false);
-  const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState("");
-
-  React.useEffect(() => {
-    void (async () => {
-      try {
-        const available = await careApi.slots(clinicId);
-        setSlots(
-          available.filter(
-            (slot) => slot.kind === kind && slot.heldByCaseId === null,
-          ),
-        );
-      } catch (caught) {
-        setError(
-          caught instanceof Error ? caught.message : "Could not load slots.",
-        );
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [clinicId, kind]);
 
   const confirm = async (): Promise<void> => {
     if (caseId === undefined || selected === null) return;
-    setBusy(true);
     setError("");
     try {
       const booking =
         bookingId === undefined
-          ? await careApi.book(caseId, selected.id, selected.kind)
-          : await careApi.reschedule(bookingId, selected.id, selected.kind);
+          ? await book.mutateAsync({
+              caseId,
+              slotId: selected.id,
+              kind: selected.kind,
+            })
+          : await reschedule.mutateAsync({
+              bookingId,
+              slotId: selected.id,
+              kind: selected.kind,
+            });
       setConfirmed({ booking, slot: selected });
-      const patientId = await getPatientId();
-      trackEvent(patientId, "booking_confirmed", caseId);
+      recordEvent.mutate({ type: "booking_confirmed", caseId });
       const result = await addVisitToCalendar({
         title: "Confirmatory visit — Hermes Care",
         startAt: selected.startAt,
@@ -84,21 +76,20 @@ export const useBooking = () => {
       setError(
         caught instanceof Error ? caught.message : "Could not confirm booking.",
       );
-    } finally {
-      setBusy(false);
     }
   };
 
   return {
     kind,
-    slots,
+    slots: slots.data ?? [],
     selected,
     setSelected,
     confirmed,
     calendarNote,
-    busy,
-    loading,
-    error,
+    busy: book.isPending || reschedule.isPending,
+    loading: slots.isPending,
+    error:
+      error !== "" ? error : slots.error !== null ? slots.error.message : "",
     rescheduling,
     confirm,
   };

@@ -8,66 +8,52 @@ import { ProfileHeader } from "@/components/profile/profile-header";
 import { SecuritySections } from "@/components/profile/security-sections";
 import { ListRow, ListSection } from "@/components/ui/list";
 import { Text } from "@/components/ui/text";
-import {
-  getCachedPatient,
-  loadPatientProfile,
-  signOutPatient,
-  updateConsent,
-} from "@/lib/auth";
+import { usePatientProfile, useUpdateConsent } from "@/lib/api/queries";
+import { signOutPatient } from "@/lib/auth";
 import {
   getThemePreference,
   setThemePreference,
   type ThemePreference,
 } from "@/lib/theme-preference";
 
-type ProfileValue = Awaited<ReturnType<typeof loadPatientProfile>>;
-
 const Profile = () => {
   const router = useRouter();
-  const [profile, setProfile] = React.useState<ProfileValue | null>(null);
-  const [saving, setSaving] = React.useState(false);
-  const [error, setError] = React.useState("");
+  const profile = usePatientProfile();
+  const updateConsent = useUpdateConsent();
   const [themePreference, setThemeChoice] =
     React.useState<ThemePreference>("system");
 
   React.useEffect(() => {
-    void (async () => {
-      const fresh = await loadPatientProfile().catch(() => null);
-      const current = fresh === null ? await getCachedPatient() : fresh;
-      setProfile(current);
-      setThemeChoice(await getThemePreference());
-    })();
+    void getThemePreference().then(setThemeChoice);
   }, []);
+
+  const current = profile.data ?? null;
 
   const chooseTheme = (preference: ThemePreference): void => {
     setThemeChoice(preference);
     void setThemePreference(preference);
   };
 
-  const setConsent = async (
-    pushConsent: boolean,
-    smsConsent: boolean,
-  ): Promise<void> => {
-    if (profile === null) return;
-    setSaving(true);
-    setError("");
-    try {
-      setProfile(await updateConsent(pushConsent, smsConsent));
-    } catch (caught) {
-      setError(
-        caught instanceof Error
-          ? caught.message
-          : "Could not save your preferences.",
-      );
-    } finally {
-      setSaving(false);
-    }
+  const savePreferences = (input: {
+    pushConsent: boolean;
+    smsConsent: boolean;
+    emailConsent: boolean;
+    notificationChannel: "email" | "in_app" | "both";
+  }): void => {
+    updateConsent.mutate(input);
   };
 
   const signOut = async (): Promise<void> => {
     await signOutPatient();
     router.replace("/sign-in");
   };
+
+  const error =
+    updateConsent.error !== null
+      ? updateConsent.error.message
+      : profile.error !== null
+        ? profile.error.message
+        : "";
 
   return (
     <TabScreen>
@@ -76,9 +62,9 @@ const Profile = () => {
         contentContainerClassName="gap-6 pb-12"
       >
         <ProfileHeader
-          name={profile === null ? null : profile.name}
-          clinicName={profile === null ? "" : profile.clinicName}
-          phone={profile === null ? "" : profile.phone}
+          name={current === null ? null : current.name}
+          clinicName={current?.clinicName ?? ""}
+          phone={current?.phone ?? ""}
         />
 
         {error === "" ? null : (
@@ -89,15 +75,13 @@ const Profile = () => {
           <ListRow
             first
             title="Patient ID"
-            value={profile === null ? "—" : profile.id}
+            value={current === null ? "—" : current.id}
           />
-          <ListRow
-            title="Phone"
-            value={profile === null ? "—" : profile.phone}
-          />
+          <ListRow title="Phone" value={current?.phone ?? "—"} />
+          <ListRow title="Email" value={current?.email ?? "Not added yet"} />
           <ListRow
             title="Clinic"
-            value={profile === null ? "—" : profile.clinicName}
+            value={current?.clinicName ?? "Waiting for your clinic to link you"}
           />
         </ListSection>
 
@@ -107,12 +91,28 @@ const Profile = () => {
         />
 
         <NotificationSection
-          pushConsent={profile?.pushConsent === true}
-          smsConsent={profile?.smsConsent === true}
-          disabled={profile === null || saving}
-          onChange={(pushConsent, smsConsent) => {
-            void setConsent(pushConsent, smsConsent);
-          }}
+          pushConsent={current?.pushConsent ?? false}
+          smsConsent={current?.smsConsent ?? false}
+          emailConsent={current?.emailConsent ?? false}
+          channel={current?.notificationChannel ?? "in_app"}
+          email={current?.email ?? null}
+          disabled={current === null || updateConsent.isPending}
+          onChange={(pushConsent, smsConsent) =>
+            savePreferences({
+              pushConsent,
+              smsConsent,
+              emailConsent: current?.emailConsent ?? false,
+              notificationChannel: current?.notificationChannel ?? "in_app",
+            })
+          }
+          onChangeChannel={(notificationChannel) =>
+            savePreferences({
+              pushConsent: current?.pushConsent ?? true,
+              smsConsent: current?.smsConsent ?? false,
+              emailConsent: notificationChannel !== "in_app",
+              notificationChannel,
+            })
+          }
           onOpenHistory={() => router.push("/notifications")}
         />
 

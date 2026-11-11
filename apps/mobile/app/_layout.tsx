@@ -7,12 +7,14 @@ import {
   useFonts,
 } from "@expo-google-fonts/plus-jakarta-sans";
 import { PortalHost } from "@rn-primitives/portal";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { ThemeProvider } from "expo-router/react-navigation";
 import { StatusBar } from "expo-status-bar";
 import { type ReactNode, useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { useUniwind } from "uniwind";
+import { queryClient } from "@/lib/api/query-client";
 import { getPatientToken, onSessionExpired } from "@/lib/auth";
 import { isOnboardingDone } from "@/lib/onboarding";
 import "@/lib/notifications";
@@ -88,33 +90,38 @@ const RootLayout = () => {
   return (
     <ThemeProvider value={navTheme}>
       <StatusBar style={scheme === "dark" ? "light" : "dark"} />
-      <AuthGate>
-        <Stack
-          screenOptions={{
-            headerBackTitle: "Back",
-            headerStyle: { backgroundColor: navTheme.colors.background },
-            headerTintColor: navTheme.colors.text,
-            headerShadowVisible: false,
-            contentStyle: { backgroundColor: navTheme.colors.background },
-          }}
-        >
-          <Stack.Screen
-            name="sign-in"
-            options={{ headerShown: false, title: "Sign in" }}
-          />
-          <Stack.Screen
-            name="onboarding"
-            options={{ headerShown: false, gestureEnabled: false }}
-          />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="care-action" options={{ title: "Your result" }} />
-          <Stack.Screen name="booking" options={{ title: "Book a visit" }} />
-          <Stack.Screen
-            name="notifications"
-            options={{ headerShown: false, title: "Notifications" }}
-          />
-        </Stack>
-      </AuthGate>
+      <QueryClientProvider client={queryClient}>
+        <AuthGate>
+          <Stack
+            screenOptions={{
+              headerBackTitle: "Back",
+              headerStyle: { backgroundColor: navTheme.colors.background },
+              headerTintColor: navTheme.colors.text,
+              headerShadowVisible: false,
+              contentStyle: { backgroundColor: navTheme.colors.background },
+            }}
+          >
+            <Stack.Screen
+              name="sign-in"
+              options={{ headerShown: false, title: "Sign in" }}
+            />
+            <Stack.Screen
+              name="onboarding"
+              options={{ headerShown: false, gestureEnabled: false }}
+            />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="care-action"
+              options={{ title: "Your result" }}
+            />
+            <Stack.Screen name="booking" options={{ title: "Book a visit" }} />
+            <Stack.Screen
+              name="notifications"
+              options={{ headerShown: false, title: "Notifications" }}
+            />
+          </Stack>
+        </AuthGate>
+      </QueryClientProvider>
       <PortalHost />
     </ThemeProvider>
   );

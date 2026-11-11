@@ -1,7 +1,7 @@
 import type { MobileEventType } from "@hermes/types";
 import * as SecureStore from "expo-secure-store";
-import { getCachedPatient } from "@/lib/auth";
-import { careApi } from "@/lib/care-api";
+import { api } from "@/lib/api/client";
+import { getCachedPatient } from "@/lib/token-store";
 
 const ACTIVE_CASE_KEY = "hermes-active-case";
 
@@ -27,7 +27,10 @@ export const trackEvent = (
   type: MobileEventType,
   caseId?: string,
 ): void => {
-  careApi.recordEvent(patientId, type, caseId).catch((error: unknown) => {
-    console.warn("Telemetry dropped", type, error);
-  });
+  api
+    .patients({ patientId })
+    .events.post({ type, caseId })
+    .catch((error: unknown) => {
+      console.warn("Telemetry dropped", type, error);
+    });
 };

@@ -1,58 +1,44 @@
 import { useLocalSearchParams } from "expo-router";
-import * as React from "react";
 import { ScrollView, View } from "react-native";
 import { JourneyTimeline } from "@/components/journey/journey-timeline";
 import { TabScreen } from "@/components/layout/tab-screen";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { ScreenSkeleton } from "@/components/ui/screen-skeleton";
 import { Text } from "@/components/ui/text";
-import { careApi, type PatientCaseDetail } from "@/lib/care-api";
+import { usePatientCase, usePatientCases } from "@/lib/api/queries";
 import { stepIndex } from "@/lib/care-store";
 import { journeyHint, journeyLabel } from "@/lib/case-format";
 import { stepRows } from "@/lib/journey-steps";
 import { paramString } from "@/lib/params";
-import { getPatientId } from "@/lib/session";
 
 const Journey = () => {
   const params = useLocalSearchParams<{ caseId?: string }>();
-  const caseId = paramString(params.caseId);
-  const [detail, setDetail] = React.useState<PatientCaseDetail | null>(null);
-  const [error, setError] = React.useState("");
+  const cases = usePatientCases();
+  const caseId =
+    paramString(params.caseId) ?? cases.data?.[0]?.careCase.id ?? undefined;
+  const detail = usePatientCase(caseId);
+  const current = detail.data;
 
-  React.useEffect(() => {
-    void (async () => {
-      try {
-        const patientId = await getPatientId();
-        if (caseId === undefined) {
-          const cases = await careApi.patientCases(patientId);
-          const first = cases[0];
-          if (first === undefined) {
-            setError("No care journey yet.");
-            return;
-          }
-          setDetail(await careApi.patientCase(patientId, first.careCase.id));
-          return;
-        }
-        setDetail(await careApi.patientCase(patientId, caseId));
-      } catch (caught) {
-        setError(
-          caught instanceof Error ? caught.message : "Could not load journey.",
-        );
-      }
-    })();
-  }, [caseId]);
-
-  if (error !== "") {
+  if (detail.error !== null) {
     return (
       <TabScreen>
         <View className="flex-1 gap-2 p-4">
-          <Text className="text-destructive">{error}</Text>
+          <Text className="text-destructive">{detail.error.message}</Text>
         </View>
       </TabScreen>
     );
   }
 
-  if (detail === null) {
+  if (current === undefined) {
+    if (!cases.isPending && (cases.data ?? []).length === 0) {
+      return (
+        <TabScreen>
+          <View className="flex-1 gap-2 p-4">
+            <Text className="text-muted-foreground">No care journey yet.</Text>
+          </View>
+        </TabScreen>
+      );
+    }
     return (
       <TabScreen>
         <ScreenSkeleton rows={5} />
@@ -60,9 +46,9 @@ const Journey = () => {
     );
   }
 
-  const current = stepIndex(detail.journeyStage);
-  const rows = stepRows(detail);
-  const currentRow = rows[current];
+  const step = stepIndex(current.journeyStage);
+  const rows = stepRows(current);
+  const currentRow = rows[step];
   return (
     <TabScreen>
       <ScrollView
@@ -72,7 +58,7 @@ const Journey = () => {
         <ScreenHeader
           eyebrow="Care journey"
           title="Your timeline"
-          subtitle={journeyHint(detail)}
+          subtitle={journeyHint(current)}
         />
         <View className="gap-5 px-5">
           <View className="gap-1 rounded-[18px] bg-card p-4">
@@ -83,7 +69,7 @@ const Journey = () => {
               {currentRow === undefined ? "" : journeyLabel(currentRow.step)}
             </Text>
           </View>
-          <JourneyTimeline rows={rows} current={current} />
+          <JourneyTimeline rows={rows} current={step} />
           <Text className="text-xs text-muted-foreground">
             Reminders arrive 24 hours before your visit. Your care team sees
             every step of this timeline.

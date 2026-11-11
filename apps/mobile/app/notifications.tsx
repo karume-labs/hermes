@@ -1,6 +1,5 @@
-import { useFocusEffect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Bell, ChevronLeft } from "lucide-react-native";
-import * as React from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { TabScreen } from "@/components/layout/tab-screen";
 import { NotificationGroupList } from "@/components/notifications/notification-group-list";
@@ -8,70 +7,17 @@ import { Icon } from "@/components/ui/icon";
 import { IconTile } from "@/components/ui/list";
 import { ScreenSkeleton } from "@/components/ui/screen-skeleton";
 import { Text } from "@/components/ui/text";
-import { careApi, type PatientNotification } from "@/lib/care-api";
+import {
+  useMarkNotificationRead,
+  usePatientNotifications,
+} from "@/lib/api/queries";
 import { groupByDay } from "@/lib/notification-groups";
-import { getPatientId } from "@/lib/session";
 
 const Notifications = () => {
   const router = useRouter();
-  const [patientId, setPatientId] = React.useState<string | null>(null);
-  const [items, setItems] = React.useState<PatientNotification[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState("");
-
-  const load = React.useCallback(async (id: string): Promise<void> => {
-    try {
-      setError("");
-      setItems(await careApi.notifications(id));
-    } catch (caught) {
-      setError(
-        caught instanceof Error
-          ? caught.message
-          : "Could not load notifications.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      void (async () => {
-        const id = await getPatientId();
-        setPatientId(id);
-        await load(id);
-      })();
-    }, [load]),
-  );
-
-  const open = async (item: PatientNotification): Promise<void> => {
-    if (patientId === null) return;
-    if (item.readAt === null) {
-      try {
-        await careApi.markNotificationRead(patientId, item.id);
-        setItems((current) =>
-          current.map((entry) =>
-            entry.id === item.id
-              ? { ...entry, readAt: new Date().toISOString() }
-              : entry,
-          ),
-        );
-      } catch (caught) {
-        setError(
-          caught instanceof Error
-            ? caught.message
-            : "Could not mark this notification read.",
-        );
-      }
-    }
-    if (item.caseId !== "") {
-      router.push({
-        pathname: "/care-action",
-        params: { caseId: item.caseId },
-      });
-    }
-  };
-
+  const notifications = usePatientNotifications();
+  const markRead = useMarkNotificationRead();
+  const items = notifications.data ?? [];
   const groups = groupByDay(items);
 
   return (
@@ -103,13 +49,19 @@ const Notifications = () => {
           team.
         </Text>
 
-        {loading ? <ScreenSkeleton rows={4} withHeader={false} /> : null}
+        {notifications.isPending ? (
+          <ScreenSkeleton rows={4} withHeader={false} />
+        ) : null}
 
-        {error === "" ? null : (
-          <Text className="px-5 text-[13px] text-destructive">{error}</Text>
-        )}
+        {notifications.error !== null ? (
+          <Text className="px-5 text-[13px] text-destructive">
+            {notifications.error.message}
+          </Text>
+        ) : null}
 
-        {!loading && error === "" && items.length === 0 ? (
+        {!notifications.isPending &&
+        notifications.error === null &&
+        items.length === 0 ? (
           <View className="mx-4 items-center gap-2 rounded-[18px] border border-dashed border-border px-6 py-10">
             <IconTile tone="muted">
               <Icon as={Bell} className="size-[18px] text-muted-foreground" />
@@ -126,7 +78,13 @@ const Notifications = () => {
         <NotificationGroupList
           groups={groups}
           onOpen={(item) => {
-            void open(item);
+            if (item.readAt === null) markRead.mutate(item.id);
+            if (item.caseId !== "") {
+              router.push({
+                pathname: "/care-action",
+                params: { caseId: item.caseId },
+              });
+            }
           }}
         />
       </ScrollView>

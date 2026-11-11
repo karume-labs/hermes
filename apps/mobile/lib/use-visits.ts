@@ -2,55 +2,17 @@ import type { PatientBooking } from "@hermes/types";
 import { useFocusEffect } from "expo-router";
 import * as React from "react";
 import { Alert } from "react-native";
-import { careApi } from "@/lib/care-api";
-import { getPatientId } from "@/lib/session";
+import { useCancelBooking, usePatientBookings } from "@/lib/api/queries";
 
 export const useVisits = () => {
-  const [bookings, setBookings] = React.useState<PatientBooking[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [refreshing, setRefreshing] = React.useState(false);
-  const [error, setError] = React.useState("");
-  const [cancelling, setCancelling] = React.useState<string | null>(null);
-
-  const load = React.useCallback(async (): Promise<void> => {
-    try {
-      setError("");
-      const patientId = await getPatientId();
-      setBookings(await careApi.patientBookings(patientId));
-    } catch (caught) {
-      setError(
-        caught instanceof Error ? caught.message : "Could not load visits.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const bookings = usePatientBookings();
+  const cancel = useCancelBooking();
 
   useFocusEffect(
     React.useCallback(() => {
-      void load();
-    }, [load]),
+      void bookings.refetch();
+    }, [bookings.refetch]),
   );
-
-  const cancelVisit = async (item: PatientBooking): Promise<void> => {
-    setCancelling(item.booking.id);
-    try {
-      setError("");
-      await careApi.cancelBooking(
-        item.booking.id,
-        "Patient cancelled from the app",
-      );
-      await load();
-    } catch (caught) {
-      setError(
-        caught instanceof Error
-          ? caught.message
-          : "Could not cancel this visit.",
-      );
-    } finally {
-      setCancelling(null);
-    }
-  };
 
   const confirmCancel = (item: PatientBooking): void => {
     Alert.alert(
@@ -62,20 +24,19 @@ export const useVisits = () => {
           text: "Cancel visit",
           style: "destructive",
           onPress: () => {
-            void cancelVisit(item);
+            cancel.mutate({
+              bookingId: item.booking.id,
+              reason: "Patient cancelled from the app",
+            });
           },
         },
       ],
     );
   };
 
-  const refresh = (): void => {
-    setRefreshing(true);
-    void load().finally(() => setRefreshing(false));
-  };
-
+  const items = bookings.data ?? [];
   const now = Date.now();
-  const upcoming = bookings
+  const upcoming = items
     .filter(
       (item) =>
         item.booking.status === "confirmed" &&
@@ -86,18 +47,25 @@ export const useVisits = () => {
         new Date(left.slot.startAt).getTime() -
         new Date(right.slot.startAt).getTime(),
     );
-  const past = bookings.filter(
+  const past = items.filter(
     (item) =>
       item.booking.status !== "confirmed" ||
       new Date(item.slot.startAt).getTime() < now,
   );
 
   return {
-    loading,
-    refreshing,
-    error,
-    cancelling,
-    refresh,
+    loading: bookings.isPending,
+    refreshing: bookings.isRefetching,
+    error:
+      bookings.error !== null
+        ? bookings.error.message
+        : cancel.error !== null
+          ? cancel.error.message
+          : "",
+    cancelling: cancel.isPending ? (cancel.variables?.bookingId ?? null) : null,
+    refresh: () => {
+      void bookings.refetch();
+    },
     confirmCancel,
     next: upcoming[0],
     later: upcoming.slice(1),

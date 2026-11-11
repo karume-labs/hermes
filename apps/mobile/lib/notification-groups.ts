@@ -5,7 +5,7 @@ import {
   MessageSquare,
   ShieldAlert,
 } from "lucide-react-native";
-import type { PatientNotification } from "@/lib/care-api";
+import type { PatientNotification } from "@/lib/api/types";
 
 export const KIND_LABEL: Record<NotificationKind, string> = {
   case_alert: "Result alert",
@@ -13,6 +13,7 @@ export const KIND_LABEL: Record<NotificationKind, string> = {
   escalation: "Care team follow-up",
   secure_message: "Secure message",
   visit_reminder: "Visit reminder",
+  staff_alert: "Care team alert",
 };
 
 export const KIND_ICON: Record<NotificationKind, typeof Bell> = {
@@ -21,6 +22,7 @@ export const KIND_ICON: Record<NotificationKind, typeof Bell> = {
   escalation: ShieldAlert,
   secure_message: MessageSquare,
   visit_reminder: CalendarClock,
+  staff_alert: ShieldAlert,
 };
 
 export const timeLabel = (iso: string): string =>

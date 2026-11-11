@@ -2,7 +2,7 @@ import type * as React from "react";
 import { View } from "react-native";
 import { Icon } from "@/components/ui/icon";
 import { IconTile, ListRow, ListSection } from "@/components/ui/list";
-import type { PatientNotification } from "@/lib/care-api";
+import type { PatientNotification } from "@/lib/api/types";
 import {
   KIND_ICON,
   KIND_LABEL,

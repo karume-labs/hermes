@@ -1,9 +1,15 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import * as React from "react";
+import {
+  useAcknowledgeCase,
+  useMarkCaseRead,
+  useMarkNotificationRead,
+  usePatientCase,
+  useRecordEvent,
+  useSubmitFeedback,
+} from "@/lib/api/queries";
 import { addVisitToCalendar } from "@/lib/calendar";
-import { careApi, type PatientCaseDetail } from "@/lib/care-api";
 import { paramString } from "@/lib/params";
-import { getPatientId, trackEvent } from "@/lib/session";
 
 export const useCareAction = () => {
   const params = useLocalSearchParams<{
@@ -11,92 +17,77 @@ export const useCareAction = () => {
     patientId?: string;
   }>();
   const caseId = paramString(params.caseId);
-  const [patientId, setPatientId] = React.useState<string | null>(null);
-  const [detail, setDetail] = React.useState<PatientCaseDetail | null>(null);
+  const detail = usePatientCase(caseId);
+  const acknowledgeCase = useAcknowledgeCase();
+  const feedback = useSubmitFeedback();
+  const markRead = useMarkCaseRead(caseId);
+  const markNotificationRead = useMarkNotificationRead();
+  const recordEvent = useRecordEvent();
   const [error, setError] = React.useState("");
-  const [busy, setBusy] = React.useState(false);
   const [calendarNote, setCalendarNote] = React.useState("");
-  const [feedbackBusy, setFeedbackBusy] = React.useState(false);
 
-  const load = React.useCallback(
-    async (pid: string, cid: string): Promise<void> => {
-      try {
-        setError("");
-        const found = await careApi.patientCase(pid, cid);
-        setDetail(found);
-        trackEvent(pid, "case_viewed", cid);
-        await careApi.markRead(pid, cid);
-        const unread = found.notifications.filter(
-          (item) =>
-            item.kind === "case_alert" &&
-            (item.status === "sent" || item.status === "delivered"),
-        );
-        await Promise.all(
-          unread.map((item) => careApi.markNotificationRead(pid, item.id)),
-        );
-      } catch (caught) {
-        setError(
-          caught instanceof Error
-            ? caught.message
-            : "Could not load this result.",
-        );
-      }
-    },
-    [],
-  );
+  const patientCase = detail.data ?? null;
 
-  React.useEffect(() => {
-    void (async () => {
-      const paramPatientId = paramString(params.patientId);
-      const pid =
-        paramPatientId === undefined ? await getPatientId() : paramPatientId;
-      setPatientId(pid);
-      if (caseId === undefined) setError("No result selected.");
-    })();
-  }, [caseId, params.patientId]);
-
-  // Returning from booking must replace the superseded visit with the new one.
   useFocusEffect(
     React.useCallback(() => {
-      if (patientId !== null && caseId !== undefined) {
-        void load(patientId, caseId);
-      }
-    }, [caseId, load, patientId]),
+      void detail.refetch();
+    }, [detail.refetch]),
   );
 
+  // Opening a result is a read receipt for the case and its unread alerts.
+  React.useEffect(() => {
+    if (caseId === undefined) return;
+    recordEvent.mutate({ type: "case_viewed", caseId });
+    markRead.mutate();
+    for (const item of detail.data?.notifications ?? []) {
+      const notification = item as {
+        id: string;
+        kind: string;
+        status: string;
+      };
+      if (
+        notification.kind === "case_alert" &&
+        (notification.status === "sent" || notification.status === "delivered")
+      ) {
+        markNotificationRead.mutate(notification.id);
+      }
+    }
+  }, [
+    caseId,
+    detail.data?.notifications,
+    markNotificationRead.mutate,
+    markRead.mutate,
+    recordEvent.mutate,
+  ]);
+
   const acknowledge = async (): Promise<void> => {
-    if (patientId === null || caseId === undefined || detail === null) return;
-    setBusy(true);
+    if (caseId === undefined) return;
+    setError("");
     try {
-      await careApi.acknowledge(caseId, patientId);
-      await load(patientId, caseId);
+      await acknowledgeCase.mutateAsync(caseId);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not confirm.");
-    } finally {
-      setBusy(false);
     }
   };
 
   const syncCalendar = async (): Promise<void> => {
-    if (detail === null || detail.slot === null) return;
+    if (patientCase === null || patientCase.slot === null) return;
     const result = await addVisitToCalendar({
       title: "Confirmatory visit — Hermes Care",
-      startAt: detail.slot.startAt,
-      endAt: detail.slot.endAt,
+      startAt: patientCase.slot.startAt,
+      endAt: patientCase.slot.endAt,
       notes:
-        detail.appointment?.prepInstructions === undefined
+        patientCase.appointment?.prepInstructions === undefined
           ? "Bring prior labs."
-          : detail.appointment.prepInstructions,
-      location: detail.slot.clinicId,
+          : patientCase.appointment.prepInstructions,
+      location: patientCase.slot.clinicId,
     });
-    if (result.status === "saved") {
-      setCalendarNote("Saved to your calendar with a 24h reminder.");
-      return;
-    }
     setCalendarNote(
-      result.status === "denied"
-        ? "Calendar access was declined. You can still see your visit here."
-        : "No writable calendar found on this device.",
+      result.status === "saved"
+        ? "Saved to your calendar with a 24h reminder."
+        : result.status === "denied"
+          ? "Calendar access was declined. You can still see your visit here."
+          : "No writable calendar found on this device.",
     );
   };
 
@@ -104,28 +95,26 @@ export const useCareAction = () => {
     understood: boolean,
     confidence: number,
   ): Promise<void> => {
-    if (patientId === null || caseId === undefined) return;
-    setFeedbackBusy(true);
+    if (caseId === undefined) return;
+    setError("");
     try {
-      await careApi.feedback(patientId, caseId, understood, confidence);
-      await load(patientId, caseId);
+      await feedback.mutateAsync({ caseId, understood, confidence });
     } catch (caught) {
       setError(
         caught instanceof Error
           ? caught.message
           : "Could not save your answer.",
       );
-    } finally {
-      setFeedbackBusy(false);
     }
   };
 
   return {
-    detail,
-    error,
-    busy,
+    detail: patientCase,
+    error:
+      error !== "" ? error : detail.error !== null ? detail.error.message : "",
+    busy: acknowledgeCase.isPending,
     calendarNote,
-    feedbackBusy,
+    feedbackBusy: feedback.isPending,
     acknowledge,
     syncCalendar,
     submitFeedback,

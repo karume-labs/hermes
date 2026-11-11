@@ -1,4 +1,4 @@
-import type { PatientCaseDetail } from "@/lib/care-api";
+import type { PatientCaseDetail } from "@/lib/api/queries";
 import type { JourneyStep } from "@/lib/care-store";
 import { formatDate, formatDateTime } from "@/lib/case-format";
 
