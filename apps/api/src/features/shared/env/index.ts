@@ -17,6 +17,17 @@ const envSchema = Type.Object({
   // Case files (lab reports, referral letters) are written to this directory on
   // the API server's own disk; no object storage is involved.
   UPLOAD_DIR: Type.String({ default: "uploads" }),
+  // Transactional mail. Empty SMTP_HOST means "not configured": sensitive
+  // mail (invites, reset links, sign-in codes) then fails loudly instead of
+  // pretending it was delivered, while opt-in alerts are logged as skipped.
+  SMTP_HOST: Type.String({ default: "" }),
+  SMTP_PORT: Type.String({ default: "587" }),
+  SMTP_SECURE: Type.Boolean({ default: false }),
+  SMTP_USER: Type.String({ default: "" }),
+  SMTP_PASSWORD: Type.String({ default: "" }),
+  MAIL_FROM: Type.String({
+    default: "Hermes Care <no-reply@hermescare.health>",
+  }),
   // Optional outbound sink for patient notifications (email/SMS gateway URL).
   // Empty means "queue only": the outbox keeps rows for the admin to inspect.
   NOTIFY_WEBHOOK_URL: Type.String({ default: "" }),

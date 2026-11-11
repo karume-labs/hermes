@@ -1,4 +1,5 @@
 import { env } from "@api/features/shared/env/index";
+import { sendPasswordResetEmail } from "@api/features/shared/mail/index";
 import { account, session, user, verification } from "@db/auth/schema/index";
 import { db } from "@db/client";
 import { betterAuth } from "better-auth";
@@ -49,14 +50,6 @@ export const auth = betterAuth({
     },
   },
 
-  // Public sign-up is closed: staff are created through the admin invite flow
-  // (see features/staff). `clinicId` is set by that flow, never by the client.
-  emailAndPassword: {
-    enabled: true,
-    disableSignUp: true,
-    minPasswordLength: 8,
-  },
-
   user: {
     additionalFields: {
       clinicId: {
@@ -64,6 +57,31 @@ export const auth = betterAuth({
         required: false,
         input: false,
       },
+      organizationId: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+      notificationChannel: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+    },
+  },
+
+  emailAndPassword: {
+    enabled: true,
+    disableSignUp: true,
+    minPasswordLength: 8,
+    // Staff who forget a password get a one-hour link. Delivery failures are
+    // surfaced by the mailer, never silently swallowed.",
+    sendResetPassword: async ({ user, url }) => {
+      await sendPasswordResetEmail({
+        to: user.email,
+        name: user.name,
+        resetUrl: url,
+      });
     },
   },
 

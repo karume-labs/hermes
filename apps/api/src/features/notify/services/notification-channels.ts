@@ -1,18 +1,28 @@
 import type { NotificationRow } from "@api/features/notify/services/notification-dto";
 import { sendExpoPush } from "@api/features/notify/services/notification-push";
 import { env } from "@api/features/shared/env/index";
+import {
+  sendPatientAlertEmail,
+  wantsEmail,
+} from "@api/features/shared/mail/index";
 import { db } from "@db/client";
-import { patients } from "@db/directory/schema/index";
+import { clinics, patients } from "@db/directory/schema/index";
 import { deviceTokens } from "@db/patient/schema/index";
+import type { NotificationPreference } from "@hermes/types";
 import { eq, inArray } from "drizzle-orm";
 
 // A missing consent or device cannot be fixed by retrying.
 export class PermanentDeliveryError extends Error {}
 
 export interface PatientContact {
+  name: string;
   phone: string;
+  email: string | null;
+  clinicName: string | null;
   pushConsent: boolean;
   smsConsent: boolean;
+  emailConsent: boolean;
+  notificationChannel: NotificationPreference;
 }
 
 export const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -33,19 +43,30 @@ export const contactsFor = async (
   const rows = await db
     .select({
       id: patients.id,
+      name: patients.name,
       phone: patients.phone,
+      email: patients.email,
+      clinicName: clinics.name,
       pushConsent: patients.pushConsent,
       smsConsent: patients.smsConsent,
+      emailConsent: patients.emailConsent,
+      notificationChannel: patients.notificationChannel,
     })
     .from(patients)
+    .leftJoin(clinics, eq(patients.clinicId, clinics.id))
     .where(inArray(patients.id, patientIds));
   return new Map(
     rows.map((row) => [
       row.id,
       {
+        name: row.name,
         phone: row.phone,
+        email: row.email,
+        clinicName: row.clinicName,
         pushConsent: row.pushConsent,
         smsConsent: row.smsConsent,
+        emailConsent: row.emailConsent,
+        notificationChannel: row.notificationChannel,
       },
     ]),
   );
@@ -96,17 +117,54 @@ const postSink = async (
   if (!response.ok) throw new Error(`sink responded ${response.status}`);
 };
 
+const emailFor = async (
+  notification: NotificationRow,
+  contact: PatientContact,
+): Promise<void> => {
+  if (contact.email === null || !contact.emailConsent) {
+    throw new PermanentDeliveryError("Patient has no consented email address.");
+  }
+  await sendPatientAlertEmail({
+    to: contact.email,
+    name: contact.name,
+    text: notificationText(notification),
+    heading:
+      notification.kind === "visit_reminder"
+        ? "Your visit is coming up"
+        : "Your result is ready",
+    preference: contact.notificationChannel,
+  });
+};
+
 /** Chooses the transport for one notification and throws on permanent failure. */
 export const deliver = async (
   notification: NotificationRow,
   contact: PatientContact | undefined,
 ): Promise<void> => {
-  if (notification.channel === "in_app") return;
+  if (contact === undefined) {
+    throw new PermanentDeliveryError("Patient is not in the directory.");
+  }
+
+  // In-app is the copy the app always shows. When the patient also asked for
+  // email, the same text goes out by mail; a mail failure must not fail the
+  // in-app delivery, so it is attempted best-effort here.
+  if (notification.channel === "in_app") {
+    if (
+      contact.email !== null &&
+      contact.emailConsent &&
+      wantsEmail(contact.notificationChannel)
+    ) {
+      await emailFor(notification, contact).catch(() => undefined);
+    }
+    return;
+  }
+
+  if (notification.channel === "email") {
+    await emailFor(notification, contact);
+    return;
+  }
 
   if (notification.channel === "push") {
-    if (contact === undefined) {
-      throw new PermanentDeliveryError("Patient is not in the directory.");
-    }
     if (!contact.pushConsent) {
       throw new PermanentDeliveryError("Patient has not consented to push.");
     }
@@ -120,17 +178,10 @@ export const deliver = async (
   }
 
   if (notification.channel === "sms") {
-    if (contact === undefined) {
-      throw new PermanentDeliveryError("Patient is not in the directory.");
-    }
     if (!contact.smsConsent) {
       throw new PermanentDeliveryError("Patient has not consented to SMS.");
     }
     await postSink(notification, [], contact);
     return;
   }
-
-  // Email delivery is not configured yet: keep the row queued rather than
-  // pretending it was sent.
-  throw new Error("Email provider is not configured.");
 };
