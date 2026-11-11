@@ -1,8 +1,8 @@
+import type { NotificationRow } from "@api/features/notify/services/notification-dto";
 import {
   isRecord,
   notificationText,
-} from "@api/features/notify/services/notification-channels";
-import type { NotificationRow } from "@api/features/notify/services/notification-dto";
+} from "@api/features/notify/services/notification-recipients";
 import { db } from "@db/client";
 import { deviceTokens } from "@db/patient/schema/index";
 import { inArray } from "drizzle-orm";

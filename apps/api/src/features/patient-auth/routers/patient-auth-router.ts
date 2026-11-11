@@ -1,9 +1,9 @@
 import {
-  registerPatient,
   updatePatientPreferences,
   verifyPatientCode,
 } from "@api/features/patient-auth/services/patient-auth-service";
 import { requestPatientCode } from "@api/features/patient-auth/services/patient-code-service";
+import { registerPatient } from "@api/features/patient-auth/services/patient-registration-service";
 import {
   parseBearerToken,
   requirePatient,

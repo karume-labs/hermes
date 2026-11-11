@@ -1,9 +1,9 @@
 import {
-  contactsFor,
   deliver,
   PermanentDeliveryError,
 } from "@api/features/notify/services/notification-channels";
 import type { NotificationRow } from "@api/features/notify/services/notification-dto";
+import { contactsFor } from "@api/features/notify/services/notification-recipients";
 import { queueNotification } from "@api/features/notify/services/notification-service";
 import { recordWebhook } from "@api/features/notify/services/notification-webhooks";
 import { db } from "@db/client";
