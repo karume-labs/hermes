@@ -5,19 +5,14 @@ import {
   bookSlot,
   findBooking,
 } from "@api/features/booking/services/booking-repository";
-import { ensureSlots } from "@api/features/booking/services/slot-service";
 import { findCase } from "@api/features/care-loop/services/case-repository";
-import {
-  generateSessionToken,
-  hashToken,
-} from "@api/features/patient-auth/services/tokens";
 import { errorHandlerPlugin } from "@api/features/shared/errors/index";
 import { slots } from "@db/booking/schema/index";
 import { careCases } from "@db/care-loop/schema/index";
 import { db } from "@db/client";
-import { patientSessions } from "@db/patient/schema/index";
 import { eq } from "drizzle-orm";
 import { Elysia } from "elysia";
+import { nextFreeSlot, seedPatientSession } from "./helpers/booking-session";
 import {
   type CareLoopFixtures,
   createFixtures,
@@ -25,27 +20,13 @@ import {
 
 const app = new Elysia().use(errorHandlerPlugin).use(bookingsRouter);
 
-const nextFreeSlot = async (clinicId: string) => {
-  const available = (await ensureSlots(clinicId)).filter(
-    (slot) => slot.heldByCaseId === null,
-  );
-  const slot = available[0];
-  if (slot === undefined) throw new Error("No test slot available");
-  return slot;
-};
-
 describe("appointment lifecycle", () => {
   let fixtures: CareLoopFixtures;
   let token: string;
 
   beforeAll(async () => {
     fixtures = await createFixtures("booking");
-    token = generateSessionToken();
-    await db.insert(patientSessions).values({
-      patientId: fixtures.patientId,
-      tokenHash: hashToken(token),
-      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
-    });
+    token = await seedPatientSession(fixtures.patientId);
   });
 
   afterAll(async () => {

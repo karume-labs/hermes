@@ -12,7 +12,6 @@ import {
 import { createReferral } from "@api/features/care-loop/services/referral-service";
 import { ingestLab } from "@api/features/ingestion/services/ingest-service";
 import { referralsRouter } from "@api/features/referral/routers/referrals-router";
-import { env } from "@api/features/shared/env/index";
 import { errorHandlerPlugin } from "@api/features/shared/errors/index";
 import { caseTasks } from "@db/care-loop/schema/index";
 import { db } from "@db/client";
@@ -24,26 +23,11 @@ import {
   defaultAssigneeId,
   findOwnedCase,
 } from "./helpers/care-loop-fixtures";
+import { callAsService, closeBody } from "./helpers/cases-api";
 
 const app = new Elysia().use(errorHandlerPlugin).use(referralsRouter);
 
-const callApi = (path: string, body: unknown) =>
-  app.handle(
-    new Request(`http://localhost${path}`, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${env.API_SECRET}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(body),
-    }),
-  );
-
-const closeBody = (caseId: string) => ({
-  caseId,
-  evidence: "Repeat HbA1c confirmed the result and treatment started.",
-  plan: "Review again in three months at the clinic.",
-});
+const callApi = (path: string, body: unknown) => callAsService(app, path, body);
 
 describe("named ownership and hand-off", () => {
   let fixtures: CareLoopFixtures;

@@ -1,3 +1,4 @@
 export { contrastRatio, luminance, meetsAa } from "./contrast";
+export { PALETTE } from "./palette";
 export type { SemanticRole, SemanticTokens } from "./semantic";
-export { PALETTE, SEMANTIC } from "./semantic";
+export { SEMANTIC } from "./semantic";

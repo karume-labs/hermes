@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 
 const LINE_LIMIT = 150;
@@ -32,7 +33,7 @@ const isIgnored = (file: string): boolean =>
 const listFiles = (): string[] =>
   execFileSync("git", ["ls-files", "*.ts", "*.tsx"], { encoding: "utf8" })
     .split("\n")
-    .filter((file) => file.length > 0 && !isIgnored(file));
+    .filter((file) => file.length > 0 && !isIgnored(file) && existsSync(file));
 
 const checkFile = (file: string, source: string): Violation[] => {
   const violations: Violation[] = [];

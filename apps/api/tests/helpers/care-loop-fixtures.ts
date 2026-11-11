@@ -9,26 +9,9 @@ import { careCases } from "@db/care-loop/schema/index";
 import { db } from "@db/client";
 import { clinics, patients } from "@db/directory/schema/index";
 import { inArray } from "drizzle-orm";
+import type { CareLoopFixtures } from "./care-loop-fixture-types";
 
-export interface CareLoopFixtures {
-  clinicA: string;
-  clinicB: string;
-  patientId: string;
-  coordinatorId: string;
-  clinicianId: string;
-  coordinatorBId: string;
-  coordinator: StaffContext;
-  clinician: StaffContext;
-  admin: StaffContext;
-  createCase: (patch?: {
-    assignedToId?: string | null;
-    status?: "acknowledged" | "notified";
-    nextReviewAt?: Date | null;
-    patientId?: string;
-    clinicId?: string;
-  }) => ReturnType<typeof createCase>;
-  cleanup: () => Promise<void>;
-}
+export type { CareLoopFixtures } from "./care-loop-fixture-types";
 
 let sequence = 0;
 

@@ -1,12 +1,14 @@
 import {
-  createOrganization,
   createOrganizationClinic,
   listOrganizationClinics,
+  updateOrganizationClinic,
+} from "@api/features/organization/services/organization-clinic-service";
+import {
+  createOrganization,
   listOrganizations,
   organizationFor,
   requireOrganization,
   updateOrganization,
-  updateOrganizationClinic,
 } from "@api/features/organization/services/organization-service";
 import {
   requireAdmin,

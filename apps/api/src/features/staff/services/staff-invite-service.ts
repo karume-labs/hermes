@@ -1,5 +1,5 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { assertOrgClinic } from "@api/features/organization/services/organization-service";
+import { assertOrgClinic } from "@api/features/organization/services/organization-clinic-service";
 import type { StaffContext } from "@api/features/shared/auth/index";
 import { env } from "@api/features/shared/env/index";
 import {
