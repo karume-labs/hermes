@@ -48,9 +48,10 @@ export const useWebhookLogs = () =>
     refetchInterval: 30_000,
   });
 
-export const useClinics = () =>
+export const useClinics = (enabled = true) =>
   useQuery({
     queryKey: queryKeys.clinics,
+    enabled,
     queryFn: async () => {
       const response = await api.clinics.get();
       if (response.error) throw response.error;

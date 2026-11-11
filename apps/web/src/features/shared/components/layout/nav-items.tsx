@@ -1,3 +1,4 @@
+import type { StaffRole } from "@hermes/types";
 import {
   IconArrowsExchange,
   IconBuildingHospital,
@@ -19,7 +20,10 @@ export interface NavItem {
   href: string;
   icon: ReactNode;
   description: string;
-  adminOnly?: boolean;
+  /** Neither coordinators nor clinicians ever see this item. */
+  governance?: boolean;
+  /** Only the platform operator sees this item. */
+  platformOnly?: boolean;
 }
 
 export interface NavSection {
@@ -66,57 +70,76 @@ const ADMIN_ITEMS: NavItem[] = [
     href: "/admin",
     icon: <IconChartHistogram size={20} />,
     description: "Clinic-wide numbers for the current period.",
-    adminOnly: true,
+    platformOnly: true,
+  },
+  {
+    label: "Organization",
+    href: "/admin/organization",
+    icon: <IconBuildingHospital size={20} />,
+    description: "Your organization, its clinics and its care teams.",
+    governance: true,
   },
   {
     label: "Clinics",
     href: "/admin/clinics",
     icon: <IconBuildingHospital size={20} />,
-    description: "Clinics, their status and which staff belong to each.",
-    adminOnly: true,
+    description: "Every clinic on the platform and which staff belong to it.",
+    platformOnly: true,
   },
   {
     label: "Staff access",
     href: "/admin/staff",
     icon: <IconShieldCheck size={20} />,
     description: "Invite colleagues and review who can sign in.",
-    adminOnly: true,
+    governance: true,
   },
   {
     label: "Audit trail",
     href: "/admin/audit",
     icon: <IconHistory size={20} />,
     description: "Every clinical and access event, newest first.",
-    adminOnly: true,
+    platformOnly: true,
   },
   {
     label: "Delivery",
     href: "/admin/delivery",
     icon: <IconSend size={20} />,
-    description: "Push and SMS outbox, failures and retries.",
-    adminOnly: true,
+    description: "Push, SMS and email outbox, failures and retries.",
+    platformOnly: true,
   },
   {
     label: "Integrations",
     href: "/admin/webhooks",
     icon: <IconWebhook size={20} />,
     description: "Lab feed calls and their signature checks.",
-    adminOnly: true,
+    platformOnly: true,
   },
   {
     label: "Routing rules",
     href: "/admin/routing",
     icon: <IconRoute size={20} />,
     description: "Which result goes to which clinic.",
-    adminOnly: true,
+    platformOnly: true,
   },
 ];
 
-/** Admins get their own work first; the clinical queue sits underneath. */
-export const navSections = (isAdmin: boolean): NavSection[] =>
-  isAdmin
-    ? [
-        { title: "Administration", items: ADMIN_ITEMS },
+const visibleGovernance = (role: StaffRole): NavItem[] => {
+  if (role === "admin") return ADMIN_ITEMS;
+  if (role === "org_admin") {
+    return ADMIN_ITEMS.filter(
+      (item) => item.governance === true && item.platformOnly !== true,
+    );
+  }
+  return [];
+};
+
+/** Coordination and clinical roles see care work only. */
+export const navSections = (role: StaffRole): NavSection[] => {
+  const governance = visibleGovernance(role);
+  return governance.length === 0
+    ? [{ title: "Care team", items: CARE_ITEMS }]
+    : [
+        { title: "Administration", items: governance },
         { title: "Care team", items: CARE_ITEMS },
-      ]
-    : [{ title: "Care team", items: CARE_ITEMS }];
+      ];
+};

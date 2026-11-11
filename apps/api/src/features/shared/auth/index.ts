@@ -3,17 +3,35 @@ import { auth } from "@api/features/auth/services/config";
 import type { PatientContext } from "@api/features/patient-auth/services/patient-auth-dto";
 import { requirePatient } from "@api/features/patient-auth/services/patient-session-service";
 import { env } from "@api/features/shared/env/index";
-import { UnauthorizedError } from "@api/features/shared/errors/index";
+import {
+  ForbiddenError,
+  UnauthorizedError,
+} from "@api/features/shared/errors/index";
 import type { StaffRole } from "@hermes/types";
 
 export type StaffContext = {
   id: string;
   email: string;
   role: StaffRole;
-  /** Home clinic; null for admins, who may read every clinic. */
+  /** Home clinic; null for admins and org admins. */
   clinicId: string | null;
+  /** Organization the account belongs to; null for platform admins. */
+  organizationId: string | null;
   via: "session" | "service";
 };
+
+/** Read scope for a case: clinic, organization or explicit participation. */
+export type CaseScope = {
+  clinicId: string | null;
+  organizationId: string | null;
+  userId: string | null;
+};
+
+export const staffScope = (staff: StaffContext): CaseScope => ({
+  clinicId: staff.clinicId,
+  organizationId: staff.organizationId,
+  userId: staff.via === "service" ? null : staff.id,
+});
 
 export type RequestHeaders = {
   authorization?: string | undefined;
@@ -41,6 +59,7 @@ const serviceContext = (): StaffContext => ({
   email: "service",
   role: "admin",
   clinicId: null,
+  organizationId: null,
   via: "service",
 });
 
@@ -48,7 +67,17 @@ const hasRole = (actual: StaffRole, allowed: StaffRole[]): boolean =>
   allowed.includes(actual);
 
 const isStaffRole = (value: unknown): value is StaffRole =>
-  value === "coordinator" || value === "clinician" || value === "admin";
+  value === "coordinator" ||
+  value === "clinician" ||
+  value === "org_admin" ||
+  value === "admin";
+
+const ALL_STAFF: StaffRole[] = [
+  "coordinator",
+  "clinician",
+  "org_admin",
+  "admin",
+];
 
 /**
  * Every staff route runs through here. Two credentials are accepted: the
@@ -57,7 +86,7 @@ const isStaffRole = (value: unknown): value is StaffRole =>
  */
 export const requireStaff = async (
   headers: RequestHeaders,
-  roles: StaffRole[] = ["coordinator", "clinician", "admin"],
+  roles: StaffRole[] = ALL_STAFF,
 ): Promise<StaffContext> => {
   if (
     headers.authorization !== undefined &&
@@ -74,12 +103,18 @@ export const requireStaff = async (
   const { role } = session.user;
   if (!isStaffRole(role)) throw new UnauthorizedError("Not permitted");
   if (!hasRole(role, roles)) throw new UnauthorizedError("Not permitted");
+  const clinicId = session.user.clinicId ?? null;
+  const organizationId = session.user.organizationId ?? null;
   // A clinic-bound role without a clinic would otherwise fall through the
   // scoped queries as if it were an admin.
-  const clinicId = session.user.clinicId ?? null;
-  if (role !== "admin" && clinicId === null) {
+  if (role !== "admin" && role !== "org_admin" && clinicId === null) {
     throw new UnauthorizedError(
       "This account is not assigned to a clinic. Ask an administrator.",
+    );
+  }
+  if (role === "org_admin" && organizationId === null) {
+    throw new UnauthorizedError(
+      "This account is not assigned to an organization. Ask an administrator.",
     );
   }
 
@@ -88,6 +123,7 @@ export const requireStaff = async (
     email: session.user.email,
     role,
     clinicId,
+    organizationId,
     via: "session",
   };
 };
@@ -107,6 +143,17 @@ export const assertClinician = async (
 export const requireAdmin = async (
   headers: RequestHeaders,
 ): Promise<StaffContext> => requireStaff(headers, ["admin"]);
+
+/** Organization governance: its own org admin, or the platform operator. */
+export const requireOrgAdmin = async (
+  headers: RequestHeaders,
+): Promise<StaffContext> => {
+  const staff = await requireStaff(headers, ["org_admin", "admin"]);
+  if (staff.role === "org_admin" && staff.organizationId === null) {
+    throw new ForbiddenError("This account has no organization.");
+  }
+  return staff;
+};
 
 /**
  * Admins span clinics; a coordinator may only touch their own. Anything

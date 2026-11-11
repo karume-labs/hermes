@@ -8,6 +8,7 @@ import type { StaffRole } from "@hermes/types";
 export const DASHBOARD_ROLES: StaffRole[] = [
   "coordinator",
   "clinician",
+  "org_admin",
   "admin",
 ];
 

@@ -40,4 +40,9 @@ export const queryKeys = {
     clinics: ["admin", "clinics"] as const,
     audit: ["admin", "audit"] as const,
   },
+  organizations: {
+    all: ["organizations"] as const,
+    mine: ["organizations", "mine"] as const,
+    clinics: ["organizations", "clinics"] as const,
+  },
 } as const;

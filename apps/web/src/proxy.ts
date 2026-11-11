@@ -19,6 +19,15 @@ type SessionProbe = {
   role: PanelRole;
 };
 
+// Governance pages an organization owner runs for their own org. Everything
+// else under /admin stays with the platform operator.
+const ORG_ADMIN_PATHS = ["/admin/staff", "/admin/organization"] as const;
+
+const orgAdminMayOpen = (pathname: string): boolean =>
+  ORG_ADMIN_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  );
+
 const sessionCookie = (request: NextRequest): string | null => {
   for (const name of SESSION_COOKIES) {
     const value = request.cookies.get(name)?.value;
@@ -61,7 +70,12 @@ const isAssetPath = (pathname: string): boolean =>
   pathname.startsWith("/images") ||
   pathname === "/favicon.ico";
 
-const AUTH_PATHS = ["/sign-in", "/accept-invite"];
+const AUTH_PATHS = [
+  "/sign-in",
+  "/accept-invite",
+  "/reset-password",
+  "/email-preferences",
+];
 
 export const proxy = async (request: NextRequest) => {
   const { pathname } = request.nextUrl;
@@ -79,8 +93,13 @@ export const proxy = async (request: NextRequest) => {
 
   if (isAuthPage) return NextResponse.redirect(new URL("/queue", request.url));
 
-  // Governance pages are admin-only; coordinators are bounced to the queue.
-  if (pathname.startsWith("/admin") && session.role !== "admin") {
+  // Governance pages are admin-only, except the two an organization owner
+  // runs for their own organization.
+  if (
+    pathname.startsWith("/admin") &&
+    session.role !== "admin" &&
+    !(session.role === "org_admin" && orgAdminMayOpen(pathname))
+  ) {
     return NextResponse.redirect(new URL("/queue", request.url));
   }
 

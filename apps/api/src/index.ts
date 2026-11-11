@@ -20,6 +20,7 @@ import {
   webhookLogRouter,
 } from "@api/features/notify/routers/notify-router";
 import { dispatchPending } from "@api/features/notify/services/notification-dispatch";
+import { organizationRouter } from "@api/features/organization/routers/organization-router";
 import { patientsRouter } from "@api/features/patient/routers/patients-router";
 import { patientAuthRouter } from "@api/features/patient-auth/routers/patient-auth-router";
 import { referralsRouter } from "@api/features/referral/routers/referrals-router";
@@ -67,6 +68,7 @@ export const app = new Elysia()
   .use(clinicRouter)
   .use(adminRouter)
   .use(directoryRouter)
+  .use(organizationRouter)
   .use(ingestionRouter)
   .use(casesRouter)
   .use(outcomesRouter)

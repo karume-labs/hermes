@@ -88,6 +88,7 @@ export const createFixtures = async (
     email: `coord-${suffix}@hermescare.test`,
     role: "coordinator",
     clinicId: clinicA,
+    organizationId: null,
     via: "session",
   };
   const clinician: StaffContext = {
@@ -95,6 +96,7 @@ export const createFixtures = async (
     email: `clin-${suffix}@hermescare.test`,
     role: "clinician",
     clinicId: clinicA,
+    organizationId: null,
     via: "session",
   };
   const admin: StaffContext = {
@@ -102,6 +104,7 @@ export const createFixtures = async (
     email: "service",
     role: "admin",
     clinicId: null,
+    organizationId: null,
     via: "service",
   };
 

@@ -1,9 +1,5 @@
 import { listTeam } from "@api/features/care-loop/services/assignment-service";
-import {
-  requireAdmin,
-  requireStaff,
-  type StaffContext,
-} from "@api/features/shared/auth/index";
+import { requireOrgAdmin, requireStaff } from "@api/features/shared/auth/index";
 import {
   clientAddress,
   enforceRateLimit,
@@ -16,11 +12,13 @@ import {
   listPendingInvites,
   listStaffUsers,
   revokeStaffInvite,
+  updateNotificationChannel,
   updateStaffUser,
 } from "@api/features/staff/services/staff-service";
 import {
   AcceptStaffInviteSchema,
   CreateStaffInviteSchema,
+  NotificationPreferencesSchema,
   UpdateStaffUserSchema,
 } from "@hermes/validators";
 import { Type } from "@sinclair/typebox";
@@ -34,6 +32,14 @@ const authHeader = Type.Object({
 const idParams = Type.Object({ id: Type.String({ minLength: 1 }) });
 
 export const staffRouter = new Elysia({ prefix: "/staff" })
+  .patch(
+    "/me/preferences",
+    async ({ body, headers }) => {
+      const staff = await requireStaff(headers);
+      return updateNotificationChannel(staff, body.channel);
+    },
+    { body: NotificationPreferencesSchema, headers: authHeader },
+  )
   .get(
     "/team",
     async ({ headers }) => {
@@ -58,7 +64,7 @@ export const staffRouter = new Elysia({ prefix: "/staff" })
   .post(
     "/invites",
     async ({ body, headers }) => {
-      const staff: StaffContext = await requireAdmin(headers);
+      const staff = await requireOrgAdmin(headers);
       return createStaffInvite(staff, body);
     },
     { body: CreateStaffInviteSchema, headers: authHeader },
@@ -66,16 +72,16 @@ export const staffRouter = new Elysia({ prefix: "/staff" })
   .get(
     "/invites",
     async ({ headers }) => {
-      await requireAdmin(headers);
-      return listPendingInvites();
+      const staff = await requireOrgAdmin(headers);
+      return listPendingInvites(staff);
     },
     { headers: authHeader },
   )
   .delete(
     "/invites/:id",
     async ({ params, headers }) => {
-      await requireAdmin(headers);
-      await revokeStaffInvite(params.id);
+      const staff = await requireOrgAdmin(headers);
+      await revokeStaffInvite(staff, params.id);
       return { ok: true };
     },
     { params: idParams, headers: authHeader },
@@ -83,15 +89,15 @@ export const staffRouter = new Elysia({ prefix: "/staff" })
   .get(
     "/users",
     async ({ headers }) => {
-      await requireAdmin(headers);
-      return listStaffUsers();
+      const staff = await requireOrgAdmin(headers);
+      return listStaffUsers(staff);
     },
     { headers: authHeader },
   )
   .patch(
     "/users/:id",
     async ({ params, body, headers }) => {
-      const staff = await requireAdmin(headers);
+      const staff = await requireOrgAdmin(headers);
       return updateStaffUser(staff, params.id, body);
     },
     { params: idParams, body: UpdateStaffUserSchema, headers: authHeader },

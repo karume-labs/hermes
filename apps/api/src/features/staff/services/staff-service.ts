@@ -9,7 +9,7 @@ import { db } from "@db/client";
 import { clinics } from "@db/directory/schema/index";
 import type { StaffRole } from "@hermes/types";
 import type { UpdateStaffUser } from "@hermes/validators";
-import { desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 
 export const assertClinic = async (clinicId: string | null): Promise<void> => {
   if (clinicId === null) return;
@@ -30,11 +30,22 @@ export interface StaffUserView {
   role: StaffRole;
   clinicId: string | null;
   clinicName: string | null;
+  organizationId: string | null;
   banned: boolean;
   createdAt: string;
 }
 
-export const listStaffUsers = async (): Promise<StaffUserView[]> => {
+/**
+ * Org admins see their own organization; the platform admin sees everyone.
+ * The organization is taken from the session, never from the request.
+ */
+const organizationFilter = (actor: StaffContext): string | null =>
+  actor.role === "org_admin" ? actor.organizationId : null;
+
+export const listStaffUsers = async (
+  actor: StaffContext,
+): Promise<StaffUserView[]> => {
+  const organizationId = organizationFilter(actor);
   const rows = await db
     .select({
       id: user.id,
@@ -43,11 +54,17 @@ export const listStaffUsers = async (): Promise<StaffUserView[]> => {
       role: user.role,
       clinicId: user.clinicId,
       clinicName: clinics.name,
+      organizationId: user.organizationId,
       banned: user.banned,
       createdAt: user.createdAt,
     })
     .from(user)
     .leftJoin(clinics, eq(user.clinicId, clinics.id))
+    .where(
+      organizationId === null
+        ? undefined
+        : eq(user.organizationId, organizationId),
+    )
     .orderBy(desc(user.createdAt));
   return rows.map((row) => ({
     ...row,
@@ -56,7 +73,8 @@ export const listStaffUsers = async (): Promise<StaffUserView[]> => {
   }));
 };
 
-export const listPendingInvites = async () => {
+export const listPendingInvites = async (actor: StaffContext) => {
+  const organizationId = organizationFilter(actor);
   const rows = await db
     .select({
       id: staffInvites.id,
@@ -64,11 +82,19 @@ export const listPendingInvites = async () => {
       name: staffInvites.name,
       role: staffInvites.role,
       clinicId: staffInvites.clinicId,
+      organizationId: staffInvites.organizationId,
       expiresAt: staffInvites.expiresAt,
       createdAt: staffInvites.createdAt,
     })
     .from(staffInvites)
-    .where(isNull(staffInvites.acceptedAt))
+    .where(
+      and(
+        isNull(staffInvites.acceptedAt),
+        organizationId === null
+          ? undefined
+          : eq(staffInvites.organizationId, organizationId),
+      ),
+    )
     .orderBy(desc(staffInvites.createdAt));
   return rows.map((row) => ({
     ...row,
@@ -77,12 +103,45 @@ export const listPendingInvites = async () => {
   }));
 };
 
-export const revokeStaffInvite = async (id: string): Promise<void> => {
+export const revokeStaffInvite = async (
+  actor: StaffContext,
+  id: string,
+): Promise<void> => {
+  const organizationId = organizationFilter(actor);
   const rows = await db
     .delete(staffInvites)
-    .where(eq(staffInvites.id, id))
+    .where(
+      and(
+        eq(staffInvites.id, id),
+        organizationId === null
+          ? undefined
+          : eq(staffInvites.organizationId, organizationId),
+      ),
+    )
     .returning({ id: staffInvites.id });
   if (rows.length === 0) throw new NotFoundError("Invite not found");
+};
+
+const assertCanManage = (actor: StaffContext, targetRole: StaffRole): void => {
+  if (actor.role === "admin") return;
+  if (targetRole === "admin" || targetRole === "org_admin") {
+    throw new ForbiddenError("Only the platform operator can grant admin.");
+  }
+};
+
+// How a staff member wants their own alerts. Not an access change, so it does
+// not invalidate the session.
+export const updateNotificationChannel = async (
+  staff: StaffContext,
+  channel: "email" | "in_app" | "both",
+): Promise<{ channel: "email" | "in_app" | "both" }> => {
+  const [row] = await db
+    .update(user)
+    .set({ notificationChannel: channel })
+    .where(eq(user.id, staff.id))
+    .returning({ channel: user.notificationChannel });
+  if (row === undefined) throw new NotFoundError("Staff member not found");
+  return row;
 };
 
 export const updateStaffUser = async (
@@ -94,17 +153,33 @@ export const updateStaffUser = async (
     throw new ForbiddenError("You cannot change your own access.");
   }
   const [target] = await db
-    .select({ role: user.role, clinicId: user.clinicId })
+    .select({
+      role: user.role,
+      clinicId: user.clinicId,
+      organizationId: user.organizationId,
+    })
     .from(user)
     .where(eq(user.id, id))
     .limit(1);
   if (target === undefined) throw new NotFoundError("Staff member not found");
+  if (
+    actor.role === "org_admin" &&
+    (target.organizationId !== actor.organizationId ||
+      target.role === "admin" ||
+      target.role === "org_admin")
+  ) {
+    throw new NotFoundError("Staff member not found");
+  }
 
   const nextRole = input.role ?? target.role;
   const nextClinic =
     input.clinicId === undefined ? target.clinicId : input.clinicId;
-  if (nextRole === "coordinator" && nextClinic === null) {
-    throw new ConflictError("Coordinators need a clinic.");
+  assertCanManage(actor, nextRole);
+  if (
+    (nextRole === "coordinator" || nextRole === "clinician") &&
+    nextClinic === null
+  ) {
+    throw new ConflictError("Coordinators and clinicians need a clinic.");
   }
   await assertClinic(nextClinic);
 
@@ -138,6 +213,7 @@ export const updateStaffUser = async (
     role: updated.role,
     clinicId: updated.clinicId,
     clinicName: clinic === undefined ? null : clinic.name,
+    organizationId: updated.organizationId,
     banned: updated.banned ?? false,
     createdAt: updated.createdAt.toISOString(),
   };

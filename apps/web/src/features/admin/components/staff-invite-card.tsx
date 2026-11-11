@@ -16,34 +16,63 @@ import {
 import { IconUserPlus } from "@tabler/icons-react";
 import { type ReactNode, useState } from "react";
 import { useCreateStaffInvite } from "@/features/admin/services/mutations";
+import {
+  useOrganizationClinics,
+  useOrganizations,
+} from "@/features/admin/services/organization-queries";
 import { useClinics } from "@/features/admin/services/queries";
+import { authClient } from "@/features/auth/services/client";
 import { errorMessage } from "@/features/shared/utils/form-errors";
 
-const ROLES: { value: StaffRole; label: string }[] = [
+const CLINICAL_ROLES: { value: StaffRole; label: string }[] = [
   { value: "coordinator", label: "Coordinator" },
   { value: "clinician", label: "Clinician" },
-  { value: "admin", label: "Administrator" },
+];
+
+const PLATFORM_ROLES: { value: StaffRole; label: string }[] = [
+  ...CLINICAL_ROLES,
+  { value: "org_admin", label: "Organization admin" },
+  { value: "admin", label: "Platform administrator" },
 ];
 
 export const StaffInviteCard = (): ReactNode => {
-  const clinics = useClinics();
+  const session = authClient.useSession();
+  const isPlatformAdmin = session.data?.user.role === "admin";
+  // Platform operators pick any clinic or organization; an org admin is
+  // limited to the clinics of their own organization.
+  const clinics = useClinics(isPlatformAdmin);
+  const orgClinics = useOrganizationClinics(!isPlatformAdmin);
+  const organizations = useOrganizations(isPlatformAdmin);
   const create = useCreateStaffInvite();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<StaffRole>("coordinator");
   const [clinicId, setClinicId] = useState<string | null>(null);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
 
-  const clinicOptions = (clinics.data ?? []).map((clinic) => ({
+  const clinicRows = isPlatformAdmin
+    ? (clinics.data ?? [])
+    : (orgClinics.data ?? []);
+  const clinicOptions = clinicRows.map((clinic) => ({
     value: clinic.id,
     label: clinic.name,
   }));
+  const organizationOptions = (organizations.data ?? []).map(
+    (organization) => ({
+      value: organization.id,
+      label: organization.name,
+    }),
+  );
+  const needsClinic = role === "coordinator" || role === "clinician";
 
   const submit = (): void => {
-    create.mutate(
-      role !== "admin" && clinicId !== null
-        ? { name, email, role, clinicId }
-        : { name, email, role },
-    );
+    create.mutate({
+      name,
+      email,
+      role,
+      ...(needsClinic && clinicId !== null ? { clinicId } : {}),
+      ...(isPlatformAdmin && organizationId !== null ? { organizationId } : {}),
+    });
   };
 
   return (
@@ -57,7 +86,7 @@ export const StaffInviteCard = (): ReactNode => {
         <Text fw={700}>Invite a staff member</Text>
         <Text size="sm" c="dimmed">
           The invite link works once and expires after seven days. There is no
-          public sign-up.
+          public sign-up for staff.
         </Text>
 
         {create.isError ? (
@@ -67,10 +96,19 @@ export const StaffInviteCard = (): ReactNode => {
         ) : null}
 
         {create.data === undefined ? null : (
-          <Alert color="green" title="Invite ready to share">
+          <Alert
+            color={create.data.emailSent ? "green" : "yellow"}
+            title={
+              create.data.emailSent
+                ? "Invite emailed"
+                : "Invite ready, email not sent"
+            }
+          >
             <Stack gap={6}>
               <Text size="sm">
-                Send this link to {create.data.email}. It is shown only once.
+                {create.data.emailSent
+                  ? `We emailed the invite to ${create.data.email}. The link is also shown here once.`
+                  : `Email delivery failed for ${create.data.email}. Share this link directly.`}
               </Text>
               <Group gap="xs" wrap="nowrap">
                 <Code style={{ overflowWrap: "anywhere" }}>
@@ -104,28 +142,33 @@ export const StaffInviteCard = (): ReactNode => {
         <Group align="flex-end" grow>
           <Select
             label="Role"
-            data={ROLES}
+            data={isPlatformAdmin ? PLATFORM_ROLES : CLINICAL_ROLES}
             value={role}
             onChange={(value) =>
-              setRole(
-                value === "admin"
-                  ? "admin"
-                  : value === "clinician"
-                    ? "clinician"
-                    : "coordinator",
-              )
+              setRole(value === "clinician" ? "clinician" : "coordinator")
             }
             allowDeselect={false}
           />
-          <Select
-            label="Clinic"
-            description="Coordinators and clinicians must be assigned to one clinic."
-            data={clinicOptions}
-            value={clinicId}
-            onChange={setClinicId}
-            clearable
-            searchable
-          />
+          {needsClinic ? (
+            <Select
+              label="Clinic"
+              description="Coordinators and clinicians must be assigned to one clinic."
+              data={clinicOptions}
+              value={clinicId}
+              onChange={setClinicId}
+              clearable
+              searchable
+            />
+          ) : isPlatformAdmin ? (
+            <Select
+              label="Organization"
+              description="The organization this admin will run."
+              data={organizationOptions}
+              value={organizationId}
+              onChange={setOrganizationId}
+              searchable
+            />
+          ) : null}
         </Group>
 
         <Group justify="flex-end">
@@ -135,7 +178,11 @@ export const StaffInviteCard = (): ReactNode => {
             disabled={
               name.trim().length < 2 ||
               email.trim().length < 3 ||
-              (role !== "admin" && clinicId === null)
+              (needsClinic && clinicId === null) ||
+              (isPlatformAdmin &&
+                !needsClinic &&
+                role === "org_admin" &&
+                organizationId === null)
             }
             onClick={submit}
           >

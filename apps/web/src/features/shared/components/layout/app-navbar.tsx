@@ -1,5 +1,6 @@
 "use client";
 
+import type { StaffRole } from "@hermes/types";
 import {
   AppShellNavbar,
   Paper,
@@ -20,14 +21,14 @@ import { NavLinkList } from "@/features/shared/components/layout/nav-link-list";
 
 interface AppNavbarProps {
   isExpanded: boolean;
-  isAdmin: boolean;
+  role: StaffRole;
   mobileOpened: boolean;
   toggleMobile: () => void;
 }
 
 export const AppNavbar = ({
   isExpanded,
-  isAdmin,
+  role,
   mobileOpened,
   toggleMobile,
 }: AppNavbarProps): ReactNode => {
@@ -37,7 +38,7 @@ export const AppNavbar = ({
   const closeOnMobile = (): void => {
     if (mobileOpened) toggleMobile();
   };
-  const sections = navSections(isAdmin);
+  const sections = navSections(role);
   // Right mark for the surface: the admin shield in administration, the clinic
   // plus everywhere else.
   const surface: "clinic" | "admin" = pathname.startsWith("/admin")

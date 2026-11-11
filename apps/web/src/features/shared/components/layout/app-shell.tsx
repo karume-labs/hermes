@@ -1,5 +1,6 @@
 "use client";
 
+import type { StaffRole } from "@hermes/types";
 import {
   ActionIcon,
   AppShell,
@@ -58,6 +59,12 @@ export const AppShellLayout = ({
   // `useSession` reports `isPending` until the read lands; until then the menu
   // keeps its placeholder instead of flashing a signed-out header.
   const user = isPending || session === null ? null : session.user;
+  const panelRole: StaffRole =
+    user?.role === "admin" ||
+    user?.role === "clinician" ||
+    user?.role === "org_admin"
+      ? user.role
+      : "coordinator";
 
   return (
     <AppShell
@@ -127,7 +134,7 @@ export const AppShellLayout = ({
 
       <AppNavbar
         isExpanded={isExpanded}
-        isAdmin={user?.role === "admin"}
+        role={panelRole}
         mobileOpened={mobileOpened}
         toggleMobile={toggleMobile}
       />
