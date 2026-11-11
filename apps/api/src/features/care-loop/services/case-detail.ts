@@ -3,11 +3,12 @@ import { findSlot } from "@api/features/booking/services/slot-service";
 import { teamMember } from "@api/features/care-loop/services/assignment-service";
 import { listAudit } from "@api/features/care-loop/services/case-audit";
 import { findCase } from "@api/features/care-loop/services/case-repository";
+import { listParticipants } from "@api/features/care-loop/services/participants-service";
 import { listTasks } from "@api/features/care-loop/services/task-queries";
 import { listAttachments } from "@api/features/documents/services/attachment-repository";
 import { listNotifications } from "@api/features/notify/services/notification-service";
 import { listMessages } from "@api/features/patient/services/patient-repository";
-import type { StaffContext } from "@api/features/shared/auth/index";
+import { type StaffContext, staffScope } from "@api/features/shared/auth/index";
 import {
   caseConsultNotes,
   caseFeedback,
@@ -23,9 +24,10 @@ const toFeedback = (row: typeof caseFeedback.$inferSelect): CaseFeedback => ({
 });
 
 // Full case file: everything the care team needs in one request, including the
-// shared referral history and the patient's teach-back response.
+// shared referral history, the patient's teach-back response and everyone who
+// currently holds the case.
 export const getCaseDetail = async (id: string, staff: StaffContext) => {
-  const careCase = await findCase(id, staff.clinicId);
+  const careCase = await findCase(id, staffScope(staff));
   if (careCase === null) return null;
   const appointment = await findBookingByCaseId(careCase.id);
   const slot = appointment === null ? null : await findSlot(appointment.slotId);
@@ -72,5 +74,6 @@ export const getCaseDetail = async (id: string, staff: StaffContext) => {
       careCase.assignedToId === null
         ? null
         : await teamMember(careCase.assignedToId),
+    clinicians: await listParticipants(careCase.id),
   };
 };

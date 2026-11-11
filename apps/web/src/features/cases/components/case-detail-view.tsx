@@ -15,6 +15,7 @@ import {
   CaseStateNotices,
   CaseSummaryCard,
 } from "@/features/cases/components/case-status-cards";
+import { CaseTeam } from "@/features/cases/components/case-team";
 import { useCaseDetail } from "@/features/cases/services/queries";
 
 interface CaseDetailViewProps {
@@ -86,7 +87,10 @@ export const CaseDetailView = ({ caseId }: CaseDetailViewProps): ReactNode => {
           <Tabs.Tab value="audit">Audit trail</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="actions" pt="md">
-          <CaseActions detail={careCase} />
+          <Stack gap="md">
+            <CaseTeam detail={careCase} />
+            <CaseActions detail={careCase} />
+          </Stack>
         </Tabs.Panel>
         <Tabs.Panel value="messages" pt="md">
           <CaseMessages detail={careCase} />

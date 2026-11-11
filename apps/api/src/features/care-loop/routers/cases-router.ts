@@ -1,4 +1,5 @@
 import { caseInteractionRoutes } from "@api/features/care-loop/routers/case-interaction-routes";
+import { caseTeamRoutes } from "@api/features/care-loop/routers/case-team-routes";
 import {
   authHeader,
   idParams,
@@ -9,7 +10,7 @@ import {
   listCases,
 } from "@api/features/care-loop/services/case-repository";
 import { listMessages } from "@api/features/patient/services/patient-repository";
-import { requireStaff } from "@api/features/shared/auth/index";
+import { requireStaff, staffScope } from "@api/features/shared/auth/index";
 import { NotFoundError } from "@api/features/shared/errors/index";
 import { Type } from "@sinclair/typebox";
 import { Elysia } from "elysia";
@@ -35,7 +36,7 @@ const baseRouter = new Elysia({ prefix: "/cases" })
           unassigned: query.unassigned === "true",
           overdue: query.overdue === "true",
         },
-        staff.clinicId,
+        staffScope(staff),
       );
     },
     { query: listQuery, headers: authHeader },
@@ -54,11 +55,13 @@ const baseRouter = new Elysia({ prefix: "/cases" })
     "/:id/messages",
     async ({ params, headers }) => {
       const staff = await requireStaff(headers);
-      const found = await findCase(params.id, staff.clinicId);
+      const found = await findCase(params.id, staffScope(staff));
       if (found === null) throw new NotFoundError("Case not found");
       return listMessages(found.id);
     },
     { params: idParams, headers: authHeader },
   );
 
-export const casesRouter = baseRouter.use(caseInteractionRoutes);
+export const casesRouter = baseRouter
+  .use(caseInteractionRoutes)
+  .use(caseTeamRoutes);
