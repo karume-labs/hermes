@@ -1,7 +1,6 @@
 "use client";
 
 import { Alert, Button, Group, Stack } from "@mantine/core";
-import { IconSend } from "@tabler/icons-react";
 import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
 import { authClient } from "@/features/auth/services/client";
@@ -12,7 +11,6 @@ import {
 import { QueueBoard } from "@/features/queue/components/queue-board";
 import { QueueFilters } from "@/features/queue/components/queue-filters";
 import { QueueMetrics } from "@/features/queue/components/queue-metrics";
-import { useIngestLabResult } from "@/features/queue/services/ingest";
 import { useQueueCases } from "@/features/queue/services/queries";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
 
@@ -58,7 +56,6 @@ export const QueueView = (): ReactNode => {
   );
   const escalate = useEscalateCase();
   const assign = useAssignCase();
-  const ingest = useIngestLabResult();
 
   const term = search.trim().toLowerCase();
   const filtered = list.cases.filter((item) => {
@@ -111,16 +108,6 @@ export const QueueView = (): ReactNode => {
         eyebrow="Care team"
         title="Your queue"
         subtitle="Results that still need a person. The soonest deadline sits at the top; the list refreshes itself every 30 seconds."
-        actions={
-          <Button
-            variant="default"
-            leftSection={<IconSend size={16} />}
-            loading={ingest.isPending}
-            onClick={() => ingest.mutate()}
-          >
-            Send a test result
-          </Button>
-        }
       />
 
       {list.isError ? (

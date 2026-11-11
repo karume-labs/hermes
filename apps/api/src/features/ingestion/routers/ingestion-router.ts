@@ -1,4 +1,3 @@
-import { demoResultRoutes } from "@api/features/ingestion/routers/demo-result-routes";
 import { routingRoutes } from "@api/features/ingestion/routers/routing-routes";
 import {
   validationMessage,
@@ -95,5 +94,4 @@ export const ingestionRouter = new Elysia()
       }),
     { body: Hl7MessageSchema },
   )
-  .use(routingRoutes)
-  .use(demoResultRoutes);
+  .use(routingRoutes);
