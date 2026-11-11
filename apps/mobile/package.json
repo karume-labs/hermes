@@ -7,6 +7,8 @@
     "android": "bun run update-ip && expo prebuild --clean && expo run:android",
     "ios": "bun run update-ip && expo start -c --ios",
     "web": "expo start -c --web",
+    "lint": "biome check .",
+    "format": "biome format --write .",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .expo node_modules",
     "start": "bun run update-ip && expo start -c",

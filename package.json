@@ -44,6 +44,7 @@
     "www": "bun run --cwd apps/www dev",
     "preview:www": "bun run --cwd apps/www preview",
     "format:check": "biome format .",
+    "check:guardrails": "bun run scripts/check-guardrails.ts",
     "clean": "rm -rf .expo node_modules apps/*/node_modules apps/*/.expo apps/*/.astro apps/*/dist apps/*/.next",
     "test:tokens": "bun run --cwd packages/tokens test"
   },

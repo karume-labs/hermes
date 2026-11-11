@@ -4,6 +4,9 @@ pre-commit:
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
       run: bunx biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
       stage_fixed: true
+    guardrails:
+      glob: "*.{ts,tsx}"
+      run: bun run scripts/check-guardrails.ts {staged_files}
     typecheck:
       run: bun run typecheck
     # Tests run at commit time, not only in CI: a green typecheck says nothing

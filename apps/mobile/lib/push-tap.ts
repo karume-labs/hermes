@@ -1,5 +1,5 @@
 import * as Notifications from "expo-notifications";
-import type { Href, useRouter } from "expo-router";
+import type { useRouter } from "expo-router";
 import { getPatientId, trackEvent } from "@/lib/session";
 
 const caseIdOf = (data: unknown): string | undefined => {
@@ -26,5 +26,5 @@ export const addNotificationTapListener = (
     router.push({
       pathname: "/care-action",
       params: { caseId },
-    } as unknown as Href);
+    });
   });

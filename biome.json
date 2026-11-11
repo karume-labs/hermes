@@ -44,9 +44,14 @@
         "noUnusedImports": "error",
         "noUnusedVariables": "error"
       },
+      "suspicious": {
+        "noExplicitAny": "error"
+      },
       "style": {
         "useImportType": "error",
-        "noNonNullAssertion": "warn"
+        "noNonNullAssertion": "warn",
+        "noProcessEnv": "error",
+        "noDefaultExport": "error"
       }
     }
   },
@@ -89,6 +94,26 @@
       "includes": ["**/public/**"],
       "linter": {
         "enabled": false
+      }
+    },
+    {
+      "includes": ["**/env/**", "scripts/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noProcessEnv": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/app/**", "**/*.config.{js,mjs,cjs,ts,mts}"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
       }
     }
   ]
