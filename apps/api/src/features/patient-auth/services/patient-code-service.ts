@@ -12,6 +12,7 @@ import {
   ServiceUnavailableError,
   TooManyRequestsError,
 } from "@api/features/shared/errors/index";
+import { sendPatientCodeEmail } from "@api/features/shared/mail/index";
 import { db } from "@db/client";
 import { patientLoginCodes } from "@db/patient/schema/index";
 import { and, eq, gte, isNull } from "drizzle-orm";
@@ -90,12 +91,26 @@ export const requestPatientCode = async (
   });
 
   const delivered = await sendCodeSms(phone, code);
-  if (!delivered && env.NODE_ENV === "production") {
+  // Email is the fallback identity channel: a patient who signed up with an
+  // address but whose clinic has no SMS gateway can still get in.
+  const emailed =
+    !delivered && patient.email !== null
+      ? await sendPatientCodeEmail({
+          to: patient.email,
+          name: patient.name,
+          code,
+          minutes: codeTtlMinutes(),
+        }).then(
+          () => true,
+          () => false,
+        )
+      : false;
+  if (!delivered && !emailed && env.NODE_ENV === "production") {
     throw new ServiceUnavailableError(
       "Sign-in by SMS is not available yet. Contact your clinic.",
     );
   }
-  return delivered
+  return delivered || emailed
     ? { sent: true, expiresAt }
     : { sent: true, expiresAt, devCode: code };
 };

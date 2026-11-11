@@ -29,14 +29,18 @@ export const patientForToken = async (
       id: patients.id,
       name: patients.name,
       phone: patients.phone,
+      email: patients.email,
       clinicId: patients.clinicId,
       clinicName: clinics.name,
       pushConsent: patients.pushConsent,
       smsConsent: patients.smsConsent,
+      emailConsent: patients.emailConsent,
+      notificationChannel: patients.notificationChannel,
     })
     .from(patientSessions)
     .innerJoin(patients, eq(patientSessions.patientId, patients.id))
-    .innerJoin(clinics, eq(patients.clinicId, clinics.id))
+    // A self-registered patient is signed in before any clinic links them.
+    .leftJoin(clinics, eq(patients.clinicId, clinics.id))
     .where(
       and(
         eq(patientSessions.tokenHash, hashToken(token)),

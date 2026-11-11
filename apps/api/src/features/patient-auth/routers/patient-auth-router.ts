@@ -1,5 +1,6 @@
 import {
-  updatePatientConsent,
+  registerPatient,
+  updatePatientPreferences,
   verifyPatientCode,
 } from "@api/features/patient-auth/services/patient-auth-service";
 import { requestPatientCode } from "@api/features/patient-auth/services/patient-code-service";
@@ -17,6 +18,7 @@ import {
   PatientCodeRequestSchema,
   PatientCodeVerifySchema,
   PatientConsentSchema,
+  PatientRegisterSchema,
 } from "@hermes/validators";
 import { Type } from "@sinclair/typebox";
 import { Elysia } from "elysia";
@@ -28,6 +30,19 @@ const authHeader = Type.Object({
 const TEN_MINUTES = 10 * 60 * 1000;
 
 export const patientAuthRouter = new Elysia({ prefix: "/patient-auth" })
+  // Public sign-up: patients create their own account. No clinic, no invite.
+  .post(
+    "/register",
+    async ({ body, request, server }) => {
+      enforceRateLimit(
+        `patient-register:${clientAddress(request.headers, server, request)}`,
+        5,
+        TEN_MINUTES,
+      );
+      return registerPatient(body);
+    },
+    { body: PatientRegisterSchema },
+  )
   .post(
     "/request-code",
     async ({ body, request, server }) => {
@@ -74,7 +89,7 @@ export const patientAuthRouter = new Elysia({ prefix: "/patient-auth" })
     "/consent",
     async ({ body, headers }) => {
       const { patientId } = await requirePatient(headers);
-      return updatePatientConsent(patientId, body.pushConsent, body.smsConsent);
+      return updatePatientPreferences(patientId, body);
     },
     { body: PatientConsentSchema, headers: authHeader },
   );

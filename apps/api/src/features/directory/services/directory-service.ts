@@ -37,6 +37,7 @@ export const findPatient = async (id: string): Promise<Patient | null> => {
     ...row,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+    selfRegisteredAt: row.selfRegisteredAt?.toISOString() ?? null,
   };
 };
 
@@ -53,5 +54,6 @@ export const findPatientByPhone = async (
     ...row,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+    selfRegisteredAt: row.selfRegisteredAt?.toISOString() ?? null,
   };
 };

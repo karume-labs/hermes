@@ -102,6 +102,7 @@ export const listClinicPatients = async (
       ...patient,
       createdAt: patient.createdAt.toISOString(),
       updatedAt: patient.updatedAt.toISOString(),
+      selfRegisteredAt: patient.selfRegisteredAt?.toISOString() ?? null,
       caseCount: owned.length,
       activeCaseCount: owned.filter((row) => row.status !== "closed").length,
       lastCaseId: latest === undefined ? null : latest.id,

@@ -12,12 +12,14 @@ import {
   safeEqual,
 } from "@api/features/patient-auth/services/tokens";
 import {
+  ConflictError,
   TooManyRequestsError,
   UnauthorizedError,
 } from "@api/features/shared/errors/index";
 import { db } from "@db/client";
-import { clinics, patients } from "@db/directory/schema/index";
+import { patients } from "@db/directory/schema/index";
 import { patientLoginCodes, patientSessions } from "@db/patient/schema/index";
+import type { NotificationPreference } from "@hermes/types";
 import { and, desc, eq, gt, isNull, lt, sql } from "drizzle-orm";
 
 const MAX_ATTEMPTS = 5;
@@ -27,6 +29,72 @@ export interface VerifyResult {
   expiresAt: string;
   patient: PatientProfile;
 }
+
+const issueSession = async (patient: PatientProfile): Promise<VerifyResult> => {
+  const now = new Date();
+  const token = generateSessionToken();
+  const expiresAt = new Date(
+    now.getTime() + sessionDays() * 24 * 60 * 60 * 1000,
+  );
+  await db.insert(patientSessions).values({
+    patientId: patient.id,
+    tokenHash: hashToken(token),
+    expiresAt,
+  });
+  return { token, expiresAt: expiresAt.toISOString(), patient };
+};
+
+/**
+ * Self-service sign-up. Anyone with a phone number can create an account; the
+ * clinic link is made later, when that clinic sends or admits them data. The
+ * existing directory row wins so a patient who was already admitted keeps
+ * their history instead of getting a second account.
+ */
+export const registerPatient = async (input: {
+  name: string;
+  phone: string;
+  email?: string;
+  notificationChannel?: NotificationPreference;
+}): Promise<VerifyResult> => {
+  const phone = normalizePhone(input.phone);
+  const email = input.email?.trim().toLowerCase();
+  const existing = await findPatientByPhone(phone);
+  if (existing !== null) {
+    throw new ConflictError(
+      "That number already has an account. Sign in with a code instead.",
+    );
+  }
+
+  const channel = input.notificationChannel ?? "in_app";
+  const [row] = await db
+    .insert(patients)
+    .values({
+      // A self-registered patient has no clinic id yet: the clinic's own
+      // numbering cannot be invented, and the link flow assigns it.
+      id: `self-${crypto.randomUUID()}`,
+      clinicId: null,
+      name: input.name.trim(),
+      phone,
+      email: email ?? null,
+      emailConsent: email !== undefined && channel !== "in_app",
+      notificationChannel: channel,
+      pushConsent: true,
+      selfRegisteredAt: new Date(),
+    })
+    .returning({
+      id: patients.id,
+      name: patients.name,
+      phone: patients.phone,
+      email: patients.email,
+      clinicId: patients.clinicId,
+      pushConsent: patients.pushConsent,
+      smsConsent: patients.smsConsent,
+      emailConsent: patients.emailConsent,
+      notificationChannel: patients.notificationChannel,
+    });
+  if (row === undefined) throw new ConflictError("Could not create account.");
+  return issueSession(toProfile({ ...row, clinicName: null }));
+};
 
 export const verifyPatientCode = async (
   phoneInput: string,
@@ -77,54 +145,48 @@ export const verifyPatientCode = async (
     throw new UnauthorizedError("That code is not valid.");
   }
 
-  const now = new Date();
   await db
     .update(patientLoginCodes)
-    .set({ consumedAt: now })
+    .set({ consumedAt: new Date() })
     .where(eq(patientLoginCodes.id, row.id));
 
-  const token = generateSessionToken();
-  const expiresAt = new Date(
-    now.getTime() + sessionDays() * 24 * 60 * 60 * 1000,
-  );
-  await db.insert(patientSessions).values({
-    patientId: patient.id,
-    tokenHash: hashToken(token),
-    expiresAt,
-  });
-
-  return {
-    token,
-    expiresAt: expiresAt.toISOString(),
-    patient: toProfile(patient),
-  };
+  return issueSession(patient);
 };
 
-export const updatePatientConsent = async (
+export const updatePatientPreferences = async (
   patientId: string,
-  pushConsent: boolean,
-  smsConsent: boolean,
+  input: {
+    pushConsent: boolean;
+    smsConsent: boolean;
+    emailConsent?: boolean;
+    notificationChannel?: NotificationPreference;
+  },
 ): Promise<PatientProfile> => {
   const [row] = await db
     .update(patients)
-    .set({ pushConsent, smsConsent })
+    .set({
+      pushConsent: input.pushConsent,
+      smsConsent: input.smsConsent,
+      ...(input.emailConsent === undefined
+        ? {}
+        : { emailConsent: input.emailConsent }),
+      ...(input.notificationChannel === undefined
+        ? {}
+        : { notificationChannel: input.notificationChannel }),
+    })
     .where(eq(patients.id, patientId))
     .returning({
       id: patients.id,
       name: patients.name,
       phone: patients.phone,
+      email: patients.email,
       clinicId: patients.clinicId,
       pushConsent: patients.pushConsent,
       smsConsent: patients.smsConsent,
+      emailConsent: patients.emailConsent,
+      notificationChannel: patients.notificationChannel,
     });
   if (row === undefined) throw new UnauthorizedError();
-  const clinic = await db
-    .select({ name: clinics.name })
-    .from(clinics)
-    .where(eq(clinics.id, row.clinicId))
-    .limit(1);
-  return toProfile({
-    ...row,
-    clinicName: clinic[0]?.name ?? row.clinicId,
-  });
+  const profile = await findPatientByPhone(row.phone);
+  return toProfile(profile ?? { ...row, clinicName: null });
 };
