@@ -18,23 +18,11 @@ export const listOrganizationClinics = async (
     .from(clinics)
     .where(eq(clinics.organizationId, organizationId))
     .orderBy(asc(clinics.name));
-  const [patientRows, staffRows, openCaseRows] = await Promise.all([
-    db
-      .select({ clinicId: user.clinicId, total: count() })
-      .from(user)
-      .groupBy(user.clinicId),
-    db
-      .select({ clinicId: clinics.id, total: count() })
-      .from(user)
-      .where(eq(user.organizationId, organizationId))
-      .groupBy(clinics.id),
-    db
-      .select({ clinicId: user.clinicId, total: count() })
-      .from(user)
-      .groupBy(user.clinicId),
-  ]);
-  void patientRows;
-  void openCaseRows;
+  const staffRows = await db
+    .select({ clinicId: user.clinicId, total: count() })
+    .from(user)
+    .where(eq(user.organizationId, organizationId))
+    .groupBy(user.clinicId);
   const staffCountFor = (clinicId: string): number =>
     Number(staffRows.find((row) => row.clinicId === clinicId)?.total ?? 0);
   return clinicRows.map((clinic) => ({

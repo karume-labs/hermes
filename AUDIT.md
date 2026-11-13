@@ -146,11 +146,11 @@ token that has `workflow` scope (or via the GitHub UI).
 | 10 native folders | Already correct: both are git-ignored and untracked; only local generated copies exist. |
 | 11 store links | Unchanged; needs published listings. |
 | 12 www fallback | Fixed with an Astro `env.schema` default. |
-| 13 infra validation | Not done; needs a Caddy/compose job in CI. |
+| 13 infra validation | Fixed in CI: `docker compose config --quiet` and `caddy validate` job. |
 | 14 local-disk uploads | Unchanged; needs a storage service choice. |
 | 15 email delivery | Unverified; needs SMTP credentials. |
 | 16 staff preferences UI | Not done. |
-| 17 organisation tests | Not done. |
+| 17 organisation tests | Fixed: `apps/api/tests/organization.test.ts` covers scoping, session-derived org, cross-org refusal and the customer list. Its first run exposed a broken clinical count query (`clinics.id` selected from a `user`-only query); `listOrganizationClinics` now groups by `user.clinicId`. |
 
 `bun run verify` now runs format check, lint, guardrails, typecheck and tests in
 one command for local and CI use.
