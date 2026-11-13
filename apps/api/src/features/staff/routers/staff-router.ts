@@ -4,10 +4,8 @@ import {
   clientAddress,
   enforceRateLimit,
 } from "@api/features/shared/rate-limit";
-import {
-  acceptStaffInvite,
-  createStaffInvite,
-} from "@api/features/staff/services/staff-invite-service";
+import { acceptStaffInvite } from "@api/features/staff/services/staff-invite-accept-service";
+import { createStaffInvite } from "@api/features/staff/services/staff-invite-service";
 import {
   listPendingInvites,
   listStaffUsers,

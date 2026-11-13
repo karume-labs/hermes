@@ -70,12 +70,7 @@ const isAssetPath = (pathname: string): boolean =>
   pathname.startsWith("/images") ||
   pathname === "/favicon.ico";
 
-const AUTH_PATHS = [
-  "/sign-in",
-  "/accept-invite",
-  "/reset-password",
-  "/email-preferences",
-];
+const AUTH_PATHS = ["/sign-in", "/accept-invite", "/reset-password"];
 
 export const proxy = async (request: NextRequest) => {
   const { pathname } = request.nextUrl;

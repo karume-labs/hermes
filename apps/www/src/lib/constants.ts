@@ -23,8 +23,7 @@ export const HERO_HEADLINE =
  * Where the clinic dashboard lives. Override with PUBLIC_DASHBOARD_URL at build
  * time when the dashboard is hosted somewhere other than the local dev server.
  */
-export const DASHBOARD_URL =
-  import.meta.env.PUBLIC_DASHBOARD_URL ?? "http://localhost:3100";
+export const DASHBOARD_URL = import.meta.env.PUBLIC_DASHBOARD_URL;
 
 /**
  * App downloads. The Android link uses the package from apps/mobile/app.json,

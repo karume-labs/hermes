@@ -1,6 +1,6 @@
-import Constants from "expo-constants";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import { env } from "@/lib/env/index";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -11,15 +11,6 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
-
-const pushProjectId = (): string | undefined => {
-  const eas = Constants.expoConfig?.extra?.eas;
-  if (eas === undefined || eas === null || typeof eas !== "object") {
-    return undefined;
-  }
-  const projectId = "projectId" in eas ? eas.projectId : undefined;
-  return typeof projectId === "string" ? projectId : undefined;
-};
 
 export const hasNotificationPermission = async (): Promise<boolean> => {
   if (Platform.OS === "web") return false;
@@ -36,7 +27,7 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
 
 export const registerPushToken = async (): Promise<string | null> => {
   if (Platform.OS === "web") return null;
-  const projectId = pushProjectId();
+  const projectId = env.easProjectId;
   if (projectId === undefined) return null;
   try {
     const { status: existing } = await Notifications.getPermissionsAsync();

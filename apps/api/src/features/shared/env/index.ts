@@ -84,6 +84,10 @@ if (env.NODE_ENV === "production") {
   if (env.WEBHOOK_SECRET === "dev-webhook-secret-change-me") {
     unsafe.push("WEBHOOK_SECRET");
   }
+  // Without these two, invites/resets and every patient sign-in fail at the
+  // first user action; catch it at boot instead of in production.
+  if (env.SMTP_HOST === "") unsafe.push("SMTP_HOST");
+  if (env.SMS_WEBHOOK_URL === "") unsafe.push("SMS_WEBHOOK_URL");
   if (env.API_URL.includes("localhost")) unsafe.push("API_URL");
   if (env.FRONTEND_URL.includes("localhost")) unsafe.push("FRONTEND_URL");
   if (!env.API_URL.startsWith("https://")) unsafe.push("API_URL (https)");
