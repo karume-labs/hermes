@@ -26,6 +26,7 @@ export const queryKeys = {
   routingRules: ["routing-rules"] as const,
   clinics: ["clinics"] as const,
   staff: {
+    preferences: ["staff", "preferences"] as const,
     users: ["staff", "users"] as const,
     invites: ["staff", "invites"] as const,
     team: ["staff", "team"] as const,

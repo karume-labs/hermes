@@ -63,7 +63,9 @@ export const useUpdateOwnPreferences = () => {
       if (response.error) throw response.error;
       return response.data;
     },
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: queryKeys.session }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.session });
+      queryClient.invalidateQueries({ queryKey: queryKeys.staff.preferences });
+    },
   });
 };

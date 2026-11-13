@@ -9,6 +9,7 @@ import { createStaffInvite } from "@api/features/staff/services/staff-invite-ser
 import {
   listPendingInvites,
   listStaffUsers,
+  readNotificationChannel,
   revokeStaffInvite,
   updateNotificationChannel,
   updateStaffUser,
@@ -30,6 +31,14 @@ const authHeader = Type.Object({
 const idParams = Type.Object({ id: Type.String({ minLength: 1 }) });
 
 export const staffRouter = new Elysia({ prefix: "/staff" })
+  .get(
+    "/me/preferences",
+    async ({ headers }) => {
+      const staff = await requireStaff(headers);
+      return readNotificationChannel(staff);
+    },
+    { headers: authHeader },
+  )
   .patch(
     "/me/preferences",
     async ({ body, headers }) => {

@@ -14,6 +14,7 @@ import {
   IconWebhook,
 } from "@tabler/icons-react";
 import type { ReactNode } from "react";
+import { PREFERENCES_NAV_ITEM } from "./preferences-nav-item";
 
 export interface NavItem {
   label: string;
@@ -62,6 +63,7 @@ const CARE_ITEMS: NavItem[] = [
     icon: <IconChecklist size={20} />,
     description: "Reminders, reviews and follow-ups that still need a person.",
   },
+  PREFERENCES_NAV_ITEM,
 ];
 
 const ADMIN_ITEMS: NavItem[] = [

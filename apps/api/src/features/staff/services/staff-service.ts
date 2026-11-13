@@ -131,6 +131,18 @@ const assertCanManage = (actor: StaffContext, targetRole: StaffRole): void => {
 
 // How a staff member wants their own alerts. Not an access change, so it does
 // not invalidate the session.
+export const readNotificationChannel = async (
+  staff: StaffContext,
+): Promise<{ channel: "email" | "in_app" | "both" }> => {
+  const [row] = await db
+    .select({ channel: user.notificationChannel })
+    .from(user)
+    .where(eq(user.id, staff.id))
+    .limit(1);
+  if (row === undefined) throw new NotFoundError("Staff member not found");
+  return row;
+};
+
 export const updateNotificationChannel = async (
   staff: StaffContext,
   channel: "email" | "in_app" | "both",
