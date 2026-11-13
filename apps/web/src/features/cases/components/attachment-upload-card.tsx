@@ -24,15 +24,6 @@ const KIND_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-const _KIND_LABELS: Record<string, string> = Object.fromEntries(
-  KIND_OPTIONS.map((option) => [option.value, option.label]),
-);
-
-const _formatSize = (bytes: number): string =>
-  bytes >= 1024 * 1024
-    ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-    : `${Math.max(1, Math.round(bytes / 1024))} KB`;
-
 export const AttachmentUploadCard = ({
   caseId,
 }: {
@@ -52,8 +43,9 @@ export const AttachmentUploadCard = ({
           </Text>
         </Group>
         <Text size="xs" c="dimmed">
-          Lab reports, referral letters and closure evidence are stored on the
-          API server. PDF, PNG, JPEG, WebP or plain text, up to 10 MB.
+          Lab reports, referral letters and closure evidence are stored securely
+          and served back through the API after an access check. PDF, PNG, JPEG,
+          WebP or plain text, up to 10 MB.
         </Text>
         <Group align="flex-end" gap="sm" wrap="wrap">
           <FileInput

@@ -12,9 +12,7 @@ import {
 } from "@mantine/core";
 import { IconFileText } from "@tabler/icons-react";
 import type { ReactNode } from "react";
-import { useState } from "react";
 import { AttachmentUploadCard } from "@/features/cases/components/attachment-upload-card";
-import { useUploadAttachment } from "@/features/cases/services/mutations-attachment";
 import { env } from "@/features/shared/env/index";
 
 const CARD_STYLE = "1px solid var(--hermes-line)";
@@ -42,10 +40,6 @@ interface CaseAttachmentsProps {
 export const CaseAttachments = ({
   detail,
 }: CaseAttachmentsProps): ReactNode => {
-  const _upload = useUploadAttachment(detail.id);
-  const [_file, _setFile] = useState<File | null>(null);
-  const [_kind, _setKind] = useState<string>("lab_report");
-
   return (
     <Stack gap="md">
       <AttachmentUploadCard caseId={detail.id} />

@@ -10,22 +10,9 @@ import { CaseOpenWorkCard } from "@/features/cases/components/case-open-work-car
 import { CaseReferrals } from "@/features/cases/components/case-referrals";
 import { CaseCloseForm } from "@/features/cases/components/close-case-form";
 import { CaseReferralForm } from "@/features/cases/components/referral-form";
-import { useBookSlot } from "@/features/cases/services/mutations-case";
-import { useCompleteTask } from "@/features/cases/services/mutations-outcome";
-import { useClinicSlots } from "@/features/cases/services/queries";
 
 export const CaseActions = ({ detail }: { detail: CaseDetail }): ReactNode => {
-  const bookingClinicId =
-    detail.referralClinicId === null
-      ? detail.clinicId
-      : detail.referralClinicId;
-  const slots = useClinicSlots(bookingClinicId);
-  const _book = useBookSlot();
-  const _completeTask = useCompleteTask();
   const closed = detail.status === "closed";
-  const _bookedSlotId =
-    detail.appointment === null ? null : detail.appointment.slotId;
-  const _availableSlots = slots.data === undefined ? [] : slots.data;
 
   return (
     <Stack gap="lg">

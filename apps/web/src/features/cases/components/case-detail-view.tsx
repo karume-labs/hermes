@@ -22,12 +22,6 @@ interface CaseDetailViewProps {
   caseId: string;
 }
 
-// Clinical free text often ends in its own full stop; keep exactly one.
-const _asSentence = (value: string | null): string => {
-  if (value === null || value.trim() === "") return "not recorded";
-  return `${value.trim().replace(/\.+$/, "")}.`;
-};
-
 export const CaseDetailView = ({ caseId }: CaseDetailViewProps): ReactNode => {
   const detail = useCaseDetail(caseId);
   const { data: session } = authClient.useSession();
