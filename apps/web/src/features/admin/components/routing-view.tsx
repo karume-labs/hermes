@@ -64,7 +64,7 @@ export const RoutingView = (): ReactNode => {
       <PageHeader
         eyebrow="Administration"
         title="Routing configuration"
-        subtitle="Incoming lab markers are matched by longest lowercase prefix. Unmatched results fall back to clinic-1."
+        subtitle="Incoming lab markers are matched by longest lowercase prefix. Unmatched results fall back to the configured default clinic."
       />
 
       {rules.isError || upsert.isError || remove.isError ? (

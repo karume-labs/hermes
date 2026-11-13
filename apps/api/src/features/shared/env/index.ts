@@ -48,6 +48,9 @@ const envSchema = Type.Object({
   SMS_WEBHOOK_URL: Type.String({ default: "" }),
   // HMAC secret every lab feed must sign with (x-hermes-signature).
   WEBHOOK_SECRET: Type.String({ default: "dev-webhook-secret-change-me" }),
+  // Where an unmatched lab marker falls back to. The seeded network uses
+  // `clinic-1`; rename it to the id of a real default clinic per deployment.
+  DEFAULT_CLINIC_ID: Type.String({ default: "clinic-1" }),
   PATIENT_SESSION_DAYS: Type.String({ default: "30" }),
   PATIENT_CODE_TTL_MINUTES: Type.String({ default: "10" }),
   NODE_ENV: Type.Union(

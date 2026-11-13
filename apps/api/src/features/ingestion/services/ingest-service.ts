@@ -19,10 +19,9 @@ import type {
   NormalizedLab,
 } from "@api/features/ingestion/types/index";
 import { queueNotification } from "@api/features/notify/services/notification-service";
+import { env } from "@api/features/shared/env/index";
 import { UnprocessableError } from "@api/features/shared/errors/index";
 import type { CareCase } from "@hermes/types";
-
-const DEFAULT_CLINIC = "clinic-1";
 
 const sourceOf = (sourceMessageId: string): string => {
   if (sourceMessageId.startsWith("fhir_")) return "fhir";
@@ -53,7 +52,8 @@ export const ingestLab = async (lab: NormalizedLab): Promise<IngestResult> => {
   const severity = gradeSeverity(lab.markerCode, lab.markerValue);
   const due = slaDueAt(severity);
   const clinicId =
-    lab.clinicId ?? (await resolveClinic(lab.markerCode, DEFAULT_CLINIC));
+    lab.clinicId ??
+    (await resolveClinic(lab.markerCode, env.DEFAULT_CLINIC_ID));
   const [clinic, patient] = await Promise.all([
     findClinic(clinicId),
     findPatient(lab.patientId),
