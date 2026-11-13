@@ -13,8 +13,6 @@ export {
   findCaseByLabPayloadId,
   listAllCases,
   listCases,
-  listCasesNeedingEscalation,
-  listSurveillanceDue,
 } from "@api/features/care-loop/services/case-queries";
 export {
   type CaseScope,
@@ -22,6 +20,10 @@ export {
   normalizeScope,
   type ScopeInput,
 } from "@api/features/care-loop/services/case-scope";
+export {
+  listCasesNeedingEscalation,
+  listSurveillanceDue,
+} from "@api/features/care-loop/services/case-sweep-queries";
 
 export const createCase = async (input: NewCase): Promise<CareCase> => {
   const [row] = await db.insert(careCases).values(input).returning();

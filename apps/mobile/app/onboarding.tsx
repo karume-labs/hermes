@@ -1,16 +1,9 @@
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import {
-  FlatList,
-  type ListRenderItem,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { type FlatList, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { OnboardingControls } from "@/components/onboarding/onboarding-controls";
-import { OnboardingSlideView } from "@/components/onboarding/onboarding-slide";
+import { OnboardingSlideList } from "@/components/onboarding/onboarding-slide-list";
 import { Text } from "@/components/ui/text";
 import {
   hasNotificationPermission,
@@ -82,26 +75,6 @@ const OnboardingScreen = () => {
     void finish();
   };
 
-  const onMomentumEnd = (
-    event: NativeSyntheticEvent<NativeScrollEvent>,
-  ): void => {
-    setIndex(Math.round(event.nativeEvent.contentOffset.x / width));
-  };
-
-  const renderSlide: ListRenderItem<OnboardingSlide> = ({ item }) => (
-    <OnboardingSlideView slide={item} pageWidth={width}>
-      {item.kind === "permission" ? (
-        <Text className="text-[14px] font-medium text-primary">
-          {busy
-            ? "Asking your phone…"
-            : alertsOn
-              ? "Alerts are on for this phone."
-              : "You can change this later in Profile."}
-        </Text>
-      ) : null}
-    </OnboardingSlideView>
-  );
-
   const ctaLabel = needsAlerts
     ? busy
       ? "Waiting for your phone…"
@@ -121,25 +94,12 @@ const OnboardingScreen = () => {
         </Text>
       </View>
 
-      <FlatList
-        ref={listRef}
-        data={ONBOARDING_SLIDES}
-        keyExtractor={(item) => item.id}
-        renderItem={renderSlide}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        bounces={false}
-        onMomentumScrollEnd={onMomentumEnd}
-        getItemLayout={(_, i) => ({
-          length: width,
-          offset: width * i,
-          index: i,
-        })}
-        initialNumToRender={1}
-        maxToRenderPerBatch={1}
-        windowSize={3}
-        className="flex-1"
+      <OnboardingSlideList
+        pageWidth={width}
+        busy={busy}
+        alertsOn={alertsOn}
+        listRef={listRef}
+        onIndexChange={setIndex}
       />
 
       <OnboardingControls

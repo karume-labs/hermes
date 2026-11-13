@@ -12,10 +12,7 @@ export * from "@api/features/shared/auth/staff-guards";
 
 /** Either a staff session/API secret or a patient bearer token. */
 export type CarePrincipal =
-  | {
-      kind: "staff";
-      staff: import("@api/features/shared/auth/staff-context").StaffContext;
-    }
+  | { kind: "staff"; staff: StaffContext }
   | { kind: "patient"; patient: PatientContext };
 
 export const requireCarePrincipal = async (
