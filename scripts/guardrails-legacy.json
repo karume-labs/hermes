@@ -6,10 +6,5 @@
   "apps/api/src/features/staff/services/staff-service.ts",
   "apps/mobile/app/onboarding.tsx",
   "apps/mobile/app/sign-in.tsx",
-  "apps/mobile/lib/api/queries.ts",
-  "apps/web/src/features/admin/components/organization-view.tsx",
-  "apps/web/src/features/admin/components/staff-invite-card.tsx",
-  "apps/web/src/features/clinic/components/appointments-view.tsx",
-  "apps/web/src/features/queue/components/queue-view.tsx",
-  "apps/web/src/features/tasks/components/tasks-view.tsx"
+  "apps/mobile/lib/api/queries.ts"
 ]

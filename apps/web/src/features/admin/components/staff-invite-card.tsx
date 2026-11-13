@@ -5,16 +5,15 @@ import {
   Alert,
   Button,
   Card,
-  Code,
-  CopyButton,
   Group,
-  Select,
   Stack,
   Text,
   TextInput,
 } from "@mantine/core";
 import { IconUserPlus } from "@tabler/icons-react";
 import { type ReactNode, useState } from "react";
+import { StaffInviteResult } from "@/features/admin/components/staff-invite-result";
+import { StaffInviteTarget } from "@/features/admin/components/staff-invite-target";
 import { useCreateStaffInvite } from "@/features/admin/services/mutations";
 import {
   useOrganizationClinics,
@@ -23,17 +22,6 @@ import {
 import { useClinics } from "@/features/admin/services/queries";
 import { authClient } from "@/features/auth/services/client";
 import { errorMessage } from "@/features/shared/utils/form-errors";
-
-const CLINICAL_ROLES: { value: StaffRole; label: string }[] = [
-  { value: "coordinator", label: "Coordinator" },
-  { value: "clinician", label: "Clinician" },
-];
-
-const PLATFORM_ROLES: { value: StaffRole; label: string }[] = [
-  ...CLINICAL_ROLES,
-  { value: "org_admin", label: "Organization admin" },
-  { value: "admin", label: "Platform administrator" },
-];
 
 export const StaffInviteCard = (): ReactNode => {
   const session = authClient.useSession();
@@ -96,34 +84,7 @@ export const StaffInviteCard = (): ReactNode => {
         ) : null}
 
         {create.data === undefined ? null : (
-          <Alert
-            color={create.data.emailSent ? "green" : "yellow"}
-            title={
-              create.data.emailSent
-                ? "Invite emailed"
-                : "Invite ready, email not sent"
-            }
-          >
-            <Stack gap={6}>
-              <Text size="sm">
-                {create.data.emailSent
-                  ? `We emailed the invite to ${create.data.email}. The link is also shown here once.`
-                  : `Email delivery failed for ${create.data.email}. Share this link directly.`}
-              </Text>
-              <Group gap="xs" wrap="nowrap">
-                <Code style={{ overflowWrap: "anywhere" }}>
-                  {create.data.inviteUrl}
-                </Code>
-                <CopyButton value={create.data.inviteUrl}>
-                  {({ copied, copy }) => (
-                    <Button size="compact-xs" variant="light" onClick={copy}>
-                      {copied ? "Copied" : "Copy"}
-                    </Button>
-                  )}
-                </CopyButton>
-              </Group>
-            </Stack>
-          </Alert>
+          <StaffInviteResult result={create.data} />
         )}
 
         <Group align="flex-end" grow>
@@ -139,37 +100,18 @@ export const StaffInviteCard = (): ReactNode => {
             onChange={(event) => setEmail(event.currentTarget.value)}
           />
         </Group>
-        <Group align="flex-end" grow>
-          <Select
-            label="Role"
-            data={isPlatformAdmin ? PLATFORM_ROLES : CLINICAL_ROLES}
-            value={role}
-            onChange={(value) =>
-              setRole(value === "clinician" ? "clinician" : "coordinator")
-            }
-            allowDeselect={false}
-          />
-          {needsClinic ? (
-            <Select
-              label="Clinic"
-              description="Coordinators and clinicians must be assigned to one clinic."
-              data={clinicOptions}
-              value={clinicId}
-              onChange={setClinicId}
-              clearable
-              searchable
-            />
-          ) : isPlatformAdmin ? (
-            <Select
-              label="Organization"
-              description="The organization this admin will run."
-              data={organizationOptions}
-              value={organizationId}
-              onChange={setOrganizationId}
-              searchable
-            />
-          ) : null}
-        </Group>
+        <StaffInviteTarget
+          isPlatformAdmin={isPlatformAdmin}
+          role={role}
+          onRoleChange={setRole}
+          needsClinic={needsClinic}
+          clinicOptions={clinicOptions}
+          clinicId={clinicId}
+          onClinicChange={setClinicId}
+          organizationOptions={organizationOptions}
+          organizationId={organizationId}
+          onOrganizationChange={setOrganizationId}
+        />
 
         <Group justify="flex-end">
           <Button

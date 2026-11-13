@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Button, Group, Stack } from "@mantine/core";
+import { Alert, Stack } from "@mantine/core";
 import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
 import { authClient } from "@/features/auth/services/client";
@@ -8,10 +8,12 @@ import {
   useAssignCase,
   useEscalateCase,
 } from "@/features/cases/services/mutations-case";
+import { QueueAssignAll } from "@/features/queue/components/queue-assign-all";
 import { QueueBoard } from "@/features/queue/components/queue-board";
 import { QueueFilters } from "@/features/queue/components/queue-filters";
 import { QueueMetrics } from "@/features/queue/components/queue-metrics";
 import { useQueueCases } from "@/features/queue/services/queries";
+import { queueStats } from "@/features/queue/utils/queue-stats";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
 
 const SORTS = ["newest", "oldest"] as const;
@@ -89,18 +91,7 @@ export const QueueView = (): ReactNode => {
     void setSearch("");
   };
 
-  const pending = cases.filter(
-    (item) =>
-      item.acknowledgedAt === null &&
-      (item.status === "notified" || item.status === "escalated"),
-  ).length;
-  const breached = cases.filter(
-    (item) =>
-      new Date(item.slaDueAt).getTime() < Date.now() &&
-      item.acknowledgedAt === null &&
-      item.status !== "closed",
-  ).length;
-  const unassigned = cases.filter((item) => item.assignedToId === null).length;
+  const { pending, breached, unassigned } = queueStats(cases);
 
   return (
     <Stack gap="xl">
@@ -139,26 +130,7 @@ export const QueueView = (): ReactNode => {
         onClear={clearAll}
       />
 
-      <Group justify="flex-end">
-        <Button
-          variant="subtle"
-          size="xs"
-          onClick={() => {
-            const userId = session?.user.id;
-            if (userId === undefined) return;
-            for (const item of cases) {
-              if (item.assignedToId === null) {
-                assign.mutate({ caseId: item.id, assignedToId: userId });
-              }
-            }
-          }}
-          disabled={unassigned === 0 || assign.isPending}
-        >
-          {unassigned === 0
-            ? "Every case has an owner"
-            : `Take the ${unassigned} unassigned case${unassigned === 1 ? "" : "s"}`}
-        </Button>
-      </Group>
+      <QueueAssignAll cases={cases} unassigned={unassigned} />
 
       <QueueBoard
         cases={cases}
