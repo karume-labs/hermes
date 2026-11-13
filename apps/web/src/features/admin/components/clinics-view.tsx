@@ -1,12 +1,13 @@
 "use client";
 
 import type { AdminClinicSummary } from "@hermes/types";
-import { Alert, Button, SimpleGrid, Stack } from "@mantine/core";
+import { Alert, Button, Stack } from "@mantine/core";
 import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { buildClinicColumns } from "@/features/admin/components/clinic-columns";
 import { ClinicFormModal } from "@/features/admin/components/clinic-form-modal";
+import { ClinicMetrics } from "@/features/admin/components/clinic-metrics";
 import { useAdminClinics } from "@/features/admin/services/queries";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
 import { DataTable } from "@/features/shared/components/table/data-table";
@@ -15,7 +16,6 @@ import {
   DataToolbarSearch,
   DataToolbarSelect,
 } from "@/features/shared/components/table/data-toolbar-fields";
-import { MetricCard } from "@/features/shared/components/ui/metric-card";
 
 const SORTS = ["newest", "oldest"] as const;
 
@@ -86,33 +86,7 @@ export const ClinicsView = (): ReactNode => {
         </Alert>
       ) : null}
 
-      <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
-        <MetricCard
-          label="Open clinics"
-          value={rows.filter((row) => row.isActive).length}
-          hint={`${rows.length} in the network`}
-        />
-        <MetricCard
-          label="Patients"
-          value={rows.reduce((sum, row) => sum + row.patientCount, 0)}
-          hint="Registered across all clinics"
-        />
-        <MetricCard
-          label="Staff"
-          value={rows.reduce((sum, row) => sum + row.staffCount, 0)}
-          hint="Accounts assigned to a clinic"
-        />
-        <MetricCard
-          label="Open results"
-          value={rows.reduce((sum, row) => sum + row.openCaseCount, 0)}
-          hint="Still waiting on a step"
-          emphasis={
-            rows.reduce((sum, row) => sum + row.openCaseCount, 0) > 0
-              ? "attention"
-              : "none"
-          }
-        />
-      </SimpleGrid>
+      <ClinicMetrics rows={rows} />
 
       <DataToolbar
         title="Find a clinic"

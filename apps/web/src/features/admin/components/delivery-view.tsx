@@ -1,11 +1,12 @@
 "use client";
 
-import { Alert, Button, Card, SimpleGrid, Stack, Text } from "@mantine/core";
-import { IconSend } from "@tabler/icons-react";
+import { Alert, Card, Stack, Text } from "@mantine/core";
 import { parseAsString, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { deliveryColumns } from "@/features/admin/components/delivery-columns";
+import { DeliveryHeader } from "@/features/admin/components/delivery-header";
+import { DeliveryMetrics } from "@/features/admin/components/delivery-metrics";
 import type { NotificationRow } from "@/features/admin/components/delivery-view-types";
 import { WebhookLogTable } from "@/features/admin/components/webhook-log-table";
 import { useDispatchNotifications } from "@/features/admin/services/mutations";
@@ -13,14 +14,12 @@ import {
   useNotificationStats,
   useRecentNotifications,
 } from "@/features/admin/services/queries";
-import { PageHeader } from "@/features/shared/components/layout/page-header";
 import { DataTable } from "@/features/shared/components/table/data-table";
 import { DataToolbar } from "@/features/shared/components/table/data-toolbar";
 import {
   DataToolbarSearch,
   DataToolbarSelect,
 } from "@/features/shared/components/table/data-toolbar-fields";
-import { MetricCard } from "@/features/shared/components/ui/metric-card";
 
 const CHANNELS = [
   { value: "push", label: "Push" },
@@ -60,19 +59,9 @@ export const DeliveryView = (): ReactNode => {
 
   return (
     <Stack gap="xl">
-      <PageHeader
-        eyebrow="Administration"
-        title="Delivery & integrations"
-        subtitle="Push, SMS fallback, webhook intake and lab-feed health."
-        actions={
-          <Button
-            leftSection={<IconSend size={16} />}
-            loading={dispatch.isPending}
-            onClick={() => dispatch.mutate()}
-          >
-            Run outbox now
-          </Button>
-        }
+      <DeliveryHeader
+        isPending={dispatch.isPending}
+        onRun={() => dispatch.mutate()}
       />
 
       {notifications.isError || stats.isError ? (
@@ -81,29 +70,23 @@ export const DeliveryView = (): ReactNode => {
         </Alert>
       ) : null}
 
-      <SimpleGrid cols={{ base: 1, sm: 2, lg: 5 }}>
-        <MetricCard label="Queued" value={statValue("queued")} />
-        <MetricCard label="Sent" value={statValue("sent")} />
-        <MetricCard label="Read" value={statValue("read")} />
-        <MetricCard
-          label="Failed"
-          value={statValue("failed")}
-          emphasis={statValue("failed") > 0 ? "alert" : "none"}
-        />
-        <MetricCard label="SMS fallback" value={statValue("smsQueued")} />
-      </SimpleGrid>
+      <DeliveryMetrics
+        queued={statValue("queued")}
+        sent={statValue("sent")}
+        read={statValue("read")}
+        failed={statValue("failed")}
+        smsQueued={statValue("smsQueued")}
+        failureCount={failures.length}
+        failureMessage={
+          failures.length === 0 || failures[0].error === null
+            ? null
+            : `${failures[0].caseId.slice(0, 8)}: ${failures[0].error}`
+        }
+      />
 
       {dispatch.isSuccess ? (
         <Alert color="teal">
           Outbox drained: {dispatch.data.delivered} notification(s) delivered.
-        </Alert>
-      ) : null}
-
-      {failures.length > 0 ? (
-        <Alert color="orange" title={`${failures.length} failed deliveries`}>
-          {failures[0].error === null
-            ? "Inspect the failed rows in the outbox table."
-            : `${failures[0].caseId.slice(0, 8)}: ${failures[0].error}`}
         </Alert>
       ) : null}
 
