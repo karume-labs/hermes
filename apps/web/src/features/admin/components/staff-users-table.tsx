@@ -12,7 +12,9 @@ import { DataTableSkeleton } from "@/features/shared/components/table/data-table
 
 const ROLE_OPTIONS = [
   { value: "coordinator", label: "Coordinator" },
-  { value: "admin", label: "Administrator" },
+  { value: "clinician", label: "Clinician" },
+  { value: "org_admin", label: "Organization admin" },
+  { value: "admin", label: "Platform administrator" },
 ];
 
 export interface StaffUserRow {
@@ -63,12 +65,19 @@ export const StaffUsersTable = (): ReactNode => {
             data={ROLE_OPTIONS}
             value={row.original.role}
             allowDeselect={false}
-            onChange={(value) =>
-              update.mutate({
-                id: row.original.id,
-                patch: { role: value === "admin" ? "admin" : "coordinator" },
-              })
-            }
+            onChange={(value) => {
+              if (
+                value === "admin" ||
+                value === "org_admin" ||
+                value === "clinician" ||
+                value === "coordinator"
+              ) {
+                update.mutate({
+                  id: row.original.id,
+                  patch: { role: value },
+                });
+              }
+            }}
           />
         ),
       },

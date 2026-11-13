@@ -46,9 +46,15 @@ export const CaseReferralForm = ({
     defaultValues: { toClinicId: "", note: "" },
   });
 
-  const options = (clinics.data ?? [])
+  const clinicRows = clinics.data ?? [];
+  const options = clinicRows
     .filter((clinic) => clinic.isActive && clinic.id !== originClinicId)
     .map((clinic) => ({ value: clinic.id, label: clinic.name }));
+  const currentClinicName =
+    currentClinicId === null
+      ? null
+      : (clinicRows.find((clinic) => clinic.id === currentClinicId)?.name ??
+        currentClinicId);
 
   const onSubmit = (values: ReferralForm) => {
     refer.mutate(
@@ -60,9 +66,9 @@ export const CaseReferralForm = ({
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Stack gap="sm">
-        {currentClinicId === null ? null : (
+        {currentClinicName === null ? null : (
           <Text size="sm" c="dimmed">
-            Currently referred to {currentClinicId}
+            Currently referred to {currentClinicName}
           </Text>
         )}
         {refer.isError ? (
