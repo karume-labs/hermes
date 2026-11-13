@@ -1,9 +1,4 @@
 [
-  "apps/api/src/features/care-loop/services/case-repository.ts",
-  "apps/api/src/features/care-loop/services/handover-service.ts",
-  "apps/api/src/features/shared/auth/index.ts",
-  "apps/api/src/features/shared/mail/index.ts",
-  "apps/api/src/features/staff/services/staff-service.ts",
   "apps/mobile/app/onboarding.tsx",
   "apps/mobile/app/sign-in.tsx",
   "apps/mobile/lib/api/queries.ts"
