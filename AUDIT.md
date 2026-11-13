@@ -142,7 +142,7 @@ token that has `workflow` scope (or via the GitHub UI).
 | 6 CI | Prepared in `.github/workflows/ci.yml`; still needs a push with `workflow` scope. |
 | 7 `FRONTEND_URL` port | Fixed to `:3100`. |
 | 8 tests | Partly: API `/health` + `/ready` smoke tests added (58 API tests); no browser or device E2E yet. |
-| 9 oversized files | 15 remain; `staff-invite-service` split into create/accept/token files. |
+| 9 oversized files | 13 remain. Split so far: `staff-invite-service` (create/accept/token), `delivery-view` (header/metrics) and `clinics-view` (metrics). |
 | 10 native folders | Already correct: both are git-ignored and untracked; only local generated copies exist. |
 | 11 store links | Unchanged; needs published listings. |
 | 12 www fallback | Fixed with an Astro `env.schema` default. |
