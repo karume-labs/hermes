@@ -80,7 +80,7 @@ token that has `workflow` scope (or via the GitHub UI).
 | 7 | `.env.example` sets `FRONTEND_URL=http://localhost:3000`, while the API default and the dashboard dev server are `:3100`. CORS, Better Auth trusted origin, cookies and reset links all disagree locally. | `apps/api/.env.example:11`, `env/index.ts:13` |
 | 8 | No end-to-end or mobile tests. Coverage is 56 API tests, 8 token tests and one web unit test file; nothing exercises a browser or a device, so route wiring, cookies and mobile navigation are unverified. | `find` inventory |
 | 9 | 16 files still exceed the 150-line cap and are exempted by `scripts/guardrails-legacy.json`: `case-repository`, `handover-service`, `shared/auth`, `shared/mail`, `staff-service`, `staff-invite-service`, mobile `queries`/`sign-in`/`onboarding`, and seven web admin/clinic views. | `scripts/guardrails-legacy.json` |
-| 10 | `apps/mobile/android` and `apps/mobile/ios` are present and tracked. `REACT-NATIVE.MD` bans editing them and expects CNG via `expo prebuild --clean`; they will drift from `app.json`. | directory listing |
+| 10 | `apps/mobile/android` and `apps/mobile/ios` exist on disk but are **not tracked**: `apps/mobile/.gitignore:45-46` ignores both, so only CI-generated copies are used. Confirmed with `git ls-files` (0 entries) and `git check-ignore`. | `.gitignore`, `git ls-files` |
 | 11 | Marketing download CTAs are not deliverable: the iOS link is a store search and the Android package (`com.hermes.care`) is not published. | `apps/www/src/lib/constants.ts:31-36` |
 | 12 | `apps/www` hardcodes `SITE_URL` and falls back to `localhost` for the dashboard URL, duplicating `astro.config.mjs` and violating the no-fallback rule. | `apps/www/src/lib/constants.ts:8,27` |
 | 13 | `infra/caddy/Caddyfile` and the compose stack have no validation or smoke job; TLS/headers/proxy behaviour is unverified in CI. | `infra/` |
@@ -143,7 +143,7 @@ token that has `workflow` scope (or via the GitHub UI).
 | 7 `FRONTEND_URL` port | Fixed to `:3100`. |
 | 8 tests | Partly: API `/health` + `/ready` smoke tests added (58 API tests); no browser or device E2E yet. |
 | 9 oversized files | 15 remain; `staff-invite-service` split into create/accept/token files. |
-| 10 native folders | Unchanged; deleting tracked `android/`/`ios/` needs a decision. |
+| 10 native folders | Already correct: both are git-ignored and untracked; only local generated copies exist. |
 | 11 store links | Unchanged; needs published listings. |
 | 12 www fallback | Fixed with an Astro `env.schema` default. |
 | 13 infra validation | Not done; needs a Caddy/compose job in CI. |
