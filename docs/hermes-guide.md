@@ -1315,7 +1315,9 @@ gateway and `NOTIFY_WEBHOOK_URL` at the SMS sink (push goes directly to Expo).
    bucket (R2, MinIO, Backblaze, AWS); see `docs/operations.md` for the variable
    table and the migration step. Off-host backups remain an infrastructure task.
 4. **App store and EAS credentials** are needed to build and submit the patient
-   app.
+   app. Run `eas init` in `apps/mobile` and put the resulting id in
+   `EXPO_PUBLIC_EAS_PROJECT_ID` (also in `apps/mobile/eas.json`); until then no
+   device token is registered and push stays in-app only.
 5. **Legal review** of `/privacy` and `/terms` by counsel before launch.
 6. **No coordinator mobile app.** Staff work happens in the dashboard; the
    mobile app is patient-only.
