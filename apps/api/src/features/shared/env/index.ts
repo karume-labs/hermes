@@ -14,9 +14,21 @@ const envSchema = Type.Object({
   BETTER_AUTH_SECRET: Type.String({
     default: "hermes-development-secret-change-me-now",
   }),
-  // Case files (lab reports, referral letters) are written to this directory on
-  // the API server's own disk; no object storage is involved.
+  // Case files (lab reports, referral letters). `local` writes them to this
+  // directory on the API server's own disk; `s3` puts them in any
+  // S3-compatible bucket so more than one replica can serve them.
   UPLOAD_DIR: Type.String({ default: "uploads" }),
+  STORAGE_DRIVER: Type.Union([Type.Literal("local"), Type.Literal("s3")], {
+    default: "local",
+  }),
+  S3_BUCKET: Type.String({ default: "" }),
+  // `auto` suits Cloudflare R2; AWS S3 needs a real region.
+  S3_REGION: Type.String({ default: "auto" }),
+  // Leave empty for AWS; set it for R2, MinIO or Backblaze.
+  S3_ENDPOINT: Type.String({ default: "" }),
+  S3_ACCESS_KEY_ID: Type.String({ default: "" }),
+  S3_SECRET_ACCESS_KEY: Type.String({ default: "" }),
+  S3_FORCE_PATH_STYLE: Type.Boolean({ default: false }),
   // Transactional mail. Empty SMTP_HOST means "not configured": sensitive
   // mail (invites, reset links, sign-in codes) then fails loudly instead of
   // pretending it was delivered, while opt-in alerts are logged as skipped.
@@ -88,6 +100,16 @@ if (env.NODE_ENV === "production") {
   // first user action; catch it at boot instead of in production.
   if (env.SMTP_HOST === "") unsafe.push("SMTP_HOST");
   if (env.SMS_WEBHOOK_URL === "") unsafe.push("SMS_WEBHOOK_URL");
+  // The S3 driver is opt-in, but a half-configured one must not boot and then
+  // fail every upload.
+  if (env.STORAGE_DRIVER === "s3") {
+    if (env.S3_BUCKET === "") unsafe.push("S3_BUCKET");
+    if (env.S3_ACCESS_KEY_ID === "") unsafe.push("S3_ACCESS_KEY_ID");
+    if (env.S3_SECRET_ACCESS_KEY === "") unsafe.push("S3_SECRET_ACCESS_KEY");
+    if (env.S3_ENDPOINT === "" && env.S3_REGION === "auto") {
+      unsafe.push("S3_REGION or S3_ENDPOINT");
+    }
+  }
   if (env.API_URL.includes("localhost")) unsafe.push("API_URL");
   if (env.FRONTEND_URL.includes("localhost")) unsafe.push("FRONTEND_URL");
   if (!env.API_URL.startsWith("https://")) unsafe.push("API_URL (https)");

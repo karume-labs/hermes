@@ -1310,8 +1310,10 @@ gateway and `NOTIFY_WEBHOOK_URL` at the SMS sink (push goes directly to Expo).
    fail visibly in the delivery view.
 2. **TLS and DNS.** Caddy terminates TLS, but certificates require public DNS
    and ports 80/443.
-3. **Uploads are single-node disk.** The compose volume keeps them across
-   restarts; object storage and off-host backups remain an infrastructure task.
+3. **Attachments** default to the API host's disk (`STORAGE_DRIVER=local`). Set
+   `STORAGE_DRIVER=s3` with `S3_BUCKET` plus credentials to use any S3-compatible
+   bucket (R2, MinIO, Backblaze, AWS); see `docs/operations.md` for the variable
+   table and the migration step. Off-host backups remain an infrastructure task.
 4. **App store and EAS credentials** are needed to build and submit the patient
    app.
 5. **Legal review** of `/privacy` and `/terms` by counsel before launch.

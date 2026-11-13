@@ -86,7 +86,7 @@ export const attachmentDownloadRouter = new Elysia({
   prefix: "/attachments",
 }).get(
   "/:id",
-  async ({ params, headers, set }) => {
+  async ({ params, headers }) => {
     const attachment = await findAttachment(params.id);
     if (attachment === null) throw new NotFoundError("File not found");
 
@@ -109,12 +109,13 @@ export const attachmentDownloadRouter = new Elysia({
     }
 
     const safeName = attachment.filename.replace(/[^\w.\- ]/g, "_");
-    set.headers["content-type"] = attachment.mimeType;
-    set.headers["content-disposition"] = `inline; filename="${safeName}"`;
-    set.headers["cache-control"] = "private, no-store";
-    set.headers["x-content-type-options"] = "nosniff";
-    set.headers["content-security-policy"] = "sandbox";
-    return readUpload(attachment.storedName);
+    return readUpload(attachment.storedName, {
+      "content-type": attachment.mimeType,
+      "content-disposition": `inline; filename="${safeName}"`,
+      "cache-control": "private, no-store",
+      "x-content-type-options": "nosniff",
+      "content-security-policy": "sandbox",
+    });
   },
   { headers: authHeader },
 );

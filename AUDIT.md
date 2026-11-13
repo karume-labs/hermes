@@ -12,9 +12,9 @@ Current gate status (all green on `main`):
 ```
 bun run format        # clean
 bun run lint          # 474 files, 0 errors (2 CSS specificity warnings)
-bun run check:guardrails  # 412 files OK
+bun run check:guardrails  # 463 files OK, no exemptions
 bun run typecheck     # 0 errors, 8 workspaces
-bun run test          # 56 api + 8 token tests pass
+bun run test          # 70 api + 8 token tests pass
 apps/web build        # succeeded (previous run)
 ```
 
@@ -141,14 +141,14 @@ token that has `workflow` scope (or via the GitHub UI).
 | 5 mobile env | Fixed: validated, https-only in production, dev-only localhost default. |
 | 6 CI | Prepared in `.github/workflows/ci.yml`; still needs a push with `workflow` scope. |
 | 7 `FRONTEND_URL` port | Fixed to `:3100`. |
-| 8 tests | Partly: API `/health` + `/ready` smoke tests added (58 API tests); no browser or device E2E yet. |
+| 8 tests | Partly: 70 API tests now cover health/readiness, organization scoping, booking, reminders, upload validation and storage, and mail copy/preferences. No browser or device E2E yet. |
 | 9 oversized files | Fixed: every file is under the cap and the legacy allowlist is empty. Views split into header/metrics/toolbar parts, API services into query/guard/action modules, mobile queries per domain and the sign-in/onboarding screens per step. |
 | 10 native folders | Already correct: both are git-ignored and untracked; only local generated copies exist. |
 | 11 store links | Unchanged; needs published listings. |
 | 12 www fallback | Fixed with an Astro `env.schema` default. |
 | 13 infra validation | Fixed in CI: `docker compose config --quiet` and `caddy validate` job. |
-| 14 local-disk uploads | Unchanged; needs a storage service choice. |
-| 15 email delivery | Unverified; needs SMTP credentials. |
+| 14 local-disk uploads | Fixed: `STORAGE_DRIVER=local\|s3` with an S3-compatible driver (`S3_BUCKET`, region/endpoint, keys), a production guard against a half-configured bucket, and validation/storage tests. Moving existing files is documented in `docs/operations.md`. |
+| 15 email delivery | Partly: template escaping, preference suppression and the skip path are now tested; live delivery still needs SMTP credentials (`docs/operations.md` §4). |
 | 16 staff preferences UI | Fixed: `GET /staff/me/preferences` plus a `/settings` page and nav item for every role; saving invalidates the session and preference query. |
 | 17 organisation tests | Fixed: `apps/api/tests/organization.test.ts` covers scoping, session-derived org, cross-org refusal and the customer list. Its first run exposed a broken clinical count query (`clinics.id` selected from a `user`-only query); `listOrganizationClinics` now groups by `user.clinicId`. |
 
