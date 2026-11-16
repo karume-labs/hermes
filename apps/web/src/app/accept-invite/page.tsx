@@ -1,3 +1,7 @@
+// Search params are read per request, so opt out of instant navigation
+// validation.
+export const instant = false;
+
 import { Card, Text, Title } from "@mantine/core";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";

@@ -1,3 +1,7 @@
+// Search params are read per request, so opt out of instant navigation
+// validation.
+export const instant = false;
+
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { AuthLayout } from "@/features/auth/components/auth-layout";

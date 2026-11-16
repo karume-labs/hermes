@@ -1,3 +1,7 @@
+// The form reads the session before it renders, so opt out of instant
+// navigation validation like the dashboard pages behind the same gate.
+export const instant = false;
+
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { AuthLayout } from "@/features/auth/components/auth-layout";
