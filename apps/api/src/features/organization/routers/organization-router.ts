@@ -100,13 +100,16 @@ export const organizationRouter = new Elysia({ prefix: "/organizations" })
     },
     { params: idParams, body: ClinicUpdateSchema, headers: authHeader },
   )
-  // Every staff member can see the organization they work for.
+  // Every staff member can see the organization they work for. The envelope
+  // keeps the "no organization" answer a real JSON body: a bare `null` is
+  // serialized as an empty response, which reads as an object on the client.
   .get(
     "/mine",
     async ({ headers }) => {
       const staff = await requireStaff(headers);
-      if (staff.organizationId === null) return null;
-      return requireOrganization(staff.organizationId);
+      if (staff.organizationId === null) return { organization: null };
+      const organization = await requireOrganization(staff.organizationId);
+      return { organization };
     },
     { headers: authHeader },
   );

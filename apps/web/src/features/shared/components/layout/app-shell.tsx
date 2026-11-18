@@ -19,6 +19,7 @@ import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { authClient } from "@/features/auth/services/client";
 import { AppNavbar } from "@/features/shared/components/layout/app-navbar";
+import { ShellSkeleton } from "@/features/shared/components/layout/shell-skeleton";
 import { ThemeToggle } from "@/features/shared/components/layout/theme-toggle";
 import { UserMenu } from "@/features/shared/components/layout/user-menu";
 
@@ -31,14 +32,6 @@ interface AppShellLayoutProps {
   children: ReactNode;
 }
 
-/** Shown while the client session read lands: the shell, not a white page. */
-const ShellSkeleton = (): ReactNode => (
-  <div className="hermes-shell-skeleton">
-    <Skeleton height={56} radius="lg" />
-    <Skeleton height={420} radius="lg" />
-  </div>
-);
-
 export const AppShellLayout = ({
   children,
 }: AppShellLayoutProps): ReactNode => {
@@ -48,7 +41,14 @@ export const AppShellLayout = ({
     defaultValue: true,
   });
   const router = useRouter();
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session, isPending, refetch } = authClient.useSession();
+
+  // The session atom normally fetches as it mounts. When that first read is
+  // skipped, the shell would show its skeleton with no request in flight, so
+  // ask once more instead of waiting on a page that will never fill in.
+  useEffect(() => {
+    if (isPending) void refetch();
+  }, [isPending, refetch]);
 
   // proxy.ts already blocks signed-out traffic; this covers client-side
   // navigation and expired sessions without a server fetch in the layout.

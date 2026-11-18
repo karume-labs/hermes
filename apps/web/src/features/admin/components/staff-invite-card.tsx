@@ -29,7 +29,11 @@ export const StaffInviteCard = (): ReactNode => {
   // Platform operators pick any clinic or organization; an org admin is
   // limited to the clinics of their own organization.
   const clinics = useClinics(isPlatformAdmin);
-  const orgClinics = useOrganizationClinics(!isPlatformAdmin);
+  // Same rule as the clinics card: no organization query until the session
+  // names a role, and never for a platform operator.
+  const orgClinics = useOrganizationClinics(
+    session.data !== undefined && !isPlatformAdmin,
+  );
   const organizations = useOrganizations(isPlatformAdmin);
   const create = useCreateStaffInvite();
   const [name, setName] = useState("");

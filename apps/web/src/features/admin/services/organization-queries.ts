@@ -22,7 +22,7 @@ export const useMyOrganization = () =>
     queryFn: async () => {
       const response = await api.organizations.mine.get();
       if (response.error) throw response.error;
-      return response.data;
+      return response.data.organization;
     },
   });
 

@@ -11,6 +11,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import {
@@ -18,10 +19,18 @@ import {
   useUpdateOrgClinic,
 } from "@/features/admin/services/organization-mutations";
 import { useOrganizationClinics } from "@/features/admin/services/organization-queries";
+import { authClient } from "@/features/auth/services/client";
 import { errorMessage } from "@/features/shared/utils/form-errors";
 
 export const OrgClinicsCard = (): ReactNode => {
-  const clinics = useOrganizationClinics();
+  const session = authClient.useSession();
+  const role = session.data?.user.role;
+  // A platform operator belongs to no organization, so asking for "my
+  // organization's clinics" answers 409. Wait for the session and skip it.
+  const isPlatformAdmin = role === "admin";
+  const clinics = useOrganizationClinics(
+    role !== undefined && !isPlatformAdmin,
+  );
   const createClinic = useCreateOrgClinic();
   const updateClinic = useUpdateOrgClinic();
   const [clinicId, setClinicId] = useState("");
@@ -31,6 +40,28 @@ export const OrgClinicsCard = (): ReactNode => {
   const submitClinic = (): void => {
     createClinic.mutate({ id: clinicId.trim(), name: clinicName.trim() });
   };
+
+  if (isPlatformAdmin) {
+    return (
+      <Card radius="sm" p="lg" bd="1px solid var(--hermes-line)">
+        <Title order={3} mb="sm">
+          Clinics
+        </Title>
+        <Text size="sm" c="dimmed" mb="md">
+          Your account is not attached to one organization. Every clinic in the
+          network is managed from the clinic directory.
+        </Text>
+        <Button
+          component={Link}
+          href="/admin/clinics"
+          variant="light"
+          w="fit-content"
+        >
+          Open clinic directory
+        </Button>
+      </Card>
+    );
+  }
 
   return (
     <Card radius="sm" p="lg" bd="1px solid var(--hermes-line)">
