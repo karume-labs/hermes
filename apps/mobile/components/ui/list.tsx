@@ -8,16 +8,25 @@ import { cn } from "@/lib/utils";
 interface ListSectionProps {
   title?: string;
   footer?: string;
+  icon?: ReactNode;
   children: ReactNode;
 }
 
 /** Inset grouped list, the shape phones use for settings and record rows. */
-export const ListSection = ({ title, footer, children }: ListSectionProps) => (
+export const ListSection = ({
+  title,
+  footer,
+  icon,
+  children,
+}: ListSectionProps) => (
   <View className="gap-2">
     {title === undefined ? null : (
-      <Text className="px-5 text-[12px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-        {title}
-      </Text>
+      <View className="flex-row items-center gap-2 px-5">
+        {icon}
+        <Text className="text-[12px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+          {title}
+        </Text>
+      </View>
     )}
     <View className="mx-4 overflow-hidden rounded-[16px] border border-border/80 bg-card">
       {children}

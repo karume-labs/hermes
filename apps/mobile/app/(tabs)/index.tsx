@@ -1,3 +1,4 @@
+import { HeartPulse } from "lucide-react-native";
 import { RefreshControl, ScrollView } from "react-native";
 import { BiometricGate } from "@/components/care/biometric-gate";
 import {
@@ -7,6 +8,7 @@ import {
 } from "@/components/care/home-empty-state";
 import { ResultSections } from "@/components/care/result-sections";
 import { TabScreen } from "@/components/layout/tab-screen";
+import { Icon } from "@/components/ui/icon";
 import { ScreenHeader } from "@/components/ui/screen-header";
 import { ScreenSkeleton } from "@/components/ui/screen-skeleton";
 import { useHomeCases } from "@/lib/use-home-cases";
@@ -40,10 +42,11 @@ const HomeScreen = () => {
             eyebrow="Blood results"
             title="Your care loop"
             subtitle="Screening results, bookings and follow-up in one place."
+            icon={<Icon as={HeartPulse} className="size-5 text-primary" />}
           />
 
           {patientId === null ? null : (
-            <SignedInBanner patientId={patientId} patientLabel={patientLabel} />
+            <SignedInBanner patientLabel={patientLabel} />
           )}
 
           {loading ? <ScreenSkeleton rows={3} withHeader={false} /> : null}

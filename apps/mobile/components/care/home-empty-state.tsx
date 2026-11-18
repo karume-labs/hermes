@@ -41,21 +41,27 @@ export const HomeErrorCard = ({
 );
 
 export const SignedInBanner = ({
-  patientId,
   patientLabel,
 }: {
-  patientId: string;
   patientLabel: string;
 }): React.ReactNode => (
-  <View className="mx-4 flex-row items-center justify-between rounded-[18px] bg-card p-4">
-    <View className="flex-1 gap-1">
-      <Text className="text-[12px] font-semibold uppercase tracking-wide text-muted-foreground">
-        Signed in
-      </Text>
-      <Text className="text-[15px] font-semibold">
-        {patientLabel === "" ? patientId : patientLabel}
+  <View className="mx-4 flex-row items-center gap-3 rounded-[18px] border border-border/70 bg-card p-4">
+    <View className="size-10 items-center justify-center rounded-full bg-primary/15">
+      <Text className="text-[15px] font-extrabold text-primary">
+        {(patientLabel === "" ? "H" : patientLabel).slice(0, 1).toUpperCase()}
       </Text>
     </View>
-    <View className="size-2.5 rounded-full bg-success" />
+    <View className="flex-1 gap-0.5">
+      <Text className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+        Signed in
+      </Text>
+      <Text className="text-[15px] font-semibold" numberOfLines={1}>
+        {patientLabel === "" ? "Your account" : patientLabel}
+      </Text>
+    </View>
+    <View className="flex-row items-center gap-1.5 rounded-full border border-success/30 bg-success-fill px-2.5 py-1">
+      <View className="size-1.5 rounded-full bg-success" />
+      <Text className="text-[11px] font-bold text-success">Secure</Text>
+    </View>
   </View>
 );
