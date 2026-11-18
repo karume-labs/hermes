@@ -34,10 +34,19 @@ export const SignInForm = (): ReactNode => {
   const onSubmit = (values: SignInBody) => signIn.mutate(values);
 
   return (
-    <Card w={420} maw="100%" p="xl" radius="sm">
+    <Card w={420} maw="100%" p="xl" radius="lg">
       <Stack gap="md">
-        <Stack gap={4}>
-          <Title order={2} fw={900} c="var(--hermes-ink)">
+        <Stack gap={6}>
+          <span
+            aria-hidden
+            style={{
+              width: 22,
+              height: 3,
+              borderRadius: 2,
+              backgroundColor: "var(--hermes-accent)",
+            }}
+          />
+          <Title order={2} fw={800} c="var(--hermes-ink)" lts="-0.02em">
             Sign in
           </Title>
           <Text size="sm" c="dimmed">
@@ -45,7 +54,7 @@ export const SignInForm = (): ReactNode => {
           </Text>
         </Stack>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form method="post" onSubmit={handleSubmit(onSubmit)}>
           <Stack gap="md">
             {signIn.isError ? (
               <Alert color="red" title="Sign-in failed">

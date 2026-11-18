@@ -31,7 +31,16 @@
   --hermes-urgent-fill: #fee2e2;
   --hermes-info-text: #075985;
   --hermes-info-fill: #e0f2fe;
-
+  /* Elevation stays whisper-quiet: hairlines do the work, shadow only lifts. */
+  --hermes-elev-1: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 24px -18px
+    rgba(15, 23, 42, 0.35);
+  --hermes-elev-2: 0 2px 4px rgba(15, 23, 42, 0.05), 0 20px 44px -26px
+    rgba(15, 23, 42, 0.45);
+  --hermes-glow: radial-gradient(
+    120% 120% at 0% 0%,
+    rgba(75, 184, 231, 0.28) 0%,
+    rgba(75, 184, 231, 0) 58%
+  );
 }
 
 /*
@@ -80,7 +89,15 @@
   --hermes-urgent-fill: #3f1414;
   --hermes-info-text: #7dd3fc;
   --hermes-info-fill: #062f45;
-
+  --hermes-elev-1: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 28px -20px
+    rgba(0, 0, 0, 0.9);
+  --hermes-elev-2: 0 2px 6px rgba(0, 0, 0, 0.6), 0 24px 52px -28px
+    rgba(0, 0, 0, 0.95);
+  --hermes-glow: radial-gradient(
+    120% 120% at 0% 0%,
+    rgba(75, 184, 231, 0.18) 0%,
+    rgba(75, 184, 231, 0) 60%
+  );
 }
 
 body {
@@ -257,4 +274,102 @@ h6,
 /* Escalated rows carry a 4px urgent marker, not colour alone. */
 .hermes-escalated td:first-child {
   box-shadow: inset 4px 0 0 var(--hermes-urgent-text);
+}
+
+/* ---------------------------------------------------------------------------
+ * Surface language
+ * Cards lift by 1px and pick up a quiet shadow; nothing else moves. Table
+ * heads read as furniture, and the sidebar carries the navy brand band.
+ * ------------------------------------------------------------------------- */
+
+.hermes-kpi {
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+
+.hermes-kpi:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--hermes-elev-1);
+  border-color: color-mix(in srgb, var(--hermes-line) 60%, var(--hermes-accent));
+}
+
+.hermes-kpi::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 3px;
+  border-radius: inherit;
+  opacity: 0;
+  background: var(--hermes-accent);
+  transition: opacity 160ms ease;
+}
+
+.hermes-kpi {
+  position: relative;
+  overflow: hidden;
+}
+
+.hermes-kpi:hover::after {
+  opacity: 0.55;
+}
+
+/* Column heads: small, spaced, tinted, never louder than the data. */
+.hermes-table thead th {
+  background-color: var(--hermes-surface-tint);
+  border-bottom: 1px solid var(--hermes-line);
+}
+
+.hermes-table thead th .mantine-Table-th {
+  padding-block: 10px;
+}
+
+.hermes-table thead th > * {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--hermes-ink-muted);
+}
+
+.hermes-table tbody tr {
+  transition: background-color 140ms ease;
+}
+
+/* Navy brand band: the only place the brand surface appears in the product. */
+.hermes-brand-band {
+  background-image: var(--hermes-glow), linear-gradient(160deg, #003b5c, #002a42);
+  color: var(--hermes-on-brand);
+}
+
+[data-mantine-color-scheme="dark"] .hermes-brand-band {
+  background-image: var(--hermes-glow), linear-gradient(160deg, #141922, #0d1118);
+}
+
+/* Header bar sits above the canvas with a hairline, not a shadow. */
+.hermes-header {
+  backdrop-filter: saturate(180%) blur(8px);
+  background-color: color-mix(in srgb, var(--hermes-surface) 88%, transparent);
+}
+
+/* Menus and popovers get the same quiet elevation as cards. */
+.mantine-Menu-dropdown,
+.mantine-Popover-dropdown,
+.mantine-Modal-content {
+  box-shadow: var(--hermes-elev-2);
+}
+
+/* Horizontal scrollbars inside tables: thin, neutral, never a white slab. */
+.hermes-table ::-webkit-scrollbar,
+.mantine-ScrollArea-viewport::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.hermes-table ::-webkit-scrollbar-thumb,
+.mantine-ScrollArea-viewport::-webkit-scrollbar-thumb {
+  background-color: var(--hermes-line);
+  border-radius: 8px;
 }

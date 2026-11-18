@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { AppNavbar } from "@/features/shared/components/layout/app-navbar";
+import { HeaderContext } from "@/features/shared/components/layout/header-context";
 import { ShellSkeleton } from "@/features/shared/components/layout/shell-skeleton";
 import { ThemeToggle } from "@/features/shared/components/layout/theme-toggle";
 import { useShellSession } from "@/features/shared/components/layout/use-shell-session";
@@ -83,6 +84,7 @@ export const AppShellLayout = ({
           radius="lg"
           bg="var(--hermes-surface)"
           withBorder
+          className="hermes-header"
           style={{ overflow: "hidden" }}
         >
           <Group h="100%" justify="space-between" wrap="nowrap" gap="sm">
@@ -110,6 +112,7 @@ export const AppShellLayout = ({
                   <IconLayoutSidebar size={22} stroke={1.5} />
                 </ActionIcon>
               </Tooltip>
+              <HeaderContext role={panelRole} />
             </Group>
             <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
               <ThemeToggle />
