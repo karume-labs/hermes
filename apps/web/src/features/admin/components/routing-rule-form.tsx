@@ -4,10 +4,11 @@ import {
   type RoutingRuleForm as RoutingRuleFields,
   routingRuleForm,
 } from "@hermes/validators";
-import { Alert, Button, Group, Text, TextInput } from "@mantine/core";
+import { Alert, Button, Group, Select, Text, TextInput } from "@mantine/core";
 import type { ReactNode } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useUpsertRoutingRule } from "@/features/admin/services/mutations";
+import { useAdminClinics } from "@/features/admin/services/queries";
 import {
   errorMessage,
   friendlyTypeboxResolver,
@@ -15,14 +16,19 @@ import {
 
 export const RoutingRuleComposer = (): ReactNode => {
   const upsert = useUpsertRoutingRule();
+  const clinics = useAdminClinics();
+  const clinicOptions = (clinics.data === undefined ? [] : clinics.data).map(
+    (clinic) => ({ value: clinic.id, label: clinic.name }),
+  );
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<RoutingRuleFields>({
     resolver: friendlyTypeboxResolver(routingRuleForm),
-    defaultValues: { markerPrefix: "", clinicId: "clinic-1" },
+    defaultValues: { markerPrefix: "", clinicId: "" },
   });
 
   const onSubmit = (values: RoutingRuleFields) =>
@@ -46,11 +52,28 @@ export const RoutingRuleComposer = (): ReactNode => {
           error={errors.markerPrefix?.message}
           {...register("markerPrefix")}
         />
-        <TextInput
-          label="Clinic"
-          placeholder="clinic-1"
-          error={errors.clinicId?.message}
-          {...register("clinicId")}
+        <Controller
+          control={control}
+          name="clinicId"
+          render={({ field, fieldState }) => (
+            <Select
+              label="Clinic"
+              placeholder={
+                clinics.isLoading ? "Loading clinics" : "Choose a clinic"
+              }
+              data={clinicOptions}
+              searchable
+              w={240}
+              value={field.value === "" ? null : field.value}
+              onChange={(next) => field.onChange(next === null ? "" : next)}
+              nothingFoundMessage="No clinic matches"
+              error={
+                clinics.isError
+                  ? errorMessage(clinics.error)
+                  : fieldState.error?.message
+              }
+            />
+          )}
         />
         <Button type="submit" mt={25} loading={upsert.isPending}>
           Save rule

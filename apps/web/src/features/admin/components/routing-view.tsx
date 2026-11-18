@@ -5,14 +5,17 @@ import { Alert, Card, Stack, Text } from "@mantine/core";
 import type { ColumnDef } from "@tanstack/react-table";
 import { parseAsString, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { routingColumns } from "@/features/admin/components/routing-columns";
 import { RoutingRuleComposer } from "@/features/admin/components/routing-rule-form";
 import {
   useDeleteRoutingRule,
   useUpsertRoutingRule,
 } from "@/features/admin/services/mutations";
-import { useRoutingRules } from "@/features/admin/services/queries";
+import {
+  useAdminClinics,
+  useRoutingRules,
+} from "@/features/admin/services/queries";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
 import { DataTable } from "@/features/shared/components/table/data-table";
 import { DataTableSkeleton } from "@/features/shared/components/table/data-table-skeleton";
@@ -22,6 +25,7 @@ import { errorMessage } from "@/features/shared/utils/form-errors";
 
 export const RoutingView = (): ReactNode => {
   const rules = useRoutingRules();
+  const clinics = useAdminClinics();
   const upsert = useUpsertRoutingRule();
   const remove = useDeleteRoutingRule();
   const [search, setSearch] = useQueryState(
@@ -29,12 +33,23 @@ export const RoutingView = (): ReactNode => {
     parseAsString.withDefault(""),
   );
   const items = rules.data === undefined ? [] : rules.data;
+  const clinicNames = useMemo<Map<string, string>>(() => {
+    const map = new Map<string, string>();
+    for (const clinic of clinics.data === undefined ? [] : clinics.data) {
+      map.set(clinic.id, clinic.name);
+    }
+    return map;
+  }, [clinics.data]);
+  const clinicLabel = useCallback(
+    (clinicId: string): string => clinicNames.get(clinicId) ?? clinicId,
+    [clinicNames],
+  );
   const term = search.trim().toLowerCase();
   const filtered = items.filter(
     (rule) =>
       term === "" ||
       rule.markerPrefix.toLowerCase().includes(term) ||
-      rule.clinicId.toLowerCase().includes(term),
+      clinicLabel(rule.clinicId).toLowerCase().includes(term),
   );
 
   const columns = useMemo<ColumnDef<RoutingRule, unknown>[]>(
@@ -42,6 +57,7 @@ export const RoutingView = (): ReactNode => {
       routingColumns({
         upserting: upsert.isPending,
         removing: remove.isPending,
+        clinicLabel,
         onSetActive: (rule, active) =>
           upsert.mutate({
             markerPrefix: rule.markerPrefix,
@@ -50,7 +66,7 @@ export const RoutingView = (): ReactNode => {
           }),
         onRemove: (id) => remove.mutate(id),
       }),
-    [remove, upsert],
+    [clinicLabel, remove, upsert],
   );
 
   const error = rules.isError

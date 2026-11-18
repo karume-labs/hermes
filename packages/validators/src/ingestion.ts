@@ -74,7 +74,9 @@ export const RoutingRuleSchema = routingRuleSchema;
 export const routingRuleForm = Type.Object({
   markerPrefix: routingRuleSchema.properties.markerPrefix,
   clinicId: routingRuleSchema.properties.clinicId,
-  active: Type.Boolean({ default: true }),
+  // The composer always saves an active rule; keeping this optional keeps the
+  // form validator from failing on a field the form never renders.
+  active: routingRuleSchema.properties.active,
 });
 export type RoutingRuleForm = Static<typeof routingRuleForm>;
 export type RoutingRuleBody = Static<typeof routingRuleSchema>;

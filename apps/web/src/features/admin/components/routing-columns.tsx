@@ -11,6 +11,7 @@ import { Pill } from "@/features/shared/components/ui/pill";
 interface RoutingColumnActions {
   upserting: boolean;
   removing: boolean;
+  clinicLabel: (clinicId: string) => string;
   onSetActive: (rule: RoutingRule, active: boolean) => void;
   onRemove: (id: string) => void;
 }
@@ -19,6 +20,7 @@ interface RoutingColumnActions {
 export const routingColumns = ({
   upserting,
   removing,
+  clinicLabel,
   onSetActive,
   onRemove,
 }: RoutingColumnActions): ColumnDef<RoutingRule, unknown>[] => [
@@ -35,9 +37,9 @@ export const routingColumns = ({
   {
     id: "clinic",
     header: "Clinic",
-    accessorFn: (row) => row.clinicId,
+    accessorFn: (row) => clinicLabel(row.clinicId),
     cell: ({ row }): ReactNode => (
-      <Pill tone="info">{row.original.clinicId}</Pill>
+      <Pill tone="info">{clinicLabel(row.original.clinicId)}</Pill>
     ),
   },
   {
