@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, Stack } from "@mantine/core";
+import { IconStethoscope } from "@tabler/icons-react";
 import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
 import { authClient } from "@/features/auth/services/client";
@@ -99,6 +100,8 @@ export const QueueView = (): ReactNode => {
         eyebrow="Care team"
         title="Your queue"
         subtitle="Results that still need a person. The soonest deadline sits at the top; the list refreshes itself every 30 seconds."
+        icon={<IconStethoscope size={24} />}
+        tone="info"
       />
 
       {list.isError ? (

@@ -2,6 +2,7 @@
 
 import type { RoutingRule } from "@hermes/types";
 import { Alert, Card, Stack, Text } from "@mantine/core";
+import { IconRoute } from "@tabler/icons-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { parseAsString, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
@@ -81,6 +82,8 @@ export const RoutingView = (): ReactNode => {
         eyebrow="Administration"
         title="Routing configuration"
         subtitle="Incoming lab markers are matched by longest lowercase prefix. Unmatched results fall back to the configured default clinic."
+        icon={<IconRoute size={24} />}
+        tone="info"
       />
 
       {rules.isError || upsert.isError || remove.isError ? (

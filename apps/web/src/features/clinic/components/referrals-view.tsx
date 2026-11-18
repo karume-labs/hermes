@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, SimpleGrid, Stack } from "@mantine/core";
+import { IconArrowsExchange } from "@tabler/icons-react";
 import { parseAsString, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
 import { referralColumns } from "@/features/clinic/components/referral-columns";
@@ -49,6 +50,8 @@ export const ReferralsView = (): ReactNode => {
         eyebrow="Care team"
         title="Referrals"
         subtitle="Hand-offs into and out of this clinic. Accept, decline or complete them on the case file."
+        icon={<IconArrowsExchange size={24} />}
+        tone="info"
       />
 
       {referrals.isError ? (

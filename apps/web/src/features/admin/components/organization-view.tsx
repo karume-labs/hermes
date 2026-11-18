@@ -9,6 +9,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { IconBuildingCommunity } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { OrgAlertPreferencesCard } from "@/features/admin/components/org-alert-preferences-card";
 import { OrgClinicsCard } from "@/features/admin/components/org-clinics-card";
@@ -38,6 +39,8 @@ export const OrganizationView = (): ReactNode => {
         eyebrow="Organization"
         title={org === null ? "Your organization" : org.name}
         subtitle="Run your clinics and care teams here. Results your clinics record appear in the patient app automatically."
+        icon={<IconBuildingCommunity size={24} />}
+        tone="info"
       />
 
       {organization.isPending ? (

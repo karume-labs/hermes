@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, SimpleGrid, Stack } from "@mantine/core";
+import { IconHistory } from "@tabler/icons-react";
 import { parseAsString, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
 import { auditColumns } from "@/features/admin/components/audit-columns";
@@ -45,6 +46,7 @@ export const AuditView = (): ReactNode => {
         eyebrow="Administration"
         title="Audit trail"
         subtitle="Every clinical and access event across all clinics, newest first."
+        icon={<IconHistory size={24} />}
       />
 
       {audit.isError ? (

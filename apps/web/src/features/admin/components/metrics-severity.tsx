@@ -2,33 +2,14 @@
 
 import { Card, Group, Progress, SimpleGrid, Stack, Text } from "@mantine/core";
 import type { ReactNode } from "react";
+import {
+  SEVERITY,
+  SeverityBar,
+  type SeverityName,
+} from "@/features/admin/components/metrics-severity-bar";
+import { IconTile } from "@/features/shared/components/ui/icon-tile";
 
-/* One accent for every bar: the label and value carry the comparison. */
-const BAR_COLOR = "var(--hermes-ink-muted)";
-
-interface SeverityBarProps {
-  label: string;
-  hours: number;
-  target: string;
-}
-
-const SeverityBar = ({ label, hours, target }: SeverityBarProps): ReactNode => (
-  <Stack gap={6}>
-    <Group justify="space-between">
-      <Text size="sm" fw={600}>
-        {label}
-      </Text>
-      <Text size="sm" c="dimmed">
-        {hours}h · target {target}
-      </Text>
-    </Group>
-    <Progress
-      value={Math.min((hours / 72) * 100, 100)}
-      color={BAR_COLOR}
-      size="sm"
-    />
-  </Stack>
-);
+const ORDER: SeverityName[] = ["Routine", "Actionable", "Urgent"];
 
 export interface SeveritySectionProps {
   ackBySeverity: { Routine: number; Actionable: number; Urgent: number };
@@ -42,67 +23,75 @@ export const SeveritySection = ({
   total,
 }: SeveritySectionProps): ReactNode => (
   <SimpleGrid cols={{ base: 1, lg: 2 }}>
-    <Card
-      radius="sm"
-      p="xl"
-      bg="var(--hermes-surface)"
-      bd="1px solid var(--hermes-line)"
-    >
-      <Text size="md" fw={700} mb="lg">
-        How fast patients respond, by severity
-      </Text>
+    <Card p="xl" bg="var(--hermes-surface)" bd="1px solid var(--hermes-line)">
+      <Group justify="space-between" mb="lg">
+        <Text size="md" fw={800}>
+          How fast patients respond
+        </Text>
+        <Text size="xs" c="dimmed">
+          by severity
+        </Text>
+      </Group>
       <Stack gap="lg">
-        <SeverityBar
-          label="Routine"
-          hours={ackBySeverity.Routine}
-          target="< 72h"
-        />
-        <SeverityBar
-          label="Actionable"
-          hours={ackBySeverity.Actionable}
-          target="< 24h"
-        />
-        <SeverityBar
-          label="Urgent"
-          hours={ackBySeverity.Urgent}
-          target="< 4h"
-        />
+        {ORDER.map((label) => (
+          <SeverityBar
+            key={label}
+            label={label}
+            hours={ackBySeverity[label]}
+            target={
+              label === "Routine"
+                ? "< 72h"
+                : label === "Actionable"
+                  ? "< 24h"
+                  : "< 4h"
+            }
+            scale={72}
+          />
+        ))}
       </Stack>
     </Card>
 
-    <Card
-      radius="sm"
-      p="xl"
-      bg="var(--hermes-surface)"
-      bd="1px solid var(--hermes-line)"
-    >
-      <Text size="md" fw={700} mb="lg">
-        Severity mix
-      </Text>
+    <Card p="xl" bg="var(--hermes-surface)" bd="1px solid var(--hermes-line)">
+      <Group justify="space-between" mb="lg">
+        <Text size="md" fw={800}>
+          Severity mix
+        </Text>
+        <Text size="xs" c="dimmed">
+          {total} cases
+        </Text>
+      </Group>
       <Stack gap="lg">
-        {(
-          [
-            ["Routine", mix.Routine],
-            ["Actionable", mix.Actionable],
-            ["Urgent", mix.Urgent],
-          ] as const
-        ).map(([label, value]) => (
-          <Stack gap={6} key={label}>
-            <Group justify="space-between">
-              <Text size="sm" fw={600}>
-                {label}
-              </Text>
-              <Text size="sm" c="dimmed">
-                {value} · {total === 0 ? 0 : Math.round((value / total) * 100)}%
-              </Text>
-            </Group>
-            <Progress
-              value={total === 0 ? 0 : (value / total) * 100}
-              color={BAR_COLOR}
-              size="sm"
-            />
-          </Stack>
-        ))}
+        {ORDER.map((label) => {
+          const value = mix[label];
+          const share = total === 0 ? 0 : Math.round((value / total) * 100);
+          return (
+            <Stack gap={6} key={label}>
+              <Group justify="space-between" gap="sm">
+                <Group gap={8} align="center">
+                  <IconTile tone={SEVERITY[label].tone} size={26} radius={8}>
+                    {SEVERITY[label].icon}
+                  </IconTile>
+                  <Text size="sm" fw={700}>
+                    {label}
+                  </Text>
+                </Group>
+                <Text size="sm" c="dimmed">
+                  <Text span fw={800} c="var(--hermes-ink)">
+                    {value}
+                  </Text>
+                  {" · "}
+                  {share}%
+                </Text>
+              </Group>
+              <Progress
+                value={share}
+                color={SEVERITY[label].color}
+                size="md"
+                radius="xl"
+              />
+            </Stack>
+          );
+        })}
       </Stack>
     </Card>
   </SimpleGrid>

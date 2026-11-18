@@ -18,6 +18,8 @@ export const DeliveryHeader = ({
     eyebrow="Administration"
     title="Delivery & integrations"
     subtitle="Push, SMS fallback, webhook intake and lab-feed health."
+    icon={<IconSend size={24} />}
+    tone="info"
     actions={
       <Button
         leftSection={<IconSend size={16} />}

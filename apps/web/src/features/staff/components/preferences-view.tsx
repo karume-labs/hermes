@@ -8,6 +8,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { IconAdjustmentsAlt } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { useUpdateOwnPreferences } from "@/features/admin/services/organization-mutations";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
@@ -37,6 +38,7 @@ export const PreferencesView = (): ReactNode => {
         eyebrow="Account"
         title="Preferences"
         subtitle="Choose how Hermes reaches you about results, reviews and visits."
+        icon={<IconAdjustmentsAlt size={24} />}
       />
 
       {preferences.isError ? (

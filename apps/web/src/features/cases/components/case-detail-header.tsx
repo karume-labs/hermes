@@ -2,6 +2,7 @@
 
 import type { CaseDetail } from "@hermes/types";
 import { Anchor, Group, Stack, Text } from "@mantine/core";
+import { IconFileText } from "@tabler/icons-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { SeverityBadge } from "@/features/cases/components/case-severity-badge";
@@ -19,11 +20,14 @@ export const CaseDetailHeader = ({
       <Anchor component={Link} href="/queue" size="xs" c="dimmed">
         Queue
       </Anchor>{" "}
-      / {careCase.id.slice(0, 8)}
+      /{" "}
+      <Text span ff="monospace" size="xs">
+        {careCase.id.slice(0, 8).toUpperCase()}
+      </Text>
     </Text>
     <PageHeader
       title="Case file"
-      subtitle={`${careCase.patientId} · ${careCase.clinicId}`}
+      icon={<IconFileText size={24} />}
       actions={
         <Group gap="xs">
           <SeverityBadge severity={careCase.severity} />

@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, Stack } from "@mantine/core";
+import { IconChecklist } from "@tabler/icons-react";
 import { parseAsString, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
@@ -64,6 +65,8 @@ export const TasksView = (): ReactNode => {
         eyebrow="Care team"
         title="Tasks"
         subtitle="Reminders, referrals, reviews and patient follow-ups that still need a person."
+        icon={<IconChecklist size={24} />}
+        tone="actionable"
       />
 
       {list.isError ? (

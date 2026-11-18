@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, SimpleGrid, Stack } from "@mantine/core";
+import { IconUsers } from "@tabler/icons-react";
 import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
 import { patientColumns } from "@/features/clinic/components/patient-columns";
@@ -53,6 +54,7 @@ export const PatientsView = (): ReactNode => {
         eyebrow="Care team"
         title="Patients"
         subtitle="Everyone registered at your clinic, with how much care is still open and the latest result on file."
+        icon={<IconUsers size={24} />}
       />
 
       {patients.isError ? (

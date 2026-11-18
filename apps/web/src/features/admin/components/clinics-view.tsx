@@ -2,6 +2,7 @@
 
 import type { AdminClinicSummary } from "@hermes/types";
 import { Alert, Button, Stack } from "@mantine/core";
+import { IconBuildingHospital } from "@tabler/icons-react";
 import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
@@ -68,6 +69,7 @@ export const ClinicsView = (): ReactNode => {
         eyebrow="Administration"
         title="Clinics"
         subtitle="Every clinic in the network, who works there and how much care is open."
+        icon={<IconBuildingHospital size={24} />}
         actions={
           <Button
             onClick={() => {

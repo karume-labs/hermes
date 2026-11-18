@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, Badge, Button, Card, Group, Stack, Text } from "@mantine/core";
+import { IconShieldCheck } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { StaffInviteCard } from "@/features/admin/components/staff-invite-card";
 import { StaffUsersTable } from "@/features/admin/components/staff-users-table";
@@ -31,6 +32,8 @@ export const StaffView = (): ReactNode => {
         eyebrow="Administration"
         title="Staff access"
         subtitle="Invite coordinators, assign them to a clinic, and revoke access when someone leaves."
+        icon={<IconShieldCheck size={24} />}
+        tone="info"
       />
 
       {invites.isError || revoke.isError || update.isError ? (
