@@ -1,10 +1,25 @@
-import { Check, Clock } from "lucide-react-native";
+import {
+  CalendarCheck,
+  ClipboardList,
+  Flag,
+  type LucideIcon,
+  Stethoscope,
+} from "lucide-react-native";
 import type * as React from "react";
 import { View } from "react-native";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+import type { JourneyStep } from "@/lib/care-store";
 import { journeyLabel } from "@/lib/case-format";
 import type { StepRow } from "@/lib/journey-steps";
+
+/** One mark per stage, so the timeline reads as four known stops. */
+export const STEP_ICON: Record<JourneyStep, LucideIcon> = {
+  result_received: ClipboardList,
+  appointment_booked: CalendarCheck,
+  specialist_consultation: Stethoscope,
+  completed: Flag,
+};
 
 export const JourneyTimeline = ({
   rows,
@@ -22,16 +37,16 @@ export const JourneyTimeline = ({
             <View
               className={
                 done
-                  ? "size-8 items-center justify-center rounded-full bg-primary"
-                  : "size-8 items-center justify-center rounded-full border border-border"
+                  ? "size-9 items-center justify-center rounded-full bg-primary"
+                  : "size-9 items-center justify-center rounded-full bg-secondary"
               }
             >
               <Icon
-                as={done ? Check : Clock}
+                as={STEP_ICON[row.step]}
                 className={
                   done
-                    ? "size-4 text-primary-foreground"
-                    : "size-4 text-muted-foreground"
+                    ? "size-[17px] text-primary-foreground"
+                    : "size-[17px] text-muted-foreground"
                 }
               />
             </View>
@@ -39,13 +54,23 @@ export const JourneyTimeline = ({
               <View className="w-px flex-1 bg-border" />
             ) : null}
           </View>
-          <View className="flex-1 gap-1 pb-4">
-            <Text className={done ? "font-semibold" : "text-muted-foreground"}>
+          <View className="flex-1 gap-1 pb-5">
+            <Text
+              className={
+                done
+                  ? "text-[15px] font-bold"
+                  : "text-[15px] font-medium text-muted-foreground"
+              }
+            >
               {journeyLabel(row.step)}
             </Text>
-            <Text className="text-sm text-muted-foreground">{row.detail}</Text>
+            <Text className="text-[13px] leading-[19px] text-muted-foreground">
+              {row.detail}
+            </Text>
             {row.when === null ? null : (
-              <Text className="text-xs text-muted-foreground">{row.when}</Text>
+              <Text className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                {row.when}
+              </Text>
             )}
           </View>
         </View>

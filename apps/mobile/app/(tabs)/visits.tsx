@@ -39,6 +39,9 @@ const Visits = () => {
           eyebrow="Appointments"
           title="Your visits"
           subtitle="Confirmed appointments, preparation notes and past visits in one place."
+          icon={
+            <Icon as={CalendarCheck} className="size-[22px] text-primary" />
+          }
         />
 
         {loading ? <ScreenSkeleton rows={3} withHeader={false} /> : null}

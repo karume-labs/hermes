@@ -1,12 +1,18 @@
 import type { PatientBooking } from "@hermes/types";
 import { useRouter } from "expo-router";
-import { CalendarClock, Stethoscope, XCircle } from "lucide-react-native";
+import {
+  CalendarCheck,
+  CalendarClock,
+  CalendarDays,
+  Stethoscope,
+  XCircle,
+} from "lucide-react-native";
 import type * as React from "react";
 import { View } from "react-native";
 import { NextVisitCard } from "@/components/care/next-visit-card";
 import { Icon } from "@/components/ui/icon";
 import { IconTile, ListRow, ListSection } from "@/components/ui/list";
-import { Text } from "@/components/ui/text";
+import { VisitPrepCard } from "@/components/visits/visit-prep-card";
 import { formatDateTime } from "@/lib/case-format";
 
 export const NextVisitPanel = ({
@@ -29,18 +35,17 @@ export const NextVisitPanel = ({
     <View className="gap-5">
       <NextVisitCard item={next} />
 
-      <ListSection
-        title="Before you go"
-        footer="A reminder arrives 24 hours before your visit."
-      >
-        <View className="bg-card px-4 py-3.5">
-          <Text className="text-[14px] leading-[21px]">
-            {next.booking.prepInstructions}
-          </Text>
-        </View>
-      </ListSection>
+      <VisitPrepCard instructions={next.booking.prepInstructions} />
 
-      <ListSection title="Visit actions">
+      <ListSection
+        title="Visit actions"
+        icon={
+          <Icon
+            as={CalendarCheck}
+            className="size-[13px] text-muted-foreground"
+          />
+        }
+      >
         <ListRow
           first
           title="Open care plan"
@@ -97,11 +102,37 @@ export const NextVisitPanel = ({
       </ListSection>
 
       {later.length === 0 ? null : (
-        <ListSection title="Also booked">
+        <ListSection
+          title="Also booked"
+          icon={
+            <Icon
+              as={CalendarDays}
+              className="size-[13px] text-muted-foreground"
+            />
+          }
+        >
           {later.map((item, index) => (
             <ListRow
               key={item.booking.id}
               first={index === 0}
+              leading={
+                <IconTile
+                  tone={item.slot.kind === "telehealth" ? "info" : "muted"}
+                >
+                  <Icon
+                    as={
+                      item.slot.kind === "telehealth"
+                        ? Stethoscope
+                        : CalendarDays
+                    }
+                    className={
+                      item.slot.kind === "telehealth"
+                        ? "size-[18px] text-accent-foreground"
+                        : "size-[18px] text-muted-foreground"
+                    }
+                  />
+                </IconTile>
+              }
               title={formatDateTime(item.slot.startAt)}
               subtitle={`${item.clinicName} · ${
                 item.slot.kind === "telehealth" ? "Video" : "In person"
