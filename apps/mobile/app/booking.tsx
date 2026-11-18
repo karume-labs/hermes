@@ -35,79 +35,77 @@ const BookingScreen = () => {
   }
 
   return (
-    <ScrollView
-      className="flex-1 bg-background"
-      contentContainerClassName="gap-3 p-4 pb-12"
-    >
-      <Text variant="h3">
-        {rescheduling
-          ? "Choose a new time"
-          : kind === "telehealth"
-            ? "Video review"
-            : "In-person visit"}
-      </Text>
-      <Text className="text-muted-foreground">
-        Choose a slot that works for you. Prep instructions and a 24h reminder
-        follow automatically.
-      </Text>
+    <View className="flex-1 bg-background">
+      <ScrollView className="flex-1" contentContainerClassName="gap-3 p-4 pb-8">
+        <Text variant="h3">
+          {rescheduling
+            ? "Choose a new time"
+            : kind === "telehealth"
+              ? "Video review"
+              : "In-person visit"}
+        </Text>
+        <Text className="text-muted-foreground">
+          Choose a slot that works for you. Prep instructions and a 24h reminder
+          follow automatically.
+        </Text>
 
-      {loading ? (
-        <View className="items-center gap-2 py-8">
-          <ActivityIndicator />
-          <Text className="text-muted-foreground">Loading open slots…</Text>
-        </View>
-      ) : null}
+        {loading ? (
+          <View className="items-center gap-2 py-8">
+            <ActivityIndicator />
+            <Text className="text-muted-foreground">Loading open slots…</Text>
+          </View>
+        ) : null}
 
-      {error === "" ? null : (
-        <Text className="text-sm text-destructive">{error}</Text>
-      )}
+        {error === "" ? null : (
+          <Text className="text-sm text-destructive">{error}</Text>
+        )}
 
-      {!loading && error === "" && slots.length === 0 ? (
-        <View className="gap-2 rounded-xl border border-border p-4">
-          <Text className="font-medium">No slots open right now</Text>
-          <Text className="text-sm text-muted-foreground">
-            Message your care team and they will call you with the next opening.
-          </Text>
-        </View>
-      ) : null}
-
-      {slots.map((slot) => (
-        <Pressable
-          key={slot.id}
-          className={cn(
-            "flex-row items-center justify-between gap-3 rounded-xl border p-4",
-            selected?.id === slot.id
-              ? "border-primary bg-secondary"
-              : "border-border active:bg-accent",
-          )}
-          onPress={() => setSelected(slot)}
-        >
-          <View className="gap-1">
-            <Text className="font-medium">{slotLabel(slot)}</Text>
-            <Text className="text-xs text-muted-foreground">
-              {slot.clinicId}
+        {!loading && error === "" && slots.length === 0 ? (
+          <View className="gap-2 rounded-xl border border-border p-4">
+            <Text className="font-medium">No slots open right now</Text>
+            <Text className="text-sm text-muted-foreground">
+              Message your care team and they will call you with the next
+              opening.
             </Text>
           </View>
-          {selected?.id === slot.id ? (
-            <Icon as={Check} className="size-5 text-primary" />
-          ) : null}
-        </Pressable>
-      ))}
+        ) : null}
 
-      <Button
-        size="lg"
-        disabled={selected === null || busy || loading}
-        onPress={confirm}
-      >
-        <Text>
-          {busy
-            ? "Confirming…"
-            : rescheduling
-              ? "Confirm new time"
-              : "Confirm booking"}
-        </Text>
-      </Button>
-    </ScrollView>
+        {slots.map((slot) => (
+          <Pressable
+            key={slot.id}
+            className={cn(
+              "flex-row items-center justify-between gap-3 rounded-xl border p-4",
+              selected?.id === slot.id
+                ? "border-primary bg-secondary"
+                : "border-border active:bg-accent",
+            )}
+            onPress={() => setSelected(slot)}
+          >
+            <Text className="font-medium">{slotLabel(slot)}</Text>
+            {selected?.id === slot.id ? (
+              <Icon as={Check} className="size-5 text-primary" />
+            ) : null}
+          </Pressable>
+        ))}
+      </ScrollView>
+      {/* The list runs to thirty slots, so the confirm step stays pinned to
+          the bottom edge instead of waiting at the end of the scroll. */}
+      <View className="border-t border-border bg-background px-4 py-3">
+        <Button
+          size="lg"
+          disabled={selected === null || busy || loading}
+          onPress={confirm}
+        >
+          <Text>
+            {busy
+              ? "Confirming…"
+              : rescheduling
+                ? "Confirm new time"
+                : "Confirm booking"}
+          </Text>
+        </Button>
+      </View>
+    </View>
   );
 };
 

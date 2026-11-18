@@ -36,7 +36,7 @@ export const ResultSummary = ({ careCase }: ResultSummaryProps) => {
         {careCase.summaryPlainLanguage}
       </Text>
       <Text className="text-[12px] text-muted-foreground">
-        Received {formatDateTime(careCase.createdAt)} · {careCase.clinicId}
+        Received {formatDateTime(careCase.createdAt)}
       </Text>
 
       <View className="gap-2 border-t border-border/70 pt-3">

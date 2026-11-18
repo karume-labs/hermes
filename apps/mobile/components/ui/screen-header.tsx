@@ -29,7 +29,7 @@ export const ScreenHeader = ({
       {trailing}
     </View>
     {subtitle === undefined ? null : (
-      <Text className="max-w-[46ch] text-[15px] leading-[22px] text-muted-foreground">
+      <Text className="text-[15px] leading-[22px] text-muted-foreground">
         {subtitle}
       </Text>
     )}
