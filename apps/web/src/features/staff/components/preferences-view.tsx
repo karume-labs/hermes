@@ -1,23 +1,40 @@
 "use client";
 
+import { Alert, Card, Group, SimpleGrid, Stack, Text } from "@mantine/core";
 import {
-  Alert,
-  Card,
-  SegmentedControl,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
-import { IconAdjustmentsAlt } from "@tabler/icons-react";
+  IconAdjustmentsAlt,
+  IconBellRinging,
+  IconDeviceMobile,
+  IconMail,
+  IconStack2,
+} from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { useUpdateOwnPreferences } from "@/features/admin/services/organization-mutations";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
+import { ChannelCard } from "@/features/shared/components/ui/channel-card";
+import { Pill } from "@/features/shared/components/ui/pill";
+import { SectionHeader } from "@/features/shared/components/ui/section-header";
 import { useNotificationPreferences } from "@/features/staff/services/queries";
 
 const CHANNELS = [
-  { value: "in_app", label: "In-app only" },
-  { value: "email", label: "Email" },
-  { value: "both", label: "In-app + email" },
+  {
+    value: "in_app",
+    title: "In-app only",
+    description: "Alerts stay inside Hermes. Nothing reaches your inbox.",
+    icon: <IconDeviceMobile size={19} />,
+  },
+  {
+    value: "email",
+    title: "Email",
+    description: "The same alert also lands in your work inbox.",
+    icon: <IconMail size={19} />,
+  },
+  {
+    value: "both",
+    title: "In-app + email",
+    description: "A Hermes alert and a copy by email, for both channels.",
+    icon: <IconStack2 size={19} />,
+  },
 ];
 
 export const PreferencesView = (): ReactNode => {
@@ -47,35 +64,45 @@ export const PreferencesView = (): ReactNode => {
         </Alert>
       ) : null}
 
-      <Card
-        radius="lg"
-        p="lg"
-        bg="var(--hermes-surface)"
-        bd="1px solid var(--hermes-line)"
-      >
-        <Stack gap="md">
-          <Title order={3} size="h5">
-            Notifications
-          </Title>
-          <Text size="sm" c="dimmed">
-            In-app alerts always appear in Hermes. Choose Email or In-app +
-            email when the same message should also reach your inbox.
-          </Text>
-          <SegmentedControl
-            value={current}
-            onChange={save}
-            data={CHANNELS}
-            disabled={preferences.isLoading || update.isPending}
+      <Card p="xl" bg="var(--hermes-surface)" bd="1px solid var(--hermes-line)">
+        <Stack gap="lg">
+          <SectionHeader
+            icon={<IconBellRinging size={19} />}
+            title="Notifications"
+            hint="In-app alerts always appear in Hermes; email adds a copy"
+            tone="info"
+            action={
+              update.isSuccess ? (
+                <Pill tone="routine" size="sm">
+                  Saved
+                </Pill>
+              ) : null
+            }
           />
+
+          <SimpleGrid cols={{ base: 1, md: 3 }}>
+            {CHANNELS.map((channel) => (
+              <ChannelCard
+                key={channel.value}
+                icon={channel.icon}
+                title={channel.title}
+                description={channel.description}
+                checked={current === channel.value}
+                disabled={preferences.isLoading || update.isPending}
+                onSelect={() => save(channel.value)}
+              />
+            ))}
+          </SimpleGrid>
+
           {update.isError ? (
-            <Text size="sm" c="red">
-              Could not save that choice. Try again.
-            </Text>
-          ) : null}
-          {update.isSuccess ? (
-            <Text size="sm" c="teal">
-              Saved.
-            </Text>
+            <Group gap="xs">
+              <Pill tone="urgent" size="sm">
+                Not saved
+              </Pill>
+              <Text size="sm" c="var(--hermes-ink-muted)">
+                Could not save that choice. Try again.
+              </Text>
+            </Group>
           ) : null}
         </Stack>
       </Card>
