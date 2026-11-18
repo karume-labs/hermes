@@ -4,3 +4,4 @@ type SessionState = ReturnType<typeof authClient.useSession>;
 
 /** User as Better Auth exposes it on the client (includes the staff role). */
 export type SessionUser = NonNullable<SessionState["data"]>["user"];
+export type Session = NonNullable<SessionState["data"]>;
