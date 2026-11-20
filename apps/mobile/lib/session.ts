@@ -1,6 +1,6 @@
 import type { MobileEventType } from "@hermes/types";
-import * as SecureStore from "expo-secure-store";
 import { api } from "@/lib/api/client";
+import { readKey, writeKey } from "@/lib/key-store";
 import { getCachedPatient } from "@/lib/token-store";
 
 const ACTIVE_CASE_KEY = "hermes-active-case";
@@ -15,11 +15,11 @@ export const getPatientId = async (): Promise<string> => {
 };
 
 export const setActiveCase = async (caseId: string): Promise<void> => {
-  await SecureStore.setItemAsync(ACTIVE_CASE_KEY, caseId);
+  await writeKey(ACTIVE_CASE_KEY, caseId);
 };
 
 export const getActiveCase = async (): Promise<string | null> =>
-  SecureStore.getItemAsync(ACTIVE_CASE_KEY);
+  readKey(ACTIVE_CASE_KEY);
 
 // Telemetry must never block the patient flow.
 export const trackEvent = (

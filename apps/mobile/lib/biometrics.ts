@@ -1,5 +1,5 @@
 import * as LocalAuthentication from "expo-local-authentication";
-import * as SecureStore from "expo-secure-store";
+import { deleteKey, readKey, writeKey } from "@/lib/key-store";
 
 const UNLOCK_KEY = "hermes-biometric-unlock";
 
@@ -16,16 +16,16 @@ export const isBiometricAvailable = async (): Promise<boolean> => {
  * fingerprint on first launch reads as a barrier, not as privacy.
  */
 export const isBiometricUnlockEnabled = async (): Promise<boolean> =>
-  (await SecureStore.getItemAsync(UNLOCK_KEY)) === "true";
+  (await readKey(UNLOCK_KEY)) === "true";
 
 export const setBiometricUnlockEnabled = async (
   enabled: boolean,
 ): Promise<void> => {
   if (enabled) {
-    await SecureStore.setItemAsync(UNLOCK_KEY, "true");
+    await writeKey(UNLOCK_KEY, "true");
     return;
   }
-  await SecureStore.deleteItemAsync(UNLOCK_KEY);
+  await deleteKey(UNLOCK_KEY);
 };
 
 export const authenticateWithBiometrics = async (): Promise<boolean> => {

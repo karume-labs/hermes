@@ -1,5 +1,7 @@
-import * as SecureStore from "expo-secure-store";
+import { deleteKey, readKey, writeKey } from "@/lib/key-store";
 
+// The bearer token is a credential: devices keep it in the keychain/keystore,
+// while the web build keeps it in localStorage instead (see lib/key-store.ts).
 const TOKEN_KEY = "hermes-patient-token";
 const PROFILE_KEY = "hermes-patient-profile";
 
@@ -16,15 +18,14 @@ export interface PatientProfile {
   notificationChannel: "email" | "in_app" | "both";
 }
 
-export const getPatientToken = (): Promise<string | null> =>
-  SecureStore.getItemAsync(TOKEN_KEY);
+export const getPatientToken = (): Promise<string | null> => readKey(TOKEN_KEY);
 
 export const setPatientToken = (token: string): Promise<void> =>
-  SecureStore.setItemAsync(TOKEN_KEY, token);
+  writeKey(TOKEN_KEY, token);
 
 export const clearPatientToken = async (): Promise<void> => {
-  await SecureStore.deleteItemAsync(TOKEN_KEY);
-  await SecureStore.deleteItemAsync(PROFILE_KEY);
+  await deleteKey(TOKEN_KEY);
+  await deleteKey(PROFILE_KEY);
 };
 
 type SessionListener = () => void;
@@ -58,7 +59,7 @@ export const expirePatientSession = async (): Promise<void> => {
 };
 
 export const cacheProfile = async (patient: PatientProfile): Promise<void> => {
-  await SecureStore.setItemAsync(PROFILE_KEY, JSON.stringify(patient));
+  await writeKey(PROFILE_KEY, JSON.stringify(patient));
 };
 
 const isProfile = (value: unknown): value is PatientProfile =>
@@ -71,7 +72,7 @@ const isProfile = (value: unknown): value is PatientProfile =>
 
 /** Last known patient, for screens that only need the id. */
 export const getCachedPatient = async (): Promise<PatientProfile | null> => {
-  const raw = await SecureStore.getItemAsync(PROFILE_KEY);
+  const raw = await readKey(PROFILE_KEY);
   if (raw === null) return null;
   try {
     const parsed: unknown = JSON.parse(raw);
