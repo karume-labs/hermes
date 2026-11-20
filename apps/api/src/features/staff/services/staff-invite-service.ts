@@ -11,12 +11,27 @@ import { hashInviteToken } from "@api/features/staff/services/staff-invite-token
 import { assertClinic } from "@api/features/staff/services/staff-service";
 import { staffInvites, user } from "@db/auth/schema/index";
 import { db } from "@db/client";
-import { organizations } from "@db/directory/schema/index";
+import { clinics, organizations } from "@db/directory/schema/index";
 import type { StaffRole } from "@hermes/types";
 import type { CreateStaffInvite } from "@hermes/validators";
 import { and, eq, isNull } from "drizzle-orm";
 
 const INVITE_DAYS = 7;
+
+// A coordinator joins through their clinic, and a clinic already sits inside an
+// organization. Asking the operator to name both invites a mismatch, so the
+// clinic decides the organization when the operator did not pick one.
+const clinicOrganization = async (
+  clinicId: string | null,
+): Promise<string | null> => {
+  if (clinicId === null) return null;
+  const [row] = await db
+    .select({ organizationId: clinics.organizationId })
+    .from(clinics)
+    .where(eq(clinics.id, clinicId))
+    .limit(1);
+  return row?.organizationId ?? null;
+};
 
 const roleLabel = (role: StaffRole): string => role.replaceAll("_", " ");
 
@@ -43,7 +58,7 @@ export const createStaffInvite = async (
   // one explicitly, which is how the first org admin is created.
   const organizationId =
     staff.role === "admin"
-      ? (input.organizationId ?? null)
+      ? (input.organizationId ?? (await clinicOrganization(clinicId)))
       : (staff.organizationId ?? null);
   if (organizationId === null) {
     throw new ConflictError("Choose the organization this person joins.");
