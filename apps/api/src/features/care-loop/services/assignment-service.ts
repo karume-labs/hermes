@@ -2,7 +2,7 @@ import {
   findCase,
   updateCase,
 } from "@api/features/care-loop/services/case-repository";
-import type { StaffContext } from "@api/features/shared/auth/index";
+import { type StaffContext, staffScope } from "@api/features/shared/auth/index";
 import {
   ConflictError,
   NotFoundError,
@@ -73,7 +73,10 @@ export const assignCase = async (
   caseId: string,
   assignedToId: string | null,
 ) => {
-  const found = await findCase(caseId, staff.clinicId);
+  // The queue shows hand-over cases from other clinics too, so the read uses
+  // the same scope the list used: a hand-over case is found, and the assignee
+  // check below is what refuses an owner from the wrong clinic.
+  const found = await findCase(caseId, staffScope(staff));
   if (found === null) throw new NotFoundError("Case not found");
 
   if (assignedToId !== null) {

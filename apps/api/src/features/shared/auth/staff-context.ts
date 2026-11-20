@@ -24,11 +24,23 @@ export type RequestHeaders = {
   cookie?: string | undefined;
 };
 
-export const staffScope = (staff: StaffContext): CaseScope => ({
-  clinicId: staff.clinicId,
-  organizationId: staff.organizationId,
-  userId: staff.via === "service" ? null : staff.id,
-});
+export const staffScope = (staff: StaffContext): CaseScope => {
+  // A platform admin has no home clinic and no organization, so they span the
+  // network. Scoping them to "cases I take part in" would hand the operator an
+  // empty queue while the metrics above it count every case.
+  if (
+    staff.role === "admin" &&
+    staff.clinicId === null &&
+    staff.organizationId === null
+  ) {
+    return { clinicId: null, organizationId: null, userId: null };
+  }
+  return {
+    clinicId: staff.clinicId,
+    organizationId: staff.organizationId,
+    userId: staff.via === "service" ? null : staff.id,
+  };
+};
 
 export const safeEqual = (left: string, right: string): boolean => {
   const a = Buffer.from(left);

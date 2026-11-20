@@ -29,6 +29,10 @@ export const auth = betterAuth({
     customRules: {
       "/sign-in/email": { window: 60, max: 5 },
       "/request-password-reset": { window: 300, max: 3 },
+      // The dashboard proxy reads the session on every navigation and every
+      // link prefetch, so this read must not share the sign-in budget: a 429
+      // here looks exactly like a signed-out visitor and bounces the page.
+      "/get-session": { window: 60, max: 600 },
     },
   },
 
