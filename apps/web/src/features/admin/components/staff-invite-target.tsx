@@ -44,7 +44,11 @@ export const StaffInviteTarget = ({
       data={isPlatformAdmin ? PLATFORM_ROLES : CLINICAL_ROLES}
       value={role}
       onChange={(value) =>
-        onRoleChange(value === "clinician" ? "clinician" : "coordinator")
+        onRoleChange(
+          value === "clinician" || value === "org_admin" || value === "admin"
+            ? value
+            : "coordinator",
+        )
       }
       allowDeselect={false}
     />
