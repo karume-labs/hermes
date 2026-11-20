@@ -7,7 +7,7 @@ import {
   useRescheduleBooking,
   useSlots,
 } from "@/lib/api/queries";
-import { addVisitToCalendar } from "@/lib/calendar";
+import { syncVisitToCalendar } from "@/lib/calendar";
 import { scheduleVisitReminder } from "@/lib/notifications";
 import { paramString } from "@/lib/params";
 
@@ -56,7 +56,8 @@ export const useBooking = () => {
             });
       setConfirmed({ booking, slot: selected });
       recordEvent.mutate({ type: "booking_confirmed", caseId });
-      const result = await addVisitToCalendar({
+      const result = await syncVisitToCalendar({
+        caseId,
         title: "Confirmatory visit — Hermes Care",
         startAt: selected.startAt,
         endAt: selected.endAt,

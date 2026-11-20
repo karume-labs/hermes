@@ -8,7 +8,7 @@ import {
   useRecordEvent,
   useSubmitFeedback,
 } from "@/lib/api/queries";
-import { addVisitToCalendar } from "@/lib/calendar";
+import { syncVisitToCalendar } from "@/lib/calendar";
 import { paramString } from "@/lib/params";
 
 export const useCareAction = () => {
@@ -72,7 +72,8 @@ export const useCareAction = () => {
 
   const syncCalendar = async (): Promise<void> => {
     if (patientCase === null || patientCase.slot === null) return;
-    const result = await addVisitToCalendar({
+    const result = await syncVisitToCalendar({
+      caseId: patientCase.careCase.id,
       title: "Confirmatory visit — Hermes Care",
       startAt: patientCase.slot.startAt,
       endAt: patientCase.slot.endAt,

@@ -1,8 +1,14 @@
 import type { PatientBooking } from "@hermes/types";
 import { useFocusEffect } from "expo-router";
 import * as React from "react";
-import { Alert } from "react-native";
+import { Alert, Platform } from "react-native";
 import { useCancelBooking, usePatientBookings } from "@/lib/api/queries";
+import { removeVisitFromCalendar } from "@/lib/calendar";
+import { cancelVisitReminder } from "@/lib/notifications";
+
+const CANCEL_TITLE = "Cancel this visit?";
+const CANCEL_BODY =
+  "This frees the slot for another patient. Your care team will still see your result.";
 
 export const useVisits = () => {
   const bookings = usePatientBookings();
@@ -15,23 +21,30 @@ export const useVisits = () => {
   );
 
   const confirmCancel = (item: PatientBooking): void => {
-    Alert.alert(
-      "Cancel this visit?",
-      "This frees the slot for another patient. Your care team will still see your result.",
-      [
-        { text: "Keep visit", style: "cancel" },
+    const cancelIt = (): void => {
+      cancel.mutate(
         {
-          text: "Cancel visit",
-          style: "destructive",
-          onPress: () => {
-            cancel.mutate({
-              bookingId: item.booking.id,
-              reason: "Patient cancelled from the app",
-            });
+          bookingId: item.booking.id,
+          reason: "Patient cancelled from the app",
+        },
+        {
+          onSuccess: () => {
+            void removeVisitFromCalendar(item.booking.caseId);
+            void cancelVisitReminder();
           },
         },
-      ],
-    );
+      );
+    };
+    // react-native-web ships no Alert, so the browser build never showed the
+    // dialog and a visit could not be cancelled there at all.
+    if (Platform.OS === "web") {
+      if (globalThis.confirm(`${CANCEL_TITLE} ${CANCEL_BODY}`)) cancelIt();
+      return;
+    }
+    Alert.alert(CANCEL_TITLE, CANCEL_BODY, [
+      { text: "Keep visit", style: "cancel" },
+      { text: "Cancel visit", style: "destructive", onPress: cancelIt },
+    ]);
   };
 
   const items = bookings.data ?? [];

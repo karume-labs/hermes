@@ -25,6 +25,19 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
   return status === "granted";
 };
 
+/**
+ * Android 13+ blocks notifications until the app asks, and onboarding is the
+ * only other place that asks, so a patient who skipped it would otherwise get
+ * a switch that claims push is on while nothing ever arrives.
+ */
+export const ensurePushPermission = async (
+  wanted: boolean,
+  alreadyOn: boolean,
+): Promise<boolean> => {
+  if (!wanted || alreadyOn) return wanted;
+  return requestNotificationPermission().catch(() => false);
+};
+
 export const registerPushToken = async (): Promise<string | null> => {
   if (Platform.OS === "web") return null;
   const projectId = env.easProjectId;
@@ -50,7 +63,27 @@ export const registerPushToken = async (): Promise<string | null> => {
   }
 };
 
+const VISIT_REMINDER_KIND = "visit_reminder";
+
+/** Rescheduling replaces the reminder the same way it replaces the calendar event. */
+export const cancelVisitReminder = async (): Promise<void> => {
+  if (Platform.OS === "web") return;
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  await Promise.all(
+    scheduled
+      .filter(
+        (item) =>
+          (item.content.data as { kind?: string } | null)?.kind ===
+          VISIT_REMINDER_KIND,
+      )
+      .map((item) =>
+        Notifications.cancelScheduledNotificationAsync(item.identifier),
+      ),
+  );
+};
+
 export const scheduleVisitReminder = async (at: Date): Promise<string> => {
+  await cancelVisitReminder().catch(() => undefined);
   if (at.getTime() <= Date.now()) {
     return "";
   }
@@ -58,7 +91,7 @@ export const scheduleVisitReminder = async (at: Date): Promise<string> => {
     content: {
       title: "Visit tomorrow",
       body: "Your confirmatory visit is coming up. Bring prior labs and arrive 15 minutes early.",
-      data: { kind: "visit_reminder" },
+      data: { kind: VISIT_REMINDER_KIND },
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
