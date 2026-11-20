@@ -15,9 +15,13 @@ const SESSION_COOKIES = [
 // do. `panelRole` mirrors DASHBOARD_ROLES so a new role cannot be half-added.
 type PanelRole = (typeof DASHBOARD_ROLES)[number];
 
-type SessionProbe = {
-  role: PanelRole;
-};
+// "none" is a real answer from the API. "unknown" is a probe that timed out or
+// was rate limited: that says nothing about the visitor, and treating it as
+// signed-out signs a working session out mid-journey.
+type ProbeOutcome =
+  | { kind: "session"; role: PanelRole }
+  | { kind: "none" }
+  | { kind: "unknown" };
 
 // Governance pages an organization owner runs for their own org. Everything
 // else under /admin stays with the platform operator.
@@ -36,34 +40,39 @@ const sessionCookie = (request: NextRequest): string | null => {
   return null;
 };
 
-const readSession = async (
-  request: NextRequest,
-): Promise<SessionProbe | null> => {
+const readSession = async (request: NextRequest): Promise<ProbeOutcome> => {
   const cookie = sessionCookie(request);
-  if (cookie === null) return null;
+  if (cookie === null) return { kind: "none" };
   try {
     const response = await fetch(
       `${env.NEXT_PUBLIC_API_URL}/auth/get-session`,
       {
         headers: { cookie },
         cache: "no-store",
+        signal: AbortSignal.timeout(4_000),
       },
     );
-    if (!response.ok) return null;
+    if (!response.ok) {
+      const declined = response.status === 401 || response.status === 403;
+      return declined ? { kind: "none" } : { kind: "unknown" };
+    }
     const body: unknown = await response.json();
     if (body === null || typeof body !== "object" || !("user" in body)) {
-      return null;
+      return { kind: "none" };
     }
     const { user } = body;
     if (user === null || typeof user !== "object" || !("role" in user)) {
-      return null;
+      return { kind: "none" };
     }
-    if (!isDashboardRole(user.role)) return null;
-    return { role: user.role };
+    if (!isDashboardRole(user.role)) return { kind: "none" };
+    return { kind: "session", role: user.role };
   } catch {
-    return null;
+    return { kind: "unknown" };
   }
 };
+
+const probeRole = (probe: ProbeOutcome): PanelRole | null =>
+  probe.kind === "session" ? probe.role : null;
 
 const isAssetPath = (pathname: string): boolean =>
   pathname.startsWith("/_next") ||
@@ -77,9 +86,14 @@ export const proxy = async (request: NextRequest) => {
   if (isAssetPath(pathname)) return NextResponse.next();
 
   const isAuthPage = AUTH_PATHS.includes(pathname);
-  const session = await readSession(request);
+  const probe = await readSession(request);
+  // The API still authorizes every request, so a visitor whose probe timed out
+  // is let through to a page that can explain itself rather than to a sign-in
+  // redirect that would drop a live cookie.
+  if (probe.kind === "unknown") return NextResponse.next();
+  const role = probeRole(probe);
 
-  if (session === null) {
+  if (role === null) {
     if (isAuthPage) return NextResponse.next();
     const signIn = new URL("/sign-in", request.url);
     if (pathname !== "/") signIn.searchParams.set("next", pathname);
@@ -92,8 +106,8 @@ export const proxy = async (request: NextRequest) => {
   // runs for their own organization.
   if (
     pathname.startsWith("/admin") &&
-    session.role !== "admin" &&
-    !(session.role === "org_admin" && orgAdminMayOpen(pathname))
+    role !== "admin" &&
+    !(role === "org_admin" && orgAdminMayOpen(pathname))
   ) {
     return NextResponse.redirect(new URL("/queue", request.url));
   }
