@@ -11,6 +11,7 @@ import { StatusBadge } from "@/features/cases/components/case-status-badge";
 
 interface QueueRowProps {
   item: CaseListItem;
+  canOwn: boolean;
   escalating: boolean;
   onEscalate: (caseId: string) => void;
   onAssign: (caseId: string) => void;
@@ -18,6 +19,7 @@ interface QueueRowProps {
 
 export const QueueRow = ({
   item,
+  canOwn,
   escalating,
   onEscalate,
   onAssign,
@@ -81,13 +83,15 @@ export const QueueRow = ({
             </Button>
           </Menu.Target>
           <Menu.Dropdown>
-            <MenuItem
-              leftSection={<IconUserPlus size={15} />}
-              onClick={() => onAssign(item.id)}
-              disabled={item.status === "closed"}
-            >
-              Assign to me
-            </MenuItem>
+            {canOwn ? (
+              <MenuItem
+                leftSection={<IconUserPlus size={15} />}
+                onClick={() => onAssign(item.id)}
+                disabled={item.status === "closed"}
+              >
+                Assign to me
+              </MenuItem>
+            ) : null}
             <MenuItem
               leftSection={<IconArrowRight size={15} />}
               onClick={() => onEscalate(item.id)}

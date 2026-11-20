@@ -68,6 +68,8 @@ const buildLanes = (cases: CaseListItem[]): Lane[] => [
 
 interface QueueBoardProps {
   cases: CaseListItem[];
+  canOwn: boolean;
+  clinicId: string | null | undefined;
   escalatingId: string | null;
   onEscalate: (caseId: string) => void;
   onAssign: (caseId: string) => void;
@@ -75,6 +77,8 @@ interface QueueBoardProps {
 
 export const QueueBoard = ({
   cases,
+  canOwn,
+  clinicId,
   escalatingId,
   onEscalate,
   onAssign,
@@ -111,6 +115,7 @@ export const QueueBoard = ({
                   <QueueRow
                     key={item.id}
                     item={item}
+                    canOwn={canOwn && item.clinicId === clinicId}
                     escalating={escalatingId === item.id}
                     onEscalate={onEscalate}
                     onAssign={onAssign}

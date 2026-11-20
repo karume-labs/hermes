@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Group } from "@mantine/core";
+import { Button, Group, Text } from "@mantine/core";
 import type { ReactNode } from "react";
 import { authClient } from "@/features/auth/services/client";
 import { useAssignCase } from "@/features/cases/services/mutations-case";
@@ -13,14 +13,18 @@ interface QueueCaseRef {
 interface QueueAssignAllProps {
   cases: QueueCaseRef[];
   unassigned: number;
+  canOwn: boolean;
 }
 
 export const QueueAssignAll = ({
   cases,
   unassigned,
+  canOwn,
 }: QueueAssignAllProps): ReactNode => {
   const { data: session } = authClient.useSession();
   const assign = useAssignCase();
+
+  if (!canOwn) return null;
 
   const takeAll = (): void => {
     const userId = session?.user.id;
@@ -34,6 +38,11 @@ export const QueueAssignAll = ({
 
   return (
     <Group justify="flex-end">
+      {assign.isError ? (
+        <Text size="xs" c="var(--hermes-urgent-ink)">
+          Those cases could not be assigned. Try one at a time.
+        </Text>
+      ) : null}
       <Button
         variant="subtle"
         size="xs"

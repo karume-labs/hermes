@@ -2,7 +2,6 @@
 
 import { Alert, Stack } from "@mantine/core";
 import { IconStethoscope } from "@tabler/icons-react";
-import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import type { ReactNode } from "react";
 import { authClient } from "@/features/auth/services/client";
 import {
@@ -15,44 +14,17 @@ import { QueueFilters } from "@/features/queue/components/queue-filters";
 import { QueueMetrics } from "@/features/queue/components/queue-metrics";
 import { useQueueCases } from "@/features/queue/services/queries";
 import { queueStats } from "@/features/queue/utils/queue-stats";
+import { useQueueFilters } from "@/features/queue/utils/use-queue-filters";
 import { PageHeader } from "@/features/shared/components/layout/page-header";
-
-const SORTS = ["newest", "oldest"] as const;
-
-const toApiSeverity = (value: string): string => {
-  if (value === "urgent") return "Urgent";
-  if (value === "actionable") return "Actionable";
-  if (value === "routine") return "Routine";
-  return "";
-};
 
 export const QueueView = (): ReactNode => {
   const { data: session } = authClient.useSession();
-  const [severity, setSeverity] = useQueryState(
-    "severity",
-    parseAsString.withDefault(""),
-  );
-  const [status, setStatus] = useQueryState(
-    "status",
-    parseAsString.withDefault(""),
-  );
-  const [ownership, setOwnership] = useQueryState(
-    "ownership",
-    parseAsString.withDefault(""),
-  );
-  const [overdue, setOverdue] = useQueryState(
-    "overdue",
-    parseAsString.withDefault(""),
-  );
-  const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
-  const [sort, setSort] = useQueryState(
-    "sort",
-    parseAsStringLiteral(SORTS).withDefault("newest"),
-  );
+  const filters = useQueueFilters();
+  const { ownership, overdue, search } = filters.value;
 
   const list = useQueueCases(
-    toApiSeverity(severity),
-    status,
+    filters.severityForApi,
+    filters.value.status,
     ownership === "mine" ? "me" : "",
     ownership === "unassigned" ? "true" : "",
     overdue,
@@ -74,25 +46,20 @@ export const QueueView = (): ReactNode => {
   const cases = [...filtered].sort((left, right) => {
     const delta =
       new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
-    return sort === "newest" ? delta : -delta;
+    return filters.sort === "newest" ? delta : -delta;
   });
 
-  const filtersActive =
-    severity !== "" ||
-    status !== "" ||
-    ownership !== "" ||
-    overdue !== "" ||
-    search !== "";
-
-  const clearAll = (): void => {
-    void setSeverity("");
-    void setStatus("");
-    void setOwnership("");
-    void setOverdue("");
-    void setSearch("");
-  };
-
   const { pending, breached, unassigned } = queueStats(cases);
+  // Only a coordinator or clinician can own a case; the API refuses an admin
+  // as an owner, so offering "assign to me" to one is a dead button.
+  const role = session?.user.role;
+  const clinicId = session?.user.clinicId;
+  const canOwn = role === "coordinator" || role === "clinician";
+  // A case handed over from another clinic is readable here but cannot gain an
+  // owner from this clinic, so it is not part of "take them all".
+  const ownable = cases.filter(
+    (item) => item.assignedToId === null && item.clinicId === clinicId,
+  );
 
   return (
     <Stack gap="xl">
@@ -119,24 +86,24 @@ export const QueueView = (): ReactNode => {
       />
 
       <QueueFilters
-        value={{ severity, status, ownership, overdue, search }}
-        filtersActive={filtersActive}
-        sort={sort}
-        onChange={(patch) => {
-          if (patch.severity !== undefined) void setSeverity(patch.severity);
-          if (patch.status !== undefined) void setStatus(patch.status);
-          if (patch.ownership !== undefined) void setOwnership(patch.ownership);
-          if (patch.overdue !== undefined) void setOverdue(patch.overdue);
-          if (patch.search !== undefined) void setSearch(patch.search);
-        }}
-        onSortChange={(next) => void setSort(next)}
-        onClear={clearAll}
+        value={filters.value}
+        filtersActive={filters.filtersActive}
+        sort={filters.sort}
+        onChange={filters.apply}
+        onSortChange={filters.setSort}
+        onClear={filters.clear}
       />
 
-      <QueueAssignAll cases={cases} unassigned={unassigned} />
+      <QueueAssignAll
+        cases={ownable}
+        unassigned={ownable.length}
+        canOwn={canOwn}
+      />
 
       <QueueBoard
         cases={cases}
+        canOwn={canOwn}
+        clinicId={clinicId}
         escalatingId={escalate.isPending ? (escalate.variables ?? null) : null}
         onEscalate={(caseId) => escalate.mutate(caseId)}
         onAssign={(caseId) => {
