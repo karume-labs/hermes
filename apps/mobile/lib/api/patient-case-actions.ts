@@ -47,7 +47,12 @@ export const useAcknowledgeCase = () => {
       if (patientId === null) throw new Error("Sign in again.");
       return unwrap(await api.cases.acknowledge.post({ caseId, patientId }));
     },
-    onSuccess: () => {
+    // The open case keeps its own query key, so the acknowledgement only shows
+    // up once that detail is invalidated too.
+    onSuccess: (_data, caseId) => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.caseDetail(caseId),
+      });
       void queryClient.invalidateQueries({ queryKey: queryKeys.cases });
       void queryClient.invalidateQueries({ queryKey: queryKeys.notifications });
     },
@@ -56,6 +61,7 @@ export const useAcknowledgeCase = () => {
 
 export const useSubmitFeedback = () => {
   const patientId = usePatientId();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: {
       caseId: string;
@@ -75,5 +81,10 @@ export const useSubmitFeedback = () => {
           }),
       ) as CaseFeedback;
     },
+    // Without this the saved answer never shows its "Last saved" line.
+    onSuccess: (_feedback, input) =>
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.caseDetail(input.caseId),
+      }),
   });
 };

@@ -21,9 +21,14 @@ const fetcher = async (
   }
   if (token !== null) headers.set("authorization", `Bearer ${token}`);
   const response = await fetch(input, { ...init, headers });
-  // A revoked or expired token must not be shown as a per-screen error: the
-  // shared expiry handler sends the app back to sign-in.
-  if (response.status === 401) await expirePatientSession();
+  // A revoked token sends the app back to sign-in. Only the token this request
+  // carried may end the session: an anonymous probe that started before
+  // sign-in answers 401 after it, and clearing the fresh token there logs the
+  // patient straight back out.
+  if (response.status === 401 && token !== null) {
+    const current = await getPatientToken();
+    if (current === token) await expirePatientSession();
+  }
   return response;
 };
 
