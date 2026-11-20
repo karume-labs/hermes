@@ -8,18 +8,18 @@ import { ProfileHeader } from "@/components/profile/profile-header";
 import { SecuritySections } from "@/components/profile/security-sections";
 import { ListRow, ListSection } from "@/components/ui/list";
 import { Text } from "@/components/ui/text";
-import { usePatientProfile, useUpdateConsent } from "@/lib/api/queries";
+import { usePatientProfile } from "@/lib/api/queries";
 import { signOutPatient } from "@/lib/auth";
 import {
   getThemePreference,
   setThemePreference,
   type ThemePreference,
 } from "@/lib/theme-preference";
+import { usePushConsent } from "@/lib/use-push-consent";
 
 const Profile = () => {
   const router = useRouter();
   const profile = usePatientProfile();
-  const updateConsent = useUpdateConsent();
   const [themePreference, setThemeChoice] =
     React.useState<ThemePreference>("system");
 
@@ -28,19 +28,11 @@ const Profile = () => {
   }, []);
 
   const current = profile.data ?? null;
+  const push = usePushConsent(current);
 
   const chooseTheme = (preference: ThemePreference): void => {
     setThemeChoice(preference);
     void setThemePreference(preference);
-  };
-
-  const savePreferences = (input: {
-    pushConsent: boolean;
-    smsConsent: boolean;
-    emailConsent: boolean;
-    notificationChannel: "email" | "in_app" | "both";
-  }): void => {
-    updateConsent.mutate(input);
   };
 
   const signOut = async (): Promise<void> => {
@@ -49,8 +41,8 @@ const Profile = () => {
   };
 
   const error =
-    updateConsent.error !== null
-      ? updateConsent.error.message
+    push.error !== null
+      ? push.error.message
       : profile.error !== null
         ? profile.error.message
         : "";
@@ -69,6 +61,12 @@ const Profile = () => {
 
         {error === "" ? null : (
           <Text className="px-5 text-[13px] text-destructive">{error}</Text>
+        )}
+
+        {push.notice === "" ? null : (
+          <Text className="px-5 text-[13px] text-destructive">
+            {push.notice}
+          </Text>
         )}
 
         <ListSection title="Account">
@@ -96,23 +94,11 @@ const Profile = () => {
           emailConsent={current?.emailConsent ?? false}
           channel={current?.notificationChannel ?? "in_app"}
           email={current?.email ?? null}
-          disabled={current === null || updateConsent.isPending}
-          onChange={(pushConsent, smsConsent) =>
-            savePreferences({
-              pushConsent,
-              smsConsent,
-              emailConsent: current?.emailConsent ?? false,
-              notificationChannel: current?.notificationChannel ?? "in_app",
-            })
-          }
-          onChangeChannel={(notificationChannel) =>
-            savePreferences({
-              pushConsent: current?.pushConsent ?? true,
-              smsConsent: current?.smsConsent ?? false,
-              emailConsent: notificationChannel !== "in_app",
-              notificationChannel,
-            })
-          }
+          disabled={current === null || push.pending}
+          onChange={(pushConsent, smsConsent) => {
+            void push.setPush(pushConsent, smsConsent);
+          }}
+          onChangeChannel={push.setChannel}
           onOpenHistory={() => router.push("/notifications")}
         />
 

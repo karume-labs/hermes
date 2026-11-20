@@ -12,6 +12,14 @@ import { useCallback } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUniwind } from "uniwind";
+import {
+  TAB_BAR_LABEL_FONT_SIZE,
+  TAB_BAR_LABEL_GAP,
+  TAB_BAR_LABEL_LINE_HEIGHT,
+  TAB_BAR_PADDING_BOTTOM,
+  TAB_BAR_PADDING_TOP,
+  tabBarHeight,
+} from "@/lib/tab-bar-metrics";
 import { NAV_THEME, THEME } from "@/lib/theme";
 
 interface TabBarIconProps {
@@ -80,18 +88,18 @@ const TabsLayout = () => {
           backgroundColor: navTheme.colors.card,
           borderTopColor: navTheme.colors.border,
           borderTopWidth: 1,
-          height: 64 + insets.bottom,
-          paddingTop: 8,
-          paddingBottom: insets.bottom + 6,
+          height: tabBarHeight(insets.bottom),
+          paddingTop: TAB_BAR_PADDING_TOP,
+          paddingBottom: TAB_BAR_PADDING_BOTTOM + insets.bottom,
           elevation: 0,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: TAB_BAR_LABEL_FONT_SIZE,
+          lineHeight: TAB_BAR_LABEL_LINE_HEIGHT,
           letterSpacing: 0.1,
           fontFamily: "PlusJakartaSans_700Bold",
-          marginTop: 2,
+          marginTop: TAB_BAR_LABEL_GAP,
         },
-        tabBarItemStyle: { paddingVertical: 2 },
         tabBarIconStyle: { marginBottom: 0 },
         tabBarHideOnKeyboard: true,
       }}

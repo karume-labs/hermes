@@ -80,6 +80,8 @@ const BookingScreen = () => {
                 : "border-border active:bg-accent",
             )}
             onPress={() => setSelected(slot)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: selected?.id === slot.id }}
           >
             <Text className="font-medium">{slotLabel(slot)}</Text>
             {selected?.id === slot.id ? (

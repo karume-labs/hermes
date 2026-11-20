@@ -119,6 +119,7 @@ const RootLayout = () => {
               name="notifications"
               options={{ headerShown: false, title: "Notifications" }}
             />
+            <Stack.Screen name="+not-found" options={{ headerShown: false }} />
           </Stack>
         </AuthGate>
       </QueryClientProvider>
